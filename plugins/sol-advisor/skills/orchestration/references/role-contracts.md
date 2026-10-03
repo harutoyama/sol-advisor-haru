@@ -2,7 +2,8 @@
 
 Sol Advisor uses capability-named custom agents. Model family names are not routing concepts.
 The delegate profile is the only profile allowed to pin a concrete model. Escalation and audit
-leave model and effort unpinned in TOML and preserve the primary capability lane at spawn time.
+contain no concrete high-capability model slug; their spawns explicitly reuse the primary
+session's resolved model and reasoning effort.
 
 ## Selective route
 
@@ -60,11 +61,10 @@ The primary inspects the actual diff and reruns verification.
 - `solo`: primary implements and verifies; no auxiliary.
 - `delegate`: spawn exactly one `sol_advisor_delegate_implementer`; primary verifies.
 - `audit`: primary implements and verifies; spawn a fresh
-  `sol_advisor_audit_reviewer` with the primary's resolved model/effort; reviewer does not
-  implement.
+  `sol_advisor_audit_reviewer` with explicit primary model/effort; reviewer does not implement.
 - `full`: spawn one implementer, primary verifies, then spawn a fresh audit reviewer. Use
   `sol_advisor_delegate_implementer` only while implementation remains bounded; otherwise use
-  `sol_advisor_escalation_implementer` with the primary's resolved model/effort.
+  `sol_advisor_escalation_implementer` with explicit primary model/effort.
 
 ## Delegate implementer
 
@@ -75,36 +75,39 @@ agent_type: sol_advisor_delegate_implementer
 fork_turns: none
 ```
 
-Do not attach per-spawn model or reasoning overrides. The custom-agent file owns the lightweight
-pin. If the result reveals judgment-heavy, high-risk, context-heavy, architecture-sensitive,
-or wide-blast-radius work, stop and escalate rather than stretching the delegate contract.
+Do not attach per-spawn model or reasoning overrides. The delegate custom-agent file owns the
+single lightweight model pin. If the result reveals judgment-heavy, high-risk, context-heavy,
+architecture-sensitive, or wide-blast-radius work, stop and escalate rather than stretching
+the delegate contract.
 
 ## Escalation implementer
 
 Use for judgment-heavy, high-risk, context-heavy, architecture-sensitive, or wide-blast-radius
-implementation.
+implementation. Resolve the primary session's current model and effort first, then spawn:
 
 ```text
 agent_type: sol_advisor_escalation_implementer
 fork_turns: none
+model: <primary-resolved-model>
+model_reasoning_effort: <primary-resolved-effort>
 ```
 
-The role TOML intentionally omits model and effort. Pass the current resolved primary model and
-reasoning effort explicitly in the native spawn request. This is required because Codex resolves
-an omitted setting through the corresponding `[agents]` default before falling back to the
-parent's value. If the primary model or effort cannot be observed, fail closed.
+The role TOML intentionally omits model and effort. Explicit spawn values are required because
+user/project `agents.default_subagent_*` settings may otherwise reroute an omitted value.
+If the primary values cannot be observed or the host cannot apply the explicit values, stop the
+lane rather than substituting another capability.
 
 ## Fresh audit reviewer
 
-Only for `audit` or `full`, after primary verification:
+Only for `audit` or `full`, after parent verification. Resolve the same primary values and
+spawn:
 
 ```text
 agent_type: sol_advisor_audit_reviewer
 fork_turns: none
+model: <primary-resolved-model>
+model_reasoning_effort: <primary-resolved-effort>
 ```
-
-Pass the current resolved primary model and reasoning effort explicitly in the native spawn
-request, and require fresh context.
 
 Prompt:
 
@@ -135,5 +138,6 @@ FINDINGS: <precise file references and required fixes, or none>
 RESIDUAL RISK: <largest remaining risk, or none>
 ```
 
-The reviewer role TOML requests read-only sandboxing. Runtime sandbox policy must still be
-observed before acceptance. Any fix invalidates the verdict and requires a new fresh audit.
+The reviewer TOML requests read-only sandboxing. Runtime overrides may broaden the effective
+sandbox, so use observed isolation, not requested isolation. Confirm the spawned model and
+effort equal the primary values. Any fix invalidates the verdict and requires a new fresh audit.
