@@ -19,21 +19,33 @@ Auxiliary work substitutes for primary work; it must not duplicate it.
 
 ## Install
 
-Requirements: a current Codex CLI with plugin and custom-agent support, `jq`, and a model
-available to your account for the primary session.
+Requirements: a current Codex CLI with plugin and custom-agent support, `jq`, `git`, and a
+model available to your account for the primary session.
+
+Register this fork as a marketplace:
 
 ```sh
 codex plugin marketplace add harutoyama/sol-advisor-haru --ref main
-plugin_dir="$(codex plugin add sol-advisor@sol-advisor --json | jq -r '.installedPath')"
-test -n "$plugin_dir" && test "$plugin_dir" != null && test -d "$plugin_dir"
-sh "$plugin_dir/scripts/install-agents.sh"
 ```
 
-The companion installer writes the three Sol Advisor custom-agent profiles to
-`$CODEX_HOME/agents` or `~/.codex/agents`. It is fail-closed: it never overwrites a
-modified file, symlink, non-regular file, or obsolete Sol Advisor profile.
+Then install **Sol Advisor** from that marketplace in the ChatGPT desktop Plugins Directory.
+The current public OpenAI documentation documents marketplace management from the CLI, while
+local marketplace plugin installation is performed from the Plugins Directory.
 
-Start a fresh Codex task after installing the agents.
+Install the companion custom-agent profiles from the same repository:
+
+```sh
+tmp_dir="$(mktemp -d)"
+git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$tmp_dir/sol-advisor-haru"
+sh "$tmp_dir/sol-advisor-haru/plugins/sol-advisor/scripts/install-agents.sh"
+rm -rf "$tmp_dir"
+```
+
+The installer writes three profiles to `$CODEX_HOME/agents` or `~/.codex/agents`. It is
+fail-closed: it never overwrites a modified file, symlink, non-regular file, or obsolete Sol
+Advisor profile.
+
+Start a fresh Codex task after installing the agents:
 
 ```text
 Use $sol-advisor:orchestration to build this feature and verify it. Declare the SELECTIVE ROUTE before task tools.
@@ -41,26 +53,29 @@ Use $sol-advisor:orchestration to build this feature and verify it. Declare the 
 
 ## Update
 
+Refresh the marketplace snapshot:
+
 ```sh
 codex plugin marketplace upgrade sol-advisor
-plugin_dir="$(codex plugin add sol-advisor@sol-advisor --json | jq -r '.installedPath')"
-test -n "$plugin_dir" && test "$plugin_dir" != null && test -d "$plugin_dir"
-sh "$plugin_dir/scripts/install-agents.sh"
 ```
+
+Then refresh/reinstall Sol Advisor from the Plugins Directory and rerun the companion installer
+from a fresh checkout using the install command above.
 
 If the installer reports obsolete Sol Advisor profiles, inspect and remove only the exact paths
 it reports, then rerun the installer. It intentionally does not delete or migrate those files.
 
-## Uninstall
+## Uninstall / migration
 
-Remove the plugin first:
+Remove the configured marketplace when you no longer want this source:
 
 ```sh
-codex plugin remove sol-advisor@sol-advisor
+codex plugin marketplace remove sol-advisor
 ```
 
-Then review `~/.codex/agents/` (or `$CODEX_HOME/agents/`) and remove Sol Advisor agent
-profiles you no longer want. Do not delete modified profiles blindly.
+Uninstall/disable Sol Advisor in the Plugins Directory separately. Then review
+`~/.codex/agents/` (or `$CODEX_HOME/agents/`) and remove Sol Advisor profiles you no longer
+want. Do not delete modified profiles blindly.
 
 ## Maintainers
 
