@@ -76,11 +76,12 @@ printf '%s\n' "$slug_hits" | grep -Fq 'sol-advisor-delegate-implementer.toml:' |
   fail "the sole concrete model slug must live in delegate TOML"
 pass "single-point delegate model pin; high-capability TOMLs remain unpinned"
 
-terra_hits=$(grep -R -nEi 'terra' "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null || true)
-if [ -n "$terra_hits" ]; then
-  bad_terra=$(printf '%s\n' "$terra_hits" | grep -vF 'scripts/install-agents.sh' || true)
-  [ -z "$bad_terra" ] || {
-    printf '%s\n' "$bad_terra" >&2
+retired_family_pattern='te''rra'
+family_hits=$(grep -R -nEi "$retired_family_pattern" "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null || true)
+if [ -n "$family_hits" ]; then
+  unexpected_family_hits=$(printf '%s\n' "$family_hits" | grep -vF 'scripts/install-agents.sh' || true)
+  [ -z "$unexpected_family_hits" ] || {
+    printf '%s\n' "$unexpected_family_hits" >&2
     fail "retired family name remains outside migration detection"
   }
 fi
