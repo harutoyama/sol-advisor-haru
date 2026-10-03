@@ -8,6 +8,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Set
 
 
 def fail(path: Path, message: str) -> None:
