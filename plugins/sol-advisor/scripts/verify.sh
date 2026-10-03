@@ -41,6 +41,7 @@ pass "required files and exact three-role set"
 python3 "$syntax" json "$portable" "$compat" "$market"
 python3 "$syntax" toml "$delegate" "$escalation" "$audit"
 python3 "$syntax" yaml "$ui"
+python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
@@ -75,25 +76,41 @@ printf '%s\n' "$slug_hits" | grep -Fq 'sol-advisor-delegate-implementer.toml:' |
   fail "the sole concrete model slug must live in delegate TOML"
 pass "single-point delegate model pin; high-capability TOMLs remain unpinned"
 
-for phrase in   'SELECTIVE ROUTE'   'Solo is the default'   'Auxiliary work must substitute'   'newly observed'   '[agents]'   'pass those resolved values explicitly'   'Verification evidence is required'; do
+terra_hits=$(grep -R -nEi 'terra' "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null || true)
+if [ -n "$terra_hits" ]; then
+  bad_terra=$(printf '%s\n' "$terra_hits" | grep -vF 'scripts/install-agents.sh' || true)
+  [ -z "$bad_terra" ] || {
+    printf '%s\n' "$bad_terra" >&2
+    fail "retired family name remains outside migration detection"
+  }
+fi
+pass "retired family name is detection-only"
+
+for phrase in   'SELECTIVE ROUTE'   'Solo is the default'   'Auxiliary work must substitute'   'newly observed'   'agents.default_subagent_model'   'explicit model and effort values'   'Verification evidence is required'; do
   grep -Fqi "$phrase" "$skill" || fail "skill omits: $phrase"
 done
 for role in sol_advisor_delegate_implementer sol_advisor_escalation_implementer sol_advisor_audit_reviewer; do
   grep -Fq "$role" "$contracts" || fail "role contract omits $role"
   grep -Fq "$role" "$ops" || fail "operations omit $role"
 done
-grep -Fq 'explicit spawn value, then the corresponding `[agents]` default, then the parent' "$ops" ||
-  fail "operations omit official model resolution precedence"
-pass "routing, spawn, and role contracts"
+for path in "$contracts" "$ops"; do
+  grep -Fq 'model: <primary-resolved-model>' "$path" || fail "$path omits explicit primary model spawn"
+  grep -Fq 'model_reasoning_effort: <primary-resolved-effort>' "$path" || fail "$path omits explicit primary effort spawn"
+  grep -Fq 'agents.default_subagent_' "$path" || fail "$path omits ambient subagent-default hazard"
+done
+pass "routing, explicit primary reuse, and role contracts"
 
 grep -Fq 'codex plugin marketplace add harutoyama/sol-advisor-haru --ref main' "$readme" ||
   fail "README marketplace install command is stale"
-grep -Fq 'codex plugin add sol-advisor@sol-advisor --json' "$readme" ||
-  fail "README does not obtain installedPath from plugin add --json"
-if grep -Fq 'codex plugin list --json' "$readme"; then
-  fail "README incorrectly expects installedPath from plugin list --json"
+grep -Fq 'Plugins Directory' "$readme" || fail "README omits documented local-plugin installation surface"
+if grep -Eq 'codex plugin (add|remove|list)([[:space:]]|$)' "$readme"; then
+  fail "README relies on an undocumented direct plugin CLI command"
 fi
-pass "README uses current plugin CLI output contract"
+grep -Fq 'codex plugin marketplace upgrade sol-advisor' "$readme" ||
+  fail "README marketplace upgrade command is stale"
+grep -Fq 'codex plugin marketplace remove sol-advisor' "$readme" ||
+  fail "README marketplace removal command is stale"
+pass "README uses documented marketplace CLI and Plugins Directory flow"
 
 sh -n "$installer"
 sh -n "$inspector"
