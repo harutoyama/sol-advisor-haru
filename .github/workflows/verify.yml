@@ -28,7 +28,7 @@ jobs:
           echo '--- retired generation search ---'
           legacy_hits="$(rg -n -i 'GPT-5\.6|gpt-5\.6|5\.6-sol|5\.6-luna|5\.6-terra|Terra' . || true)"
           printf '%s\n' "$legacy_hits"
-          unexpected_legacy="$(printf '%s\n' "$legacy_hits" | grep -v '^plugins/sol-advisor/scripts/install-agents.sh:' || true)"
+          unexpected_legacy="$(printf '%s\n' "$legacy_hits" | grep -v '^\./plugins/sol-advisor/scripts/install-agents.sh:' || true)"
           test -z "$unexpected_legacy"
 
           echo '--- concrete model assignments ---'
