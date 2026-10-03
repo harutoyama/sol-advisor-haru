@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "sol-advisor",
+  "version": "0.7.0",
+  "description": "Codex-native capability-based selective routing with solo default, bounded delegation, parent verification, and fresh audit."
+}

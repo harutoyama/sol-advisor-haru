@@ -1,0 +1,53 @@
+name: Verify Sol Advisor
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Repository verifier
+        run: sh plugins/sol-advisor/scripts/verify.sh
+
+      - name: Install ripgrep
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ripgrep
+
+      - name: Required legacy and model-pin searches
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_pattern='GPT-5''\.6|gpt-5''\.6|5''\.6-sol|5''\.6-luna|5''\.6-terra|Ter''ra'
+          echo '--- retired generation/family search ---'
+          legacy_hits="$(rg -n -i "$legacy_pattern" . || true)"
+          printf '%s\n' "$legacy_hits"
+          unexpected="$(printf '%s\n' "$legacy_hits" | grep -vF 'plugins/sol-advisor/scripts/install-agents.sh' || true)"
+          test -z "$unexpected"
+
+          echo '--- concrete model assignments ---'
+          model_hits="$(rg -n 'model\s*=' . || true)"
+          printf '%s\n' "$model_hits"
+          test "$(printf '%s\n' "$model_hits" | awk 'NF { n++ } END { print n+0 }')" -eq 1
+          printf '%s\n' "$model_hits" | grep -Fq 'plugins/sol-advisor/agents/sol-advisor-delegate-implementer.toml:'
+
+      - name: Git scope and cleanliness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+          git diff --check
+          status="$(git status --short)"
+          printf '%s\n' "$status"
+          test -z "$status"
+          git diff --stat origin/main...HEAD
+          git diff --stat
