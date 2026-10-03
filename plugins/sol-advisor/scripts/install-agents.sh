@@ -76,10 +76,10 @@ install_one() {
 script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
 template_dir=$script_dir/../agents
 
-if [ -n "$CODEX_HOME" ] 2>/dev/null; then
+if [ -n "${CODEX_HOME-}" ]; then
   target_dir=$CODEX_HOME/agents
 else
-  [ -n "$HOME" ] 2>/dev/null || fail "HOME is unset; set CODEX_HOME or pass --target-dir."
+  [ -n "${HOME-}" ] || fail "HOME is unset; set CODEX_HOME or pass --target-dir."
   target_dir=$HOME/.codex/agents
 fi
 
