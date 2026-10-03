@@ -1,21 +1,24 @@
 {
   "name": "sol-advisor",
-  "version": "0.6.0",
-  "description": "Codex-native selective routing: Sol / High declares solo, delegate, audit, or exceptional full delivery before work begins.",
+  "version": "0.7.0",
+  "description": "Codex-native capability-based selective routing with solo default, bounded delegation, parent verification, and fresh audit.",
   "author": {"name": "Daniel McAteer", "url": "https://github.com/DannyMac180"},
-  "homepage": "https://github.com/DannyMac180/sol-advisor#readme",
-  "repository": "https://github.com/DannyMac180/sol-advisor",
+  "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
+  "repository": "https://github.com/harutoyama/sol-advisor-haru",
   "license": "MIT",
-  "keywords": ["codex", "orchestration", "multi-agent", "gpt-5.6"],
+  "keywords": ["codex", "orchestration", "multi-agent", "selective-routing"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor",
-    "shortDescription": "Plan with Sol / High, declare a risk-gated route, and use at most one auxiliary by default.",
-    "longDescription": "Sol Advisor keeps GPT-5.6 Sol / High in the primary session for architecture, implementation when solo or audit is selected, verification, and acceptance. Before the first task tool call, Sol declares a machine-auditable SELECTIVE ROUTE: solo is the default; delegate uses native GPT-5.6 Luna / Max for bounded work or GPT-5.6 Terra / High for higher-risk work; audit uses a fresh read-only GPT-5.6 Sol / High review; full combines one selected implementer with a fresh review only for a broad or high-risk exception. Public role metadata is authoritative and missing, conflicting, unavailable, or unobservable routing evidence fails closed.",
-    "developerName": "Daniel McAteer",
+    "shortDescription": "Route by task capability while keeping the current primary model in charge.",
+    "longDescription": "Sol Advisor declares a SELECTIVE ROUTE before task tools. Solo is the default. Delegate is limited to bounded, fully specified, low-risk implementation. Escalation and audit omit hard-coded high-capability model slugs; the orchestrator must spawn them with the current primary session's resolved model and reasoning effort so user-level subagent defaults cannot silently reroute them. The primary verifies all auxiliary work, fresh audit is read-only by contract, and missing or conflicting routing evidence fails closed.",
+    "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],
-    "websiteURL": "https://github.com/DannyMac180/sol-advisor",
-    "defaultPrompt": ["Use $sol-advisor:orchestration to declare a SELECTIVE ROUTE before task tools, then build and verify this feature.", "Use solo by default; select delegate, audit, or exceptional full only when the stated risk justifies it."]
+    "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
+    "defaultPrompt": [
+      "Use $sol-advisor:orchestration to declare a SELECTIVE ROUTE before task tools, then build and verify this feature.",
+      "Default to solo; delegate only bounded low-risk work and escalate only on newly observed risk."
+    ]
   }
 }
