@@ -14,20 +14,17 @@ The repo marketplace at `.agents/plugins/marketplace.json` points to
 | Role | Model policy | Effort policy | Use |
 |---|---|---|---|
 | `sol_advisor_delegate_implementer` | Explicit lightweight pin in its TOML | Explicit in same TOML | Bounded, fully specified, low-risk implementation |
-| `sol_advisor_escalation_implementer` | TOML unpinned; explicit spawn copies resolved primary | Same | Judgment-heavy/high-risk implementation |
-| `sol_advisor_audit_reviewer` | TOML unpinned; explicit spawn copies resolved primary | Same | Fresh final audit |
+| `sol_advisor_escalation_implementer` | Explicit spawn value copied from primary | Explicit spawn value copied from primary | Judgment-heavy/high-risk implementation |
+| `sol_advisor_audit_reviewer` | Explicit spawn value copied from primary | Explicit spawn value copied from primary | Fresh final audit |
 
 The concrete delegate model identifier appears only in the delegate TOML. Do not copy it into
 routing docs, manifests, installer logic, or verification fixtures.
 
-Current Codex custom-agent semantics resolve each omitted model or reasoning setting from an
-explicit spawn value, then the corresponding `[agents]` default, then the parent's value.
-A custom-agent file setting overrides those sources. Therefore TOML omission alone does not
-guarantee parent inheritance when global subagent defaults exist.
-
-For escalation and audit, resolve the current primary model and reasoning effort from runtime
-metadata and supply those values explicitly at spawn time. If either is unobservable, fail
-closed rather than risk a lower-capability lane.
+Current Codex configuration exposes `agents.default_subagent_model` and
+`agents.default_subagent_reasoning_effort`; an explicit value at subagent creation takes
+precedence over those defaults. Therefore omission is not a safe guarantee of parent-model
+reuse. Escalation and audit intentionally keep their TOMLs unpinned and require explicit spawn
+values equal to the primary session's resolved model and reasoning effort.
 
 ## Exact spawn contracts
 
@@ -38,11 +35,26 @@ agent_type: sol_advisor_delegate_implementer
 fork_turns: none
 ```
 
-Escalation and audit use their exact capability role plus fresh context and explicit
-`model`/`model_reasoning_effort` values copied from the current resolved primary session.
-Do not hardcode those values in this repository.
+Escalation:
+
+```text
+agent_type: sol_advisor_escalation_implementer
+fork_turns: none
+model: <primary-resolved-model>
+model_reasoning_effort: <primary-resolved-effort>
+```
+
+Audit:
+
+```text
+agent_type: sol_advisor_audit_reviewer
+fork_turns: none
+model: <primary-resolved-model>
+model_reasoning_effort: <primary-resolved-effort>
+```
 
 Missing, conflicting, unavailable, or unobservable role/model/effort evidence fails closed.
+Do not substitute another model to keep the route moving.
 
 ## Install and preflight
 
@@ -86,17 +98,17 @@ If public and local evidence both exist, they must agree. The inspector is evide
 model-selection fallback.
 
 For delegate, confirm the selected custom role and its configured pin. For escalation and audit,
-confirm the child resolves to the exact primary model and reasoning effort captured before
-spawn.
+confirm the child resolves to the same model and reasoning effort as the primary session and
+that explicit spawn values, rather than an ambient subagent default, selected that lane.
 
 ## Reviewer isolation
 
-The audit TOML requests `sandbox_mode = "read-only"`. Subagent sandbox behavior must be
-validated from observed runtime evidence rather than inferred from the profile alone:
+The audit TOML requests `sandbox_mode = "read-only"`. Runtime policy can still broaden the
+effective child sandbox, so:
 
 - observed read-only: proceed;
 - broader observed sandbox: proceed only when hard isolation is not required, the prompt forbids
-  mutation, and the primary captures exact before/after repository and artifact state;
+  mutation, and the parent captures exact before/after repository and artifact state;
 - unobservable isolation, required hard isolation, or any mutation: stop and reject the review.
 
 Never claim enforced read-only isolation from the TOML alone.
@@ -112,6 +124,6 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks manifests, the three capability roles, one-point model pinning, routing
-contracts, installer safety fixtures, JSON/TOML/YAML syntax, and shell syntax without requiring
-Python 3.11's `tomllib`.
+The verifier checks manifests, the three capability roles, one-point model pinning, primary
+spawn-reuse contracts, installer safety fixtures, JSON/TOML/YAML syntax, and shell syntax
+without requiring Python 3.11's `tomllib`.
