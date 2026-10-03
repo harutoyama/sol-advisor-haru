@@ -89,7 +89,7 @@ implementation. Resolve the primary session's current model and effort first, th
 agent_type: sol_advisor_escalation_implementer
 fork_turns: none
 model: <primary-resolved-model>
-model_reasoning_effort: <primary-resolved-effort>
+reasoning_effort: <primary-resolved-effort>
 ```
 
 The role TOML intentionally omits model and effort. Explicit spawn values are required because
@@ -106,7 +106,7 @@ spawn:
 agent_type: sol_advisor_audit_reviewer
 fork_turns: none
 model: <primary-resolved-model>
-model_reasoning_effort: <primary-resolved-effort>
+reasoning_effort: <primary-resolved-effort>
 ```
 
 Prompt:
