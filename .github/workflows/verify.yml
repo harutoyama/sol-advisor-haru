@@ -14,5 +14,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify repository
         run: sh plugins/sol-advisor/scripts/verify.sh
-      - name: Check whitespace
-        run: git diff --check
+      - name: Dependency and model scan
+        shell: bash
+        run: |
+          legacy_pattern='GPT-5''\.6|gpt-5''\.6|5''\.6-sol|5''\.6-luna|5''\.6-terra|Ter''ra'
+          echo "Legacy references (migration-detection fixture may remain):"
+          rg -n -i "$legacy_pattern" . || true
+          echo "Concrete model assignments:"
+          rg -n 'model\s*=' .
+          test "$(rg -n 'model\s*=' . | wc -l)" -eq 1
+      - name: Git state
+        shell: bash
+        run: |
+          git diff --check
+          git status --short
+          git diff --stat
