@@ -21,7 +21,7 @@ def check_json(path: Path) -> None:
 
 def fallback_toml(path: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
-    seen: set[str] = set()
+    seen: Set[str] = set()
     in_multiline = False
     multiline_key = ""
     for number, raw in enumerate(lines, 1):
@@ -78,7 +78,7 @@ def fallback_yaml(path: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or lines[0] != "interface:":
         fail(path, "fallback parser expects top-level interface mapping")
-    keys: set[str] = set()
+    keys: Set[str] = set()
     for number, raw in enumerate(lines[1:], 2):
         if not raw.strip() or raw.lstrip().startswith("#"):
             continue
