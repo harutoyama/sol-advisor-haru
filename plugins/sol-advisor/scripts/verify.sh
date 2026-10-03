@@ -96,7 +96,7 @@ for role in sol_advisor_delegate_implementer sol_advisor_escalation_implementer 
 done
 for path in "$contracts" "$ops"; do
   grep -Fq 'model: <primary-resolved-model>' "$path" || fail "$path omits explicit primary model spawn"
-  grep -Fq 'model_reasoning_effort: <primary-resolved-effort>' "$path" || fail "$path omits explicit primary effort spawn"
+  grep -Fq 'reasoning_effort: <primary-resolved-effort>' "$path" || fail "$path omits explicit primary effort spawn"
   grep -Fq 'agents.default_subagent_' "$path" || fail "$path omits ambient subagent-default hazard"
 done
 pass "routing, explicit primary reuse, and role contracts"
