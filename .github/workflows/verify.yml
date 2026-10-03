@@ -1,4 +1,4 @@
-name: Verify
+name: Verify Sol Advisor
 
 on:
   push:
@@ -12,24 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify repository
+        with:
+          fetch-depth: 0
+
+      - name: Repository verifier
         run: sh plugins/sol-advisor/scripts/verify.sh
-      - name: Install ripgrep
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ripgrep
-      - name: Dependency and model scan
+
+      - name: Required legacy and model-pin searches
         shell: bash
         run: |
-          legacy_pattern='GPT-5''\.6|gpt-5''\.6|5''\.6-sol|5''\.6-luna|5''\.6-terra|Ter''ra'
-          echo "Legacy references (migration-detection fixture may remain):"
-          rg -n -i "$legacy_pattern" . || true
-          echo "Concrete model assignments:"
-          rg -n 'model\s*=' .
-          test "$(rg -n 'model\s*=' . | wc -l)" -eq 1
-      - name: Git state
+          set -euo pipefail
+          echo '--- retired generation search ---'
+          if rg -n -i 'GPT-5\.6|gpt-5\.6|5\.6-sol|5\.6-luna|5\.6-terra|Terra' .             --glob '!plugins/sol-advisor/scripts/install-agents.sh'; then
+            echo 'Unexpected retired runtime dependency found.' >&2
+            exit 1
+          fi
+
+          echo '--- concrete model assignments ---'
+          rg -n 'model\s*=' plugins/sol-advisor/agents
+          test "$(rg -n 'model\s*=' plugins/sol-advisor/agents | wc -l)" -eq 1
+
+      - name: Git scope checks
         shell: bash
         run: |
-          git diff --check
-          git status --short
-          git diff --stat
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+          test -z "$(git status --short)"
+          git diff --stat origin/main...HEAD
