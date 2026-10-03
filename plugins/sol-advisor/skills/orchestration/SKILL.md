@@ -1,107 +1,81 @@
 ---
 name: orchestration
-description: "Codex-native risk-gated selective routing: default solo delivery, targeted native delegation or audit, and exceptional full review."
+description: "Codex-native capability-based selective routing: solo default, bounded delegation, parent verification, fresh audit, and evidence-gated escalation."
 ---
 
 # Sol Advisor Orchestration
 
-Act as the architect. Own the user's intent, architecture, route choice, decomposition,
-implementation or delegation, parent verification, escalation decisions, and final
-acceptance. Selective routing has four exact modes: `solo`, `delegate`, `audit`, and
-`full`. Solo is the default. One auxiliary agent is the default maximum; full is an
-explicit broad or high-risk exception.
+Act as the architect and primary owner. Own the user's intent, architecture, route choice,
+decomposition, implementation or delegation, verification, escalation decisions, and final
+acceptance. The exact modes are `solo`, `delegate`, `audit`, and `full`.
 
-Read [references/role-contracts.md](references/role-contracts.md) before the first
-delegation. Use [references/operations.md](references/operations.md) for exact spawn,
-preflight, runtime-evidence, isolation, and maintainer procedures.
+Read [references/role-contracts.md](references/role-contracts.md) before delegation or review.
+Use [references/operations.md](references/operations.md) for installation, exact role names,
+runtime evidence, sandbox interpretation, and maintainer procedures.
 
-## Confirm the primary session
+## Use the current primary model
 
-Run the primary Codex session on gpt-5.6-sol with high reasoning. Verify the current
-model and effort when runtime metadata exposes them. If either differs, tell the user
-to select Sol / High and stop before delegation. If runtime metadata does not expose
-them, ask the user to confirm Sol / High and stop until confirmed. A skill cannot
-change the primary model itself; never assume or claim this prerequisite is satisfied.
+Do not require a named model family or generation for the primary session. The current model
+chosen by the user is the primary capability lane. `solo` uses it directly. The
+`escalation` and `audit` custom agents omit model and reasoning overrides so Codex inherits
+the parent settings.
+
+If the current primary is unsuitable or unavailable for the task, report that concrete runtime
+constraint rather than silently substituting a different model.
 
 ## Declare the route before task tools
 
-Before the first task tool call, emit one machine-auditable declaration:
+Before the first task tool call, emit:
 
-~~~text
+```text
 SELECTIVE ROUTE
 mode: solo | delegate | audit | full
-risk: <concise, task-specific rationale>
-~~~
+risk: <concise task-specific rationale>
+```
 
-No task tool call may precede this declaration. Choose `solo` unless a stated risk
-justifies another mode. A later declaration may only escalate the route when newly
-observed risk justifies it; never silently downgrade. Record the evidence for an
-escalation. Details and the task-scoped preflight matrix are in operations.md.
+Solo is the default. No task tool call may precede this declaration. A later route declaration
+may only escalate after newly observed risk is recorded; never silently downgrade.
 
-## Preflight selected auxiliaries only
+## Route selection
 
-Confirm Sol / High in the primary session. Preflight only an auxiliary selected by the
-declared route: none for solo; Luna / Max or Terra / High for delegate; fresh Sol / High
-for audit; and the selected implementer plus fresh Sol reviewer for full. Public metadata
-for role, model, and effort is authoritative. If it omits a model or effort, use the
-local inspector only for that omitted field. Missing, conflicting, unavailable, or
-unobservable evidence stops the affected lane; never silently substitute a role,
-model, effort, or reviewer.
+- `solo`: default. Primary plans, implements, verifies, and self-reviews. No auxiliary.
+- `delegate`: only for bounded, fully specified, low-risk work with clear interfaces and
+  little judgment. One delegate implementer executes the complete specification; primary
+  verifies. No fresh reviewer.
+- `audit`: primary implements and verifies, then a fresh audit reviewer inspects the
+  accumulated change set. No implementer auxiliary.
+- `full`: exceptional broad or high-risk case. Use one delegate implementer only if the
+  implementation remains bounded; otherwise use the escalation implementer. Primary verifies,
+  then a fresh audit reviewer reviews.
 
-## Route delivery without duplication
+Auxiliary work must substitute for primary work, not duplicate it.
 
-- `solo`: root plans, implements, tests, and self-reviews; spawn no auxiliary.
-- `delegate`: select Luna / Max for bounded, fully specified work, or Terra / High for
-  judgment-heavy, high-risk, context-heavy, or wide-blast-radius work. The selected
-  implementer executes the complete spec; root verifies; do not request a fresh review.
-- `audit`: root implements and verifies; a fresh read-only Sol / High reviewer reviews
-  the accumulated diff; spawn no implementer.
-- `full`: only for an explicit broad or high-risk exception. Select one implementer,
-  root verifies, then a fresh read-only Sol / High reviewer reviews.
+## Escalation
 
-Auxiliary work must substitute for root work, not duplicate it. A Luna result may
-justify escalation to Terra / High only when it reveals newly observed complexity,
-risk, wide blast radius, or misclassification. A corrected Luna attempt is reserved
-for a specification error and is not a prerequisite for Terra. Any route change must
-be declared and evidenced; do not silently downgrade.
+Use the escalation implementer when delegate work proves judgment-heavy, high-risk,
+context-heavy, architecture-sensitive, or wider in blast radius than specified. Escalation
+requires newly observed evidence if the task began on a lower-risk route. The escalation
+implementer inherits the parent model and reasoning settings.
 
-## Keep architect work in the primary session
+A specification correction may justify one corrected delegate attempt, but a retry is not a
+prerequisite for escalation when the result itself reveals material risk.
 
-Keep these responsibilities in the primary session:
+## Parent verification
 
-- Resolve requirements and material ambiguity.
-- Choose architecture, interfaces, decomposition, and selective route.
-- Write the complete five-part worker specification for any selected implementer.
-- Inspect the actual diff and rerun verification.
-- Decide whether newly observed risk warrants escalation.
-- Judge the reviewer verdict when the route includes review and accept the deliverable.
+Every implementer prompt must contain OBJECTIVE, FILES AND OWNERSHIP, INTERFACES,
+CONSTRAINTS, VERIFICATION, and the structured return contract in role-contracts.md.
 
-Every worker prompt must contain OBJECTIVE, FILES AND OWNERSHIP, INTERFACES,
-CONSTRAINTS, VERIFICATION, and the structured implementation return in
-[the role contracts](references/role-contracts.md). State the exact owned files,
-preserve concurrent edits, and never silently widen scope.
+Treat auxiliary reports as claims. The primary must inspect the actual diff, confirm changed
+file scope, rerun the requested checks, and evaluate artifact/runtime evidence before
+acceptance. Verification evidence is required before completion.
 
-Treat worker reports as claims. Confirm the complete diff, changed-file scope, requested
-checks, and artifact/runtime evidence in the parent session. Do not duplicate the
-selected implementer's work in the primary session.
+## Fresh audit
 
-## Review only when the route includes it
+For `audit` and `full`, spawn a new audit reviewer with fresh context after parent
+verification. The role requests `read-only`, but Codex can reapply parent live sandbox
+overrides. Accept a review only after the actual sandbox/permission evidence is consistent
+with the required isolation policy in operations.md.
 
-For `audit` and `full`, after parent verification, spawn a new native Sol / High
-reviewer. The reviewer must remain behaviorally read-only, inspect the actual
-accumulated diff, and return exactly ship, fix-first, or rethink. A reviewer never
-implements its own fixes. `solo` and `delegate` do not receive a fresh reviewer.
-
-- ship: report completion with the verification evidence.
-- fix-first applies only to `audit` and `full`:
-  - audit: the root implements the required correction, re-verifies, and obtains a new
-    fresh reviewer.
-  - full: the selected implementer handles the required correction, the root
-    re-verifies, and a new fresh reviewer reviews.
-  - solo and delegate: no fresh reviewer is added unless a newly observed,
-    risk-evidenced route escalation is declared; never silently add one.
-- rethink: revise the architecture and do not report completion.
-
-Any implementation correction invalidates the prior verdict. Apply the observed sandbox
-and permission profile rules in the operations reference; never claim enforced
-read-only isolation when it was not observed.
+The reviewer returns exactly `ship`, `fix-first`, or `rethink` and never implements its
+own fixes. Any implementation change invalidates the prior verdict and requires parent
+re-verification plus a new fresh audit.

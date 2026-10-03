@@ -1,48 +1,27 @@
 # Native Codex role contracts
 
-Use these contracts with Sol Advisor's namespaced, role-pinned native custom agents.
-They do not launch a nested Codex CLI or change global default-agent routing. Adapt
-every placeholder without removing a required field.
+Sol Advisor uses capability-named custom agents. Model family names are not routing concepts.
+The delegate profile is the only profile allowed to pin a concrete model. Escalation and audit
+inherit the parent model and reasoning settings.
 
-For task-scoped preflight, runtime evidence, sandbox interpretation, and maintainer
-commands, use [operations.md](operations.md).
+## Selective route
 
-## Selective route and required preflight
+Before task tools:
 
-Before the first task tool call, the root emits one machine-auditable route:
-
-~~~text
+```text
 SELECTIVE ROUTE
 mode: solo | delegate | audit | full
-risk: <concise, task-specific rationale>
-~~~
+risk: <concise task-specific rationale>
+```
 
-Solo is the default; one auxiliary is the default maximum. Full is an explicit broad
-or high-risk exception. A later route declaration may only escalate after newly
-observed risk justifies it and supplies that evidence; never silently downgrade.
+Solo is the default. A route changes only by escalation after newly observed risk is recorded.
+Auxiliary work substitutes for primary work and must not duplicate it.
 
-Confirm Sol / High in the primary session, then preflight only auxiliaries selected by
-the route: none for solo; Luna / Max or Terra / High for delegate; fresh Sol / High
-for audit; and one selected implementer plus fresh Sol reviewer for full. Cache each
-successful check only for the task. After spawning, complete the selected role's
-routing and reviewer-isolation checks before accepting the result:
+## Shared implementation packet
 
-1. Require the selected exact native role and fresh-context spawn contract.
-2. Observe the selected role, model, and effort through public spawn/details metadata
-   first, using the local runtime inspector only for omitted fields. Accept Luna /
-   Max for bounded delegate/full implementation, Terra / High for higher-risk
-   delegate/full implementation, and Sol / High for audit/full review.
-3. For the reviewer, capture actual sandbox policy and permission profile types.
+Every delegate or escalation prompt contains all five sections:
 
-A missing, stale, unsafe, conflicting, unavailable, inconsistent, or unobservable
-role/model/effort stops the native lane. Never silently fall back. Model and effort
-are pinned by custom-agent TOML, so omit native per-spawn overrides.
-
-## Shared implementation contract
-
-Every Luna or Terra prompt must contain all five sections:
-
-~~~text
+```text
 OBJECTIVE
 <Observable outcome and why it matters.>
 
@@ -50,162 +29,106 @@ FILES AND OWNERSHIP
 You own only:
 - <exact file or module>
 
-You are not alone in the codebase. Other agents or the user may be editing concurrently.
-Preserve their edits, do not revert unrelated work, and adapt to changes already present.
-Do not modify files outside your ownership.
+Preserve concurrent edits. Do not revert unrelated work or modify files outside ownership.
 
 INTERFACES
-- <Signatures, types, schemas, commands, or behavior that must remain compatible.>
+- <Signatures, schemas, commands, behavior, or compatibility requirements.>
 
 CONSTRAINTS
-- <Repository conventions, safety boundaries, excluded scope, and settled decisions.>
+- <Repository rules, safety boundaries, excluded scope, and settled decisions.>
 
 VERIFICATION
 - Run: <exact command>
   Success: <concrete expected result>
-- Inspect: <exact file, diff, or generated artifact>
+- Inspect: <exact file, diff, or artifact>
   Success: <concrete expected evidence>
 
 RETURN
-Return exact commands and actual evidence. A completion claim without evidence is invalid.
-
 IMPLEMENTATION REPORT
 STATUS: complete | partial | blocked
 OBJECTIVE: <one-line restatement>
 CHANGES: <file-by-file summary from the actual diff>
-VERIFIED: <exact commands plus concrete output evidence>
-JUDGMENT CALLS: <decisions the specification left open, or none>
+VERIFIED: <exact commands and concrete evidence>
+JUDGMENT CALLS: <material decisions or none>
 GAPS: <unfinished work, ambiguity, or none>
-~~~
+```
 
-The primary session must inspect the diff and rerun verification itself.
+The primary inspects the actual diff and reruns verification.
 
-## Exact mode contracts
+## Mode contracts
 
-- `solo`: root plans, implements, tests, and self-reviews. Spawn no auxiliary.
-- `delegate`: one selected Luna / Max or Terra / High implementer executes the complete
-  five-part specification. The root verifies. Do not spawn a fresh reviewer.
-- `audit`: root implements and verifies. A fresh read-only Sol / High reviewer inspects
-  the accumulated diff. Spawn no implementer. On `fix-first`, the root implements the
-  correction, re-verifies, and obtains a new fresh reviewer.
-- `full`: use only for an explicit broad or high-risk exception. One selected Luna /
-  Max or Terra / High implementer executes the complete specification, the root
-  verifies, and a fresh read-only Sol / High reviewer inspects the accumulated diff.
-  On `fix-first`, the selected implementer handles the correction, the root
-  re-verifies, and a new fresh reviewer inspects the result.
+- `solo`: primary implements and verifies; no auxiliary.
+- `delegate`: spawn exactly one `sol_advisor_delegate_implementer`; primary verifies.
+- `audit`: primary implements and verifies; spawn a fresh
+  `sol_advisor_audit_reviewer`; reviewer does not implement.
+- `full`: spawn one implementer, primary verifies, then spawn a fresh audit reviewer. Use
+  `sol_advisor_delegate_implementer` only while the implementation remains bounded; otherwise
+  use `sol_advisor_escalation_implementer`.
 
-Auxiliary work substitutes for root work; it must not duplicate it. A route can
-escalate only with newly observed, recorded risk; it never silently downgrades.
-Solo and delegate have no fresh reviewer or review-driven correction unless a newly
-observed, risk-evidenced route escalation is declared; never silently add one.
+## Delegate implementer
 
-## Luna / Max - bounded delegate/full implementation lane
+Use only for bounded, fully specified, low-risk, interface-stable work.
 
-Use this lane only when a declared delegate or full route selects it for bounded,
-fully specified work. The installed role pins GPT-5.6 Luna at max reasoning. It must
-surface ambiguity and failed checks rather than redesigning the architecture. A first
-result that demonstrates newly observed judgment-heavy, high-risk, wide-blast-radius,
-or misclassified work may justify a declared Terra escalation; do not force a retry
-first. If the specification itself was incomplete or wrong, return a precise
-correction for one corrected Luna attempt. That retry is not a prerequisite for Terra.
-
-Spawn exactly:
-
-~~~text
-agent_type: sol_advisor_luna_implementer
+```text
+agent_type: sol_advisor_delegate_implementer
 fork_turns: none
-~~~
+```
 
-Do not attach per-spawn model or reasoning fields. Prompt:
+Do not attach per-spawn model or reasoning overrides. The custom-agent file owns the lightweight
+pin. If the result reveals judgment-heavy, high-risk, context-heavy, architecture-sensitive,
+or wide-blast-radius work, stop and escalate rather than stretching the delegate contract.
 
-~~~text
-ROLE
-Act as Sol Advisor's default routine implementation worker. Execute the supplied
-specification within the settled architecture, preserve every stated interface and
-constraint, and surface ambiguity instead of redesigning the architecture.
+## Escalation implementer
 
-<paste and complete the Shared implementation contract>
-~~~
+Use for judgment-heavy, high-risk, context-heavy, architecture-sensitive, or wide-blast-radius
+implementation.
 
-## Terra / High - higher-risk delegate/full implementation lane
-
-Use this lane only when a declared delegate or full route selects judgment-heavy,
-high-risk, context-heavy, or wide-blast-radius work, including risk revealed by a
-first Luna result. The installed role pins GPT-5.6 Terra at high reasoning. A
-corrected Luna attempt is reserved for a specification error and is not a prerequisite
-for Terra.
-
-Spawn exactly:
-
-~~~text
-agent_type: sol_advisor_terra_implementer
+```text
+agent_type: sol_advisor_escalation_implementer
 fork_turns: none
-~~~
+```
 
-Do not attach per-spawn model or reasoning fields. Prompt:
+Do not attach per-spawn model or reasoning overrides. The profile intentionally omits them so
+Codex inherits the parent model and reasoning settings.
 
-~~~text
-ROLE
-Act as Sol Advisor's explicit high-complexity escalation worker. Resolve the supplied
-specification within the settled architecture, preserve every stated interface and
-constraint, and surface ambiguity instead of redesigning the architecture.
+## Fresh audit reviewer
 
-<paste and complete the Shared implementation contract>
-~~~
+Only for `audit` or `full`, after parent verification:
 
-## Fresh Sol / High - requested-read-only audit/full reviewer
-
-Only for an audit or full route, after parent verification, spawn a new native thread
-exactly:
-
-~~~text
-agent_type: sol_advisor_sol_reviewer
+```text
+agent_type: sol_advisor_audit_reviewer
 fork_turns: none
-~~~
-
-The installed role pins Sol / High and requests a read-only sandbox. Do not attach
-per-spawn model or reasoning fields. Observe the actual role, pin, sandbox policy, and
-permission profile before accepting its verdict.
+```
 
 Prompt:
 
-~~~text
+```text
 ROLE
-Act as the fresh final reviewer. Remain strictly read-only: do not edit files, implement
-fixes, or broaden scope.
+Act as the fresh final reviewer. Remain strictly read-only and do not implement fixes.
 
 STATED GOAL
-<The user's requested outcome.>
+<requested outcome>
 
 ACCUMULATED CHANGE SET
-<Exact allowed files plus complete working-tree diff, or explicit base/head revisions.>
+<allowed files plus complete diff, or explicit base/head revisions>
 
 INTERFACES AND CONSTRAINTS
-- <Compatibility, repository rules, safety boundaries, and excluded scope.>
+- <compatibility, repository rules, safety boundaries, excluded scope>
 
 VERIFICATION EVIDENCE
-- <command> -> <actual primary-session output evidence>
-- <artifact or diff inspection> -> <actual evidence>
+- <command> -> <actual primary-session evidence>
 
 REVIEW
-Inspect the actual files and accumulated change set. Judge correctness, completeness,
-regressions, scope discipline, interface preservation, test adequacy, and material risk.
+Inspect correctness, completeness, regressions, scope discipline, interface preservation,
+test adequacy, and material risk.
 
-SOL REVIEW
+AUDIT REVIEW
 VERDICT: ship | fix-first | rethink
 REASON: <decisive evidence-based reason>
 FINDINGS: <precise file references and required fixes, or none>
-RESIDUAL RISK: <most important remaining risk, or none>
-~~~
+RESIDUAL RISK: <largest remaining risk, or none>
+```
 
-If any fix is made after review, discard the verdict and run a new fresh review.
-Sol reviewing Sol is context-clean, not cross-model-family independence.
-
-Use observed isolation, not requested isolation:
-
-- With observed `read-only`, proceed with enforced isolation.
-- If the host broadens it, proceed only when hard isolation is not required, the
-  prompt forbids edits, and the parent captures and verifies exact before-and-after
-  repository and artifact state. Report the broader policy and profile.
-- If isolation is unobservable, hard isolation is required, or any mutation occurs,
-  stop the lane and do not hide or repair the mutation under that verdict.
+The reviewer profile inherits the parent model and reasoning settings and requests read-only
+sandboxing. Runtime overrides may broaden the effective sandbox, so use observed isolation,
+not requested isolation. Any fix invalidates the verdict and requires a new fresh audit.
