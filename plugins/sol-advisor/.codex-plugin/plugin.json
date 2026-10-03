@@ -1,7 +1,7 @@
 {
   "name": "sol-advisor",
   "version": "0.7.0",
-  "description": "Codex-native capability-based selective routing with solo default, bounded delegation, parent verification, and fresh audit.",
+  "description": "Codex-native capability-based selective routing with solo default, bounded delegation, primary verification, and fresh audit.",
   "author": {"name": "Daniel McAteer", "url": "https://github.com/DannyMac180"},
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
   "repository": "https://github.com/harutoyama/sol-advisor-haru",
@@ -11,7 +11,7 @@
   "interface": {
     "displayName": "Sol Advisor",
     "shortDescription": "Route by task capability while keeping the current primary model in charge.",
-    "longDescription": "Sol Advisor declares a SELECTIVE ROUTE before task tools. Solo is the default. Delegate is limited to bounded, fully specified, low-risk implementation. Escalation and audit inherit the current primary model and reasoning settings. The primary verifies all auxiliary work, fresh audit is read-only by contract, and missing or conflicting routing evidence fails closed.",
+    "longDescription": "Sol Advisor declares a SELECTIVE ROUTE before task tools. Solo is the default. Delegate is limited to bounded, fully specified, low-risk implementation. Escalation and audit use the current primary model and reasoning effort through the spawn contract rather than family-specific TOML pins. The primary verifies all auxiliary work, audit requests read-only isolation, and missing or conflicting routing evidence fails closed.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],

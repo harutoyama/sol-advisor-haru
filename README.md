@@ -24,10 +24,8 @@ available to your account for the primary session.
 
 ```sh
 codex plugin marketplace add harutoyama/sol-advisor-haru --ref main
-codex plugin add sol-advisor@sol-advisor
-
-plugin_dir="$(codex plugin list --json | jq -r '.installed[] | select(.pluginId == "sol-advisor@sol-advisor") | .installedPath' | head -n 1)"
-test -n "$plugin_dir" && test "$plugin_dir" != null
+plugin_dir="$(codex plugin add sol-advisor@sol-advisor --json | jq -r '.installedPath')"
+test -n "$plugin_dir" && test "$plugin_dir" != null && test -d "$plugin_dir"
 sh "$plugin_dir/scripts/install-agents.sh"
 ```
 
@@ -45,10 +43,8 @@ Use $sol-advisor:orchestration to build this feature and verify it. Declare the 
 
 ```sh
 codex plugin marketplace upgrade sol-advisor
-codex plugin add sol-advisor@sol-advisor
-
-plugin_dir="$(codex plugin list --json | jq -r '.installed[] | select(.pluginId == "sol-advisor@sol-advisor") | .installedPath' | head -n 1)"
-test -n "$plugin_dir" && test "$plugin_dir" != null
+plugin_dir="$(codex plugin add sol-advisor@sol-advisor --json | jq -r '.installedPath')"
+test -n "$plugin_dir" && test "$plugin_dir" != null && test -d "$plugin_dir"
 sh "$plugin_dir/scripts/install-agents.sh"
 ```
 

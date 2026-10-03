@@ -14,36 +14,35 @@ The repo marketplace at `.agents/plugins/marketplace.json` points to
 | Role | Model policy | Effort policy | Use |
 |---|---|---|---|
 | `sol_advisor_delegate_implementer` | Explicit lightweight pin in its TOML | Explicit in same TOML | Bounded, fully specified, low-risk implementation |
-| `sol_advisor_escalation_implementer` | Inherit parent | Inherit parent | Judgment-heavy/high-risk implementation |
-| `sol_advisor_audit_reviewer` | Inherit parent | Inherit parent | Fresh final audit |
+| `sol_advisor_escalation_implementer` | TOML unpinned; explicit spawn copies resolved primary | Same | Judgment-heavy/high-risk implementation |
+| `sol_advisor_audit_reviewer` | TOML unpinned; explicit spawn copies resolved primary | Same | Fresh final audit |
 
 The concrete delegate model identifier appears only in the delegate TOML. Do not copy it into
 routing docs, manifests, installer logic, or verification fixtures.
 
-Current Codex custom-agent semantics resolve subagent model and reasoning values from explicit
-spawn values, then `[agents]` defaults, then parent values; a custom agent file can override
-those values. Therefore omitting model and effort in escalation/audit intentionally inherits
-the parent's resolved values.
+Current Codex custom-agent semantics resolve each omitted model or reasoning setting from an
+explicit spawn value, then the corresponding `[agents]` default, then the parent's value.
+A custom-agent file setting overrides those sources. Therefore TOML omission alone does not
+guarantee parent inheritance when global subagent defaults exist.
+
+For escalation and audit, resolve the current primary model and reasoning effort from runtime
+metadata and supply those values explicitly at spawn time. If either is unobservable, fail
+closed rather than risk a lower-capability lane.
 
 ## Exact spawn contracts
+
+Delegate:
 
 ```text
 agent_type: sol_advisor_delegate_implementer
 fork_turns: none
 ```
 
-```text
-agent_type: sol_advisor_escalation_implementer
-fork_turns: none
-```
+Escalation and audit use their exact capability role plus fresh context and explicit
+`model`/`model_reasoning_effort` values copied from the current resolved primary session.
+Do not hardcode those values in this repository.
 
-```text
-agent_type: sol_advisor_audit_reviewer
-fork_turns: none
-```
-
-Do not add per-spawn model or effort overrides. Missing, conflicting, unavailable, or
-unobservable role evidence fails closed.
+Missing, conflicting, unavailable, or unobservable role/model/effort evidence fails closed.
 
 ## Install and preflight
 
@@ -87,16 +86,17 @@ If public and local evidence both exist, they must agree. The inspector is evide
 model-selection fallback.
 
 For delegate, confirm the selected custom role and its configured pin. For escalation and audit,
-confirm the child resolves to the same model and reasoning effort as the parent session.
+confirm the child resolves to the exact primary model and reasoning effort captured before
+spawn.
 
 ## Reviewer isolation
 
-The audit TOML requests `sandbox_mode = "read-only"`, but current Codex re-applies parent live
-runtime overrides when spawning a child. Therefore:
+The audit TOML requests `sandbox_mode = "read-only"`. Subagent sandbox behavior must be
+validated from observed runtime evidence rather than inferred from the profile alone:
 
 - observed read-only: proceed;
 - broader observed sandbox: proceed only when hard isolation is not required, the prompt forbids
-  mutation, and the parent captures exact before/after repository and artifact state;
+  mutation, and the primary captures exact before/after repository and artifact state;
 - unobservable isolation, required hard isolation, or any mutation: stop and reject the review.
 
 Never claim enforced read-only isolation from the TOML alone.

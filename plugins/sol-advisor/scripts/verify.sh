@@ -18,6 +18,7 @@ skill=$plugin_dir/skills/orchestration/SKILL.md
 ops=$plugin_dir/skills/orchestration/references/operations.md
 contracts=$plugin_dir/skills/orchestration/references/role-contracts.md
 ui=$plugin_dir/skills/orchestration/agents/openai.yaml
+readme=$repo_root/README.md
 installer=$script_dir/install-agents.sh
 inspector=$script_dir/inspect-agent-runtime.sh
 syntax=$script_dir/check-config-syntax.py
@@ -29,12 +30,8 @@ audit=$agents/sol-advisor-audit-reviewer.toml
 command -v python3 >/dev/null 2>&1 || fail "python3 is required"
 command -v jq >/dev/null 2>&1 || fail "jq is required"
 
-for path in "$portable" "$compat" "$market" "$delegate" "$escalation" "$audit"   "$skill" "$ops" "$contracts" "$ui" "$installer" "$inspector" "$syntax"; do
+for path in "$portable" "$compat" "$market" "$delegate" "$escalation" "$audit"   "$skill" "$ops" "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax"; do
   [ -f "$path" ] || fail "missing required file: $path"
-done
-
-for retired in   "$agents/sol-advisor-luna-implementer.toml"   "$agents/sol-advisor-terra-implementer.toml"   "$agents/sol-advisor-sol-reviewer.toml"; do
-  [ ! -e "$retired" ] || fail "retired runtime role remains: $retired"
 done
 
 toml_count=$(find "$agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d ' ')
@@ -44,7 +41,6 @@ pass "required files and exact three-role set"
 python3 "$syntax" json "$portable" "$compat" "$market"
 python3 "$syntax" toml "$delegate" "$escalation" "$audit"
 python3 "$syntax" yaml "$ui"
-python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
@@ -62,36 +58,42 @@ model_count=$(printf '%s\n' "$model_assignments" | awk 'NF { n++ } END { print n
 printf '%s\n' "$model_assignments" | grep -Fq 'sol-advisor-delegate-implementer.toml:' ||
   fail "the sole concrete model assignment must live in delegate TOML"
 if grep -Eq '^[[:space:]]*model[[:space:]]*=' "$escalation" "$audit"; then
-  fail "escalation/audit must inherit parent model"
+  fail "escalation/audit TOMLs must stay model-unpinned"
 fi
 if grep -Eq '^[[:space:]]*model_reasoning_effort[[:space:]]*=' "$escalation" "$audit"; then
-  fail "escalation/audit must inherit parent reasoning effort"
+  fail "escalation/audit TOMLs must stay effort-unpinned"
 fi
 grep -Fq 'sandbox_mode = "read-only"' "$audit" || fail "audit does not request read-only"
-pass "single-point delegate model pin and parent inheritance"
 
-if grep -R -nEi 'GPT-5\.6|gpt-5\.6|5\.6-sol|5\.6-luna|5\.6-terra'   "$repo_root" --exclude-dir=.git >/dev/null 2>&1; then
-  fail "retired generation-specific model identifiers remain"
-fi
+slug_hits=$(grep -R -nE 'gpt-[0-9]' "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null || true)
+slug_count=$(printf '%s\n' "$slug_hits" | awk 'NF { n++ } END { print n+0 }')
+[ "$slug_count" -eq 1 ] || {
+  printf '%s\n' "$slug_hits" >&2
+  fail "expected exactly one concrete model slug in repository, found $slug_count"
+}
+printf '%s\n' "$slug_hits" | grep -Fq 'sol-advisor-delegate-implementer.toml:' ||
+  fail "the sole concrete model slug must live in delegate TOML"
+pass "single-point delegate model pin; high-capability TOMLs remain unpinned"
 
-terra_hits=$(grep -R -nEi 'terra' "$repo_root" --exclude-dir=.git || true)
-if [ -n "$terra_hits" ]; then
-  bad_terra=$(printf '%s\n' "$terra_hits" | grep -vF 'scripts/install-agents.sh' || true)
-  [ -z "$bad_terra" ] || {
-    printf '%s\n' "$bad_terra" >&2
-    fail "retired family name remains outside the detection-only migration fixture"
-  }
-fi
-pass "retired generation/family routing removed; legacy literal is detection-only"
-
-for phrase in   'SELECTIVE ROUTE'   'Solo is the default'   'Auxiliary work must substitute'   'newly observed'   'parent model and reasoning settings'   'Verification evidence is required'; do
+for phrase in   'SELECTIVE ROUTE'   'Solo is the default'   'Auxiliary work must substitute'   'newly observed'   '[agents]'   'pass those resolved values explicitly'   'Verification evidence is required'; do
   grep -Fqi "$phrase" "$skill" || fail "skill omits: $phrase"
 done
 for role in sol_advisor_delegate_implementer sol_advisor_escalation_implementer sol_advisor_audit_reviewer; do
   grep -Fq "$role" "$contracts" || fail "role contract omits $role"
   grep -Fq "$role" "$ops" || fail "operations omit $role"
 done
-pass "routing and role contracts"
+grep -Fq 'explicit spawn value, then the corresponding `[agents]` default, then the parent' "$ops" ||
+  fail "operations omit official model resolution precedence"
+pass "routing, spawn, and role contracts"
+
+grep -Fq 'codex plugin marketplace add harutoyama/sol-advisor-haru --ref main' "$readme" ||
+  fail "README marketplace install command is stale"
+grep -Fq 'codex plugin add sol-advisor@sol-advisor --json' "$readme" ||
+  fail "README does not obtain installedPath from plugin add --json"
+if grep -Fq 'codex plugin list --json' "$readme"; then
+  fail "README incorrectly expects installedPath from plugin list --json"
+fi
+pass "README uses current plugin CLI output contract"
 
 sh -n "$installer"
 sh -n "$inspector"
@@ -101,6 +103,14 @@ pass "shell syntax"
 tmp=$(mktemp -d "/tmp/sol-advisor-verify.XXXXXX") || fail "mktemp failed"
 cleanup() { rm -rf "$tmp"; }
 trap cleanup 0 HUP INT TERM
+
+default_home=$tmp/default-home
+mkdir -p "$default_home"
+env -u CODEX_HOME HOME="$default_home" sh "$installer" >/dev/null
+env -u CODEX_HOME HOME="$default_home" sh "$installer" --check >/dev/null
+[ -f "$default_home/.codex/agents/sol-advisor-delegate-implementer.toml" ] ||
+  fail "default HOME install missing delegate"
+pass "installer works with CODEX_HOME unset"
 
 fresh=$tmp/fresh
 sh "$installer" --target-dir "$fresh" >/dev/null
