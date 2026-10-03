@@ -26,14 +26,16 @@ jobs:
         run: |
           set -euo pipefail
           echo '--- retired generation search ---'
-          if rg -n -i 'GPT-5\.6|gpt-5\.6|5\.6-sol|5\.6-luna|5\.6-terra|Terra' .             --glob '!plugins/sol-advisor/scripts/install-agents.sh'; then
-            echo 'Unexpected retired runtime dependency found.' >&2
-            exit 1
-          fi
+          legacy_hits="$(rg -n -i 'GPT-5\.6|gpt-5\.6|5\.6-sol|5\.6-luna|5\.6-terra|Terra' . || true)"
+          printf '%s\n' "$legacy_hits"
+          unexpected_legacy="$(printf '%s\n' "$legacy_hits" | grep -v '^plugins/sol-advisor/scripts/install-agents.sh:' || true)"
+          test -z "$unexpected_legacy"
 
           echo '--- concrete model assignments ---'
-          rg -n 'model\s*=' plugins/sol-advisor/agents
-          test "$(rg -n 'model\s*=' plugins/sol-advisor/agents | wc -l)" -eq 1
+          model_hits="$(rg -n 'model\s*=' . || true)"
+          printf '%s\n' "$model_hits"
+          test "$(printf '%s\n' "$model_hits" | awk 'NF { n++ } END { print n+0 }')" -eq 1
+          printf '%s\n' "$model_hits" | grep -Fq 'plugins/sol-advisor/agents/sol-advisor-delegate-implementer.toml:'
 
       - name: Git scope checks
         shell: bash
