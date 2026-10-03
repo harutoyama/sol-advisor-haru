@@ -100,7 +100,7 @@ sh -n "$inspector"
 sh -n "$0"
 pass "shell syntax"
 
-tmp=$(mktemp -d "/tmp/sol-advisor-verify.XXXXXX") || fail "mktemp failed"
+tmp=$(mktemp -d "${TMPDIR:-/tmp}/sol-advisor-verify.XXXXXX") || fail "mktemp failed"
 cleanup() { rm -rf "$tmp"; }
 trap cleanup 0 HUP INT TERM
 
