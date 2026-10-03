@@ -41,7 +41,7 @@ Escalation:
 agent_type: sol_advisor_escalation_implementer
 fork_turns: none
 model: <primary-resolved-model>
-model_reasoning_effort: <primary-resolved-effort>
+reasoning_effort: <primary-resolved-effort>
 ```
 
 Audit:
@@ -50,7 +50,7 @@ Audit:
 agent_type: sol_advisor_audit_reviewer
 fork_turns: none
 model: <primary-resolved-model>
-model_reasoning_effort: <primary-resolved-effort>
+reasoning_effort: <primary-resolved-effort>
 ```
 
 Missing, conflicting, unavailable, or unobservable role/model/effort evidence fails closed.
