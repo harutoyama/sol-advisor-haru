@@ -150,6 +150,10 @@ done
 grep -Fq 'VERDICT: ship | fix-first | rethink' "$contracts" || fail "reviewer return contract missing"
 grep -Fq 'agent_type: sol_advisor_luna_researcher' "$contracts" || fail "Luna research spawn contract missing"
 grep -Fq 'agent_type: sol_advisor_terra_researcher' "$contracts" || fail "Terra research spawn contract missing"
+sed -n '/## Luna bounded researcher/,/## Terra judgment-heavy researcher/p' "$contracts" | grep -Fq 'fork_turns: none' ||
+  fail "Luna researcher spawn no longer uses fresh context"
+sed -n '/## Terra judgment-heavy researcher/,/## Shared implementation contract/p' "$contracts" | grep -Fq 'fork_turns: none' ||
+  fail "Terra researcher spawn no longer uses fresh context"
 grep -Fq 'agent_type: sol_advisor_luna_implementer' "$contracts" || fail "Luna implementation spawn contract missing"
 grep -Fq 'agent_type: sol_advisor_terra_implementer' "$contracts" || fail "Terra implementation spawn contract missing"
 grep -Fq 'agent_type: sol_advisor_sol_reviewer' "$contracts" || fail "Sol review spawn contract missing"
