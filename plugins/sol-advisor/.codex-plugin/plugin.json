@@ -1,7 +1,7 @@
 {
   "name": "sol-advisor",
-  "version": "0.100.0",
-  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and routine-coding delegation to Luna.",
+  "version": "0.101.0",
+  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and selective research routing with dedicated read-only Luna/Terra researchers.",
   "author": {"name": "Daniel McAteer / Haru fork", "url": "https://github.com/harutoyama/sol-advisor-haru"},
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
   "repository": "https://github.com/harutoyama/sol-advisor-haru",
@@ -10,15 +10,15 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
-    "shortDescription": "Sol plans; Luna handles routine coding; Terra handles harder implementation; fresh Sol reviews.",
-    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Auxiliary work substitutes for primary implementation rather than duplicating it.",
+    "shortDescription": "Sol plans; model-pinned implementers, researchers, and fresh review are used selectively.",
+    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Research is routed independently: short work stays inline, bounded evidence gathering can use GPT-6 Luna / High, and judgment-heavy investigation can use GPT-5.6 Terra / High. Dedicated researchers are read-only, use fresh context, and do not delegate further. Auxiliary work is used only when its context or parallelism benefit exceeds coordination cost.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
-      "Use $sol-advisor:orchestration to declare a SELECTIVE ROUTE before task tools, then build and verify this feature.",
-      "Keep architecture and acceptance in Sol; prefer Luna for fully specified routine coding, Terra for harder implementation, and fresh Sol only when review is selected."
+      "Use $sol-advisor:orchestration to declare implementation/review and research axes in a SELECTIVE ROUTE before task tools, then build and verify this feature.",
+      "Keep architecture and acceptance in Sol; use dedicated read-only Luna/Terra researchers only when research delegation or parallelism clearly pays for its context and coordination cost."
     ]
   }
 }

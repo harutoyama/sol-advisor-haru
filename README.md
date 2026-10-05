@@ -10,6 +10,8 @@ primary session, while routing implementation by model:
 | Routine implementer | GPT-6 Luna | Max | Bounded, fully specified, interface-stable routine implementation |
 | Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation |
 | Fresh reviewer | GPT-6.1 Sol | High | Independent final review for audit/full; requests read-only sandbox |
+| Bounded researcher | GPT-6 Luna | High | Focused read-only code/log/docs/Web investigation with compact evidence return |
+| Judgment-heavy researcher | GPT-5.6 Terra | High | Read-only investigation requiring conflict resolution, methodology, architecture, or complex root-cause judgment |
 
 The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
 GPT-6.1 Sol / High selected.
@@ -29,6 +31,31 @@ architecture or unresolved requirements merely to increase agent count. Auxiliar
 for primary implementation; the primary inspects the actual diff and reruns verification instead
 of reimplementing the same change.
 
+## Research routing
+
+Research is orthogonal to `mode`. Declare `research: none | inline | luna | terra | split` and
+`fanout: 0..5` alongside the implementation/review mode. `mode: solo` means no implementation
+or review auxiliary; it does **not** prohibit a research auxiliary.
+
+Use `inline` for short lookups, a few files, strongly sequential investigation, or cases where
+handoff would require most of the parent context. Prefer one Luna / High researcher for bounded,
+self-contained code/log/docs/Web exploration whose raw evidence can be compressed into a short
+report. Use Terra / High for contradictory evidence, scientific or architecture-sensitive
+judgment, or complex root-cause analysis. Use `split` only when there are at least two substantial
+independent research workstreams; default to one researcher and never exceed five concurrent
+researchers. Do not micro-shard related lookups.
+
+Every research spawn uses the dedicated `sol_advisor_luna_researcher` or
+`sol_advisor_terra_researcher` profile with `fork_turns: none`. Generic `explorer`, `worker`,
+`default`, or inherited-model fallback is forbidden. Researchers are read-only and cannot spawn
+nested subagents. If an initial inline inspection reveals materially more scope or complexity than
+expected, the primary may explicitly issue a route update to Luna, Terra, or split; silent route
+changes are forbidden.
+
+Subagents are not automatically more efficient. Route on task independence, expected raw-context
+volume, handoff cost, expected result size, parallel speed/coverage benefit, and coordination
+overhead. If delegation does not clearly pay for itself, keep the research in the primary.
+
 ## Install
 
 Requirements: a current Codex CLI or ChatGPT desktop app with plugin and custom-agent support,
@@ -47,13 +74,13 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.100.0"
+workdir="$HOME/Downloads/sol-advisor-haru-0.101.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 ```
 
-The installer writes three profiles to `$CODEX_HOME/agents` when `CODEX_HOME` is set,
+The installer writes five profiles to `$CODEX_HOME/agents` when `CODEX_HOME` is set,
 otherwise to `~/.codex/agents`. It is fail-closed: it never overwrites a modified file,
 symlink, non-regular file, unknown conflicting profile, or obsolete 0.7.0 capability profile.
 
@@ -74,7 +101,9 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.100.0 checkout and run the installer. If any 0.7.0 capability profiles are
+Then use a fresh 0.101.0 checkout and run the installer. Existing unmodified 0.100.0 model-specific
+implementer/reviewer profiles are preserved byte-for-byte; the installer adds the two researcher
+profiles. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
 unmodified 0.7.0 SHA-256 values are:
 

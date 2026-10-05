@@ -23,6 +23,7 @@ def check_json(path: Path) -> None:
 def fallback_toml(path: Path) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     seen: Set[str] = set()
+    section = ""
     in_multiline = False
     multiline_key = ""
     for number, raw in enumerate(lines, 1):
@@ -37,20 +38,27 @@ def fallback_toml(path: Path) -> None:
             continue
         if not line or line.startswith("#"):
             continue
+        section_match = re.fullmatch(r"\[([A-Za-z0-9_.-]+)\]", line)
+        if section_match:
+            section = section_match.group(1)
+            continue
         match = re.fullmatch(r"([A-Za-z0-9_-]+)\s*=\s*(.+)", line)
         if not match:
             fail(path, f"line {number}: unsupported or invalid TOML syntax")
         key, value = match.groups()
-        if key in seen:
-            fail(path, f"line {number}: duplicate key {key}")
-        seen.add(key)
+        qualified = f"{section}.{key}" if section else key
+        if qualified in seen:
+            fail(path, f"line {number}: duplicate key {qualified}")
+        seen.add(qualified)
         value = value.strip()
         if value == '"""':
             in_multiline = True
-            multiline_key = key
+            multiline_key = qualified
+            continue
+        if value in {"true", "false"}:
             continue
         if not (value.startswith('"') and value.endswith('"')):
-            fail(path, f"line {number}: fallback parser expects a quoted string")
+            fail(path, f"line {number}: fallback parser expects a quoted string or boolean")
         try:
             parsed = ast.literal_eval(value)
         except (SyntaxError, ValueError) as exc:

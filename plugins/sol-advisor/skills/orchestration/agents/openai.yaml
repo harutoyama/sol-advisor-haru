@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "Sol architects; Luna handles routine coding; Terra handles harder implementation; fresh Sol reviews"
-  default_prompt: "Use $orchestration to declare a SELECTIVE ROUTE before task tools; keep architecture in Sol, prefer Luna / Max for fully specified routine coding, and use Terra / High or fresh Sol only when the task contract calls for them."
+  short_description: "Sol architects; model-pinned implementation, research, and review lanes are selected independently"
+  default_prompt: "Use $orchestration to declare mode plus the independent research route before task tools; keep architecture and acceptance in Sol, and use dedicated model-pinned auxiliaries only when their implementation, research, or review contract justifies the handoff."
