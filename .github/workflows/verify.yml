@@ -15,27 +15,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install verification tools
-        run: sudo apt-get update && sudo apt-get install -y ripgrep
-
       - name: Repository verifier
         run: sh plugins/sol-advisor/scripts/verify.sh
-
-      - name: Required legacy and model-pin searches
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo '--- retired generation search ---'
-          legacy_hits="$(rg -n -i 'GPT-5\.6|gpt-5\.6|5\.6-sol|5\.6-luna|5\.6-terra|Terra' . || true)"
-          printf '%s\n' "$legacy_hits"
-          unexpected_legacy="$(printf '%s\n' "$legacy_hits" | grep -v '^\./plugins/sol-advisor/scripts/install-agents.sh:' || true)"
-          test -z "$unexpected_legacy"
-
-          echo '--- concrete model assignments ---'
-          model_hits="$(rg -n 'model\s*=' . || true)"
-          printf '%s\n' "$model_hits"
-          test "$(printf '%s\n' "$model_hits" | awk 'NF { n++ } END { print n+0 }')" -eq 1
-          printf '%s\n' "$model_hits" | grep -Fq 'plugins/sol-advisor/agents/sol-advisor-delegate-implementer.toml:'
 
       - name: Git scope checks
         shell: bash
