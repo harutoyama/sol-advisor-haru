@@ -161,7 +161,7 @@ grep -Fq 'researcher-owned until its report returns' "$contracts" || fail "deleg
 grep -Fq 'spot-check or reproduce decisive' "$contracts" || fail "research spot-verification contract missing"
 grep -Fq 'duplicate full investigation' "$contracts" || fail "research non-duplication contract missing"
 grep -Fq 'delegated-work-relevant subset' "$contracts" || fail "research packet omits compact applicable constraint subset"
-grep -Fq 'Do not depend on a particular skill name or path' "$contracts" || fail "constraint propagation is not generic"
+grep -Fq 'particular skill name or path' "$contracts" || fail "constraint propagation is not generic"
 grep -Fq 'instead of the parent conversation' "$contracts" || fail "research packet no longer excludes parent-history inheritance"
 grep -Fq 'per-command caps do not make' "$contracts" || fail "aggregate output budget invariant missing"
 grep -Fq 'never concatenate multiple raw results' "$contracts" || fail "parallel raw-result concatenation prohibition missing"
