@@ -109,7 +109,7 @@ grep -Fqi 'Verification evidence is required' "$skill" ||
   fail "skill omits verification evidence gate"
 grep -Fq 'agents.default_subagent_model' "$ops" ||
   fail "operations omit default-subagent precedence"
-grep -Fq 'explicit spawn values take precedence' "$ops" ||
+grep -Fqi 'explicit spawn values take precedence' "$ops" ||
   fail "operations omit explicit-spawn precedence"
 pass "routing and precedence contracts"
 
