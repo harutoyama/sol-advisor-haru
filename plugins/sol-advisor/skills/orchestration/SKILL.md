@@ -103,6 +103,10 @@ frozen-log + successful-path trace routes to Luna / 1. Waiting for it is result 
   that auxiliary lane; rerouting must be explicit.
 - Researchers are read-only. The primary alone owns research fanout.
 - Researchers must not spawn nested subagents.
+- When delegated research must obey active cross-cutting execution constraints already applicable
+  in the primary, preserve only the delegated-work-relevant subset as a compact constraint capsule
+  in its research packet. Do not copy entire skill bodies, the available-skill catalog, or parent
+  history.
 - A delegated research workstream has exclusive investigation ownership. The primary must not repeat
   the same full investigation; it may spot-check decisive, suspicious, or acceptance-critical evidence
   before using the report. Verification is not duplicate full investigation.
