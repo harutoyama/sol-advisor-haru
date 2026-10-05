@@ -39,10 +39,10 @@ fork_turns: none
 ```
 
 Do not attach per-spawn model or reasoning overrides. Codex configuration can define
-`agents.default_subagent_model` and `agents.default_subagent_reasoning_effort`; explicit
-spawn values take precedence over those defaults. This workflow instead uses role-pinned TOMLs and
-requires runtime evidence to match those pins. If an explicit spawn override is present, it must
-match the role pin exactly; otherwise stop the lane.
+`agents.default_subagent_model` and `agents.default_subagent_reasoning_effort`.
+Explicit spawn values take precedence over those defaults. This workflow instead uses role-pinned
+TOMLs and requires runtime evidence to match those pins. If an explicit spawn override is present,
+it must match the role pin exactly; otherwise stop the lane.
 
 ## Selective routing
 
