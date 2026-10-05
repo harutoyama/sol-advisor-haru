@@ -81,6 +81,33 @@ effort_count=$(grep -R -hE '^[[:space:]]*model_reasoning_effort[[:space:]]*=' "$
 [ "$effort_count" -eq 5 ] || fail "expected exactly five agent effort assignments, found $effort_count"
 pass "implementation, review, and research model/effort/isolation pins"
 
+stale_sol=gpt-5.6-"sol"
+stale_luna=gpt-5.6-"luna"
+if grep -R -nF "$stale_sol" "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null; then
+  fail "stale prior Sol model remains"
+fi
+if grep -R -nF "$stale_luna" "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null; then
+  fail "stale prior Luna model remains"
+fi
+
+old_delegate=sol_advisor_"delegate"_implementer
+old_escalation=sol_advisor_"escalation"_implementer
+old_audit=sol_advisor_"audit"_reviewer
+for old_role in "$old_delegate" "$old_escalation" "$old_audit"; do
+  if grep -R -nF "$old_role" "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null; then
+    fail "obsolete capability runtime role remains: $old_role"
+  fi
+done
+
+stale_primary_model=primary-resolved-"model"
+stale_primary_effort=primary-resolved-"effort"
+for stale in "$stale_primary_model" "$stale_primary_effort"; do
+  if grep -R -nF "$stale" "$readme" "$repo_root/.agents" "$repo_root/plugins" 2>/dev/null; then
+    fail "capability-based primary-reuse contract remains: $stale"
+  fi
+done
+pass "stale runtime models and capability-role contracts absent"
+
 for role in sol_advisor_luna_implementer sol_advisor_terra_implementer sol_advisor_sol_reviewer sol_advisor_luna_researcher sol_advisor_terra_researcher; do
   grep -Fq "$role" "$contracts" || fail "role contract omits $role"
   grep -Fq "$role" "$ops" || fail "operations omit $role"
@@ -119,6 +146,16 @@ grep -Fq 'OBSOLETE 0.7.0 UNMODIFIED:' "$installer" || fail "installer does not d
 grep -Fq 'OBSOLETE MODIFIED OR UNKNOWN:' "$installer" || fail "installer does not distinguish modified obsolete profiles"
 pass "installer role names and 0.7.0 migration detection contract"
 
+grep -Fq 'codex plugin marketplace add harutoyama/sol-advisor-haru --ref main' "$readme" ||
+  fail "README marketplace install command is stale"
+grep -Fq 'codex plugin marketplace upgrade sol-advisor' "$readme" ||
+  fail "README marketplace upgrade command is stale"
+grep -Fq 'Plugins Directory' "$readme" || fail "README omits Plugins Directory flow"
+if grep -Eq 'codex plugin (add|remove|list)([[:space:]]|$)' "$readme"; then
+  fail "README relies on undocumented direct plugin CLI commands"
+fi
+pass "README uses marketplace CLI plus Plugins Directory"
+
 sh -n "$installer"
 sh -n "$inspector"
 sh -n "$0"
@@ -126,6 +163,18 @@ pass "shell syntax"
 
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/sol-advisor-verify.XXXXXX") || fail "mktemp failed"
 trap 'rm -rf "$tmp"' 0 HUP INT TERM
+
+default_home=$tmp/default-home
+mkdir -p "$default_home"
+env -u CODEX_HOME HOME="$default_home" sh "$installer" >/dev/null
+env -u CODEX_HOME HOME="$default_home" sh "$installer" --check >/dev/null
+[ -f "$default_home/.codex/agents/sol-advisor-luna-implementer.toml" ] ||
+  fail "default HOME install missing Luna implementation"
+[ -f "$default_home/.codex/agents/sol-advisor-luna-researcher.toml" ] ||
+  fail "default HOME install missing Luna research"
+[ -f "$default_home/.codex/agents/sol-advisor-terra-researcher.toml" ] ||
+  fail "default HOME install missing Terra research"
+pass "installer works with CODEX_HOME unset"
 
 fresh=$tmp/fresh
 sh "$installer" --target-dir "$fresh" >/dev/null
@@ -156,6 +205,27 @@ cmp -s "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml" || fail "0.1
 cmp -s "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml" || fail "0.100.0 -> 0.101.0 update missing Terra researcher"
 pass "0.100.0 -> 0.101.0 preserves current profiles and adds researchers"
 
+unknown=$tmp/unknown
+if sh "$installer" --target-dir "$unknown" --check-role unknown >/dev/null 2>&1; then
+  fail "unknown role unexpectedly succeeded"
+fi
+[ ! -e "$unknown" ] || fail "unknown role mutated destination"
+pass "unknown role is non-mutating"
+
+modified=$tmp/modified
+mkdir "$modified"
+cp "$luna_impl" "$modified/sol-advisor-luna-implementer.toml"
+printf '%s\n' '# local edit' >> "$modified/sol-advisor-luna-implementer.toml"
+before=$(cksum "$modified/sol-advisor-luna-implementer.toml")
+if sh "$installer" --target-dir "$modified" >/dev/null 2>&1; then
+  fail "modified destination unexpectedly succeeded"
+fi
+[ "$before" = "$(cksum "$modified/sol-advisor-luna-implementer.toml")" ] ||
+  fail "modified destination changed"
+[ ! -e "$modified/sol-advisor-luna-researcher.toml" ] ||
+  fail "partial mutation after conflict"
+pass "modified current profile fails before mutation"
+
 obsolete=$tmp/obsolete
 mkdir "$obsolete"
 printf '%s\n' 'user-owned obsolete file' > "$obsolete/sol-advisor-delegate-implementer.toml"
@@ -169,6 +239,25 @@ pass "0.7.0 obsolete capability profile is detected without mutation"
 runtime_sessions=$tmp/runtime-sessions
 runtime_day=$runtime_sessions/2026/10/05
 mkdir -p "$runtime_day"
+
+runtime_impl_id=11111111-1111-7111-8111-111111111111
+runtime_impl_rollout=$runtime_day/rollout-2026-10-05T00-00-00-$runtime_impl_id.jsonl
+printf '%s\n' \
+  '{"type":"response_item","payload":{"prompt":"DO_NOT_LEAK_PROMPT"}}' \
+  "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_impl_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_implementer\",\"agent_path\":\"/root/fixture\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
+  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"max","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  > "$runtime_impl_rollout"
+runtime_impl_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_impl_id")
+printf '%s\n' "$runtime_impl_output" | jq -e --arg id "$runtime_impl_id" '
+  .thread_id == $id
+  and .agent_role == "sol_advisor_luna_implementer"
+  and .model == "gpt-6-luna"
+  and .effort == "max"
+' >/dev/null || fail "runtime inspector returned wrong Luna/Max implementation evidence"
+if printf '%s\n' "$runtime_impl_output" | grep -Fq DO_NOT_LEAK; then
+  fail "runtime inspector leaked implementation payload"
+fi
+
 runtime_id=22222222-2222-7222-8222-222222222222
 runtime_rollout=$runtime_day/rollout-2026-10-05T00-00-01-$runtime_id.jsonl
 printf '%s\n' \
@@ -185,7 +274,7 @@ printf '%s\n' "$runtime_output" | jq -e --arg id "$runtime_id" '
   and .sandbox_policy_type == "read-only"
 ' >/dev/null || fail "runtime inspector returned wrong Luna research evidence"
 if printf '%s\n' "$runtime_output" | grep -Fq DO_NOT_LEAK; then fail "runtime inspector leaked research payload"; fi
-pass "runtime inspector research evidence fixture"
+pass "runtime inspector implementation and research evidence fixtures"
 
 if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git -C "$repo_root" diff --check
