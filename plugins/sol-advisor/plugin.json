@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sol-advisor",
-  "version": "0.7.0",
-  "description": "Codex-native capability-based selective routing with solo default, bounded delegation, parent verification, and fresh audit."
+  "version": "0.100.0",
+  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and routine-coding delegation to Luna."
 }
