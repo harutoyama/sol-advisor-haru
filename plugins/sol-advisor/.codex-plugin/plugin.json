@@ -1,24 +1,24 @@
 {
   "name": "sol-advisor",
-  "version": "0.7.0",
-  "description": "Codex-native capability-based selective routing with solo default, bounded delegation, parent verification, and fresh audit.",
-  "author": {"name": "Daniel McAteer", "url": "https://github.com/DannyMac180"},
+  "version": "0.100.0",
+  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and routine-coding delegation to Luna.",
+  "author": {"name": "Daniel McAteer / Haru fork", "url": "https://github.com/harutoyama/sol-advisor-haru"},
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
   "repository": "https://github.com/harutoyama/sol-advisor-haru",
   "license": "MIT",
-  "keywords": ["codex", "orchestration", "multi-agent", "selective-routing"],
+  "keywords": ["codex", "orchestration", "multi-agent", "selective-routing", "gpt-6"],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Sol Advisor",
-    "shortDescription": "Route by task capability while keeping the current primary model in charge.",
-    "longDescription": "Sol Advisor declares a SELECTIVE ROUTE before task tools. Solo is the default. Delegate is limited to bounded, fully specified, low-risk implementation. Escalation and audit omit hard-coded high-capability model slugs; the orchestrator must spawn them with the current primary session's resolved model and reasoning effort so user-level subagent defaults cannot silently reroute them. The primary verifies all auxiliary work, fresh audit is read-only by contract, and missing or conflicting routing evidence fails closed.",
+    "displayName": "Sol Advisor (Haru fork)",
+    "shortDescription": "Sol plans; Luna handles routine coding; Terra handles harder implementation; fresh Sol reviews.",
+    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Auxiliary work substitutes for primary implementation rather than duplicating it.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
       "Use $sol-advisor:orchestration to declare a SELECTIVE ROUTE before task tools, then build and verify this feature.",
-      "Default to solo; delegate only bounded low-risk work and escalate only on newly observed risk."
+      "Keep architecture and acceptance in Sol; prefer Luna for fully specified routine coding, Terra for harder implementation, and fresh Sol only when review is selected."
     ]
   }
 }
