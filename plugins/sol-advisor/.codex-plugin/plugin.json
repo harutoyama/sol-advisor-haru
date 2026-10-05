@@ -1,7 +1,7 @@
 {
   "name": "sol-advisor",
-  "version": "0.101.0",
-  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and selective research routing with dedicated read-only Luna/Terra researchers.",
+  "version": "0.102.0",
+  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and workstream-level research routing with dedicated read-only Luna/Terra researchers.",
   "author": {"name": "Daniel McAteer / Haru fork", "url": "https://github.com/harutoyama/sol-advisor-haru"},
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
   "repository": "https://github.com/harutoyama/sol-advisor-haru",
@@ -11,14 +11,14 @@
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
     "shortDescription": "Sol plans; model-pinned implementers, researchers, and fresh review are used selectively.",
-    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Research is routed independently: short work stays inline, bounded evidence gathering can use GPT-6 Luna / High, and judgment-heavy investigation can use GPT-5.6 Terra / High. Dedicated researchers are read-only, use fresh context, and do not delegate further. Auxiliary work is used only when its context or parallelism benefit exceeds coordination cost.",
+    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Research is routed independently at the workstream level: short or execution-state-coupled work stays inline, bounded evidence gathering can use GPT-6 Luna / High, and judgment-heavy investigation can use GPT-5.6 Terra / High. Dedicated researchers are read-only, use fresh context, and do not delegate further. Context isolation/compression, coverage, fresh context, or latency can justify delegation when they exceed coordination cost; parallelism is not required.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
       "Use $sol-advisor:orchestration to declare implementation/review and research axes in a SELECTIVE ROUTE before task tools, then build and verify this feature.",
-      "Keep architecture and acceptance in Sol; use dedicated read-only Luna/Terra researchers only when research delegation or parallelism clearly pays for its context and coordination cost."
+      "Keep architecture and acceptance in Sol; route self-contained read-only research workstreams to dedicated Luna/Terra researchers when isolation, compression, coverage, fresh context, or latency pays for coordination cost; do not route whole tasks merely because they are sequential."
     ]
   }
 }

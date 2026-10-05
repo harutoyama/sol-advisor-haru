@@ -41,6 +41,12 @@ Researchers are read-only: no implementation, mutation, formatting, fixes, commi
 actions, or nested delegation. Return synthesized evidence, not raw file contents, long search
 logs, or unnecessary tool traces.
 
+The delegated workstream is researcher-owned until its report returns. The primary may continue
+separate live/state-coupled research, but it must not investigate the same delegated scope in
+parallel or repeat the full investigation afterward. Before relying on a report, the primary may
+spot-check or reproduce decisive, suspicious, or acceptance-critical evidence. That verification
+is deliberately narrower than duplicate full investigation.
+
 ## Luna bounded researcher
 
 When the root selects the bounded research lane, spawn:
@@ -65,8 +71,10 @@ fork_turns: none
 ```
 
 The installed profile is `sol_advisor_terra_researcher`. Stay inside the supplied research packet.
-Resolve conflicting evidence explicitly, distinguish observation from inference, and return
-partial/blocked when the question cannot be answered inside scope.
+Resolve conflicting evidence explicitly and distinguish observation from inference. The return
+must clearly separate OBSERVATIONS, INFERENCES, CONFLICTS, ALTERNATIVES, and GAPS (either inside
+FINDINGS or as labeled subsections). Return partial/blocked when the question cannot be answered
+inside scope.
 
 ## Shared implementation contract
 

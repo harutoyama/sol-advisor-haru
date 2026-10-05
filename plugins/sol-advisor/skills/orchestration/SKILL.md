@@ -31,11 +31,11 @@ risk: <concise task-specific rationale>
 research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
 ```
 
-`fanout` is `0` for `none`/`inline`, normally `1` for `luna`/`terra`, and `2..5` only for
-`split`. A later read-only inspection may reveal materially more research volume or complexity than
-expected. Before changing `none`/`inline` to `luna`, `terra`, or `split`, emit an explicit
-`ROUTE UPDATE` with the observed reason. Implementation/review mode escalation still requires newly
-observed risk. Never silently change a research route or silently downgrade a mode.
+`fanout` is `0` for `none`/`inline`, normally `1` for `luna`/`terra`, and `2..5` only for `split`.
+Delegatability changes also require `ROUTE UPDATE`: for example a newly self-contained workstream,
+removed state coupling after a frozen snapshot, a new independent source family, Luna-discovered
+judgment conflict, or a second substantial independent workstream. Never silently change research
+routes. Implementation/review escalation still requires newly observed risk.
 
 ## Select the implementation/review route
 
@@ -58,23 +58,40 @@ Resolve unclear requirements in the primary before delegation. Do not default un
 
 ## Select the research route
 
-Research is orthogonal to `mode`. `mode: solo` prohibits implementation/review auxiliaries, not a
-research auxiliary.
+Research is orthogonal to `mode`; `mode: solo` does not prohibit a researcher. **Route research
+workstreams, not whole tasks.** Overall sequencing alone is not an inline reason.
 
-- `none`: no research is needed.
-- `inline`: keep short lookups, few-file checks, strongly sequential investigation, or handoffs
-  requiring most of the parent context in the primary.
-- `luna`: use one bounded researcher for self-contained code/log/docs/Web investigation, multi-file
-  inspection, or simple comparison where substantial raw evidence can be compressed into a short
-  report.
-- `terra`: use one judgment-heavy researcher for conflicting evidence, scientific or
-  methodological judgment, architecture-sensitive investigation, or complex root-cause analysis.
-- `split`: use only for at least two substantial independent workstreams. Default to one researcher;
-  concurrent research fanout is capped at five. Do not micro-shard related lookups.
+- **result dependency**: primary waits for the report -> fan-in; still delegatable.
+- **execution-state dependency**: useful research repeatedly needs primary mutation, live state,
+  intervening judgment, or operation results -> `inline`.
 
-Before spawning, weigh task independence, expected raw-context volume, handoff cost, expected result size,
-parallel speed or coverage benefit, and coordination overhead. More subagents are not
-automatically more efficient.
+Decide in order:
+
+0. **Need:** no substantive research -> `none`.
+1. **Extract:** coherent workstreams by evidence question, source family, and state ownership.
+2. **Read-only:** mutation required -> `inline`.
+3. **State coupling:** execution-state coupling -> `inline`; result dependency alone is not.
+4. **Packet:** QUESTION, SCOPE, minimal CONTEXT, EVIDENCE REQUIREMENTS, STOP CONDITIONS, and RETURN
+   must make the workstream self-contained.
+5. **Compression:** substantial raw evidence compressible to a short report favors delegation.
+6. **Payoff:** require material context isolation/raw-context compression, latency, coverage, or
+   fresh-context benefit. Parallelism is not required.
+7. **Cost:** if packet/preflight/integration/spot-verification cost dominates -> `inline`.
+8. **Model:** Luna / High for bounded objective gathering; Terra / High only when that delegated
+   workstream itself needs evidence adjudication, scientific/methodological judgment,
+   architecture-sensitive causal analysis, or complex root-cause synthesis.
+9. **Fanout:** one delegated workstream -> `luna` or `terra`, `fanout: 1`; use `split` only for
+   genuinely independent workstreams with material marginal benefit.
+
+Semantics: `none` = no research; `inline` = tiny/targeted, non-self-contained, state-coupled, or
+coordination-dominated work; `luna` = exactly one bounded delegated workstream; `terra` = exactly
+one judgment-heavy delegated workstream. Luna/Terra may coexist with primary-owned live/state-coupled
+research; overall task risk alone does not justify Terra. `split` = 2-5 delegated workstreams, soft
+default 2. Each third-or-later researcher needs distinct scope, a reason bundling is inferior, and
+material marginal coverage/latency benefit. File count alone never justifies split.
+
+S8 regression: primary owns live production/control/mutation decisions; one bundled repository +
+frozen-log + successful-path trace routes to Luna / 1. Waiting for it is result dependency.
 
 ## Cross-route invariants
 
@@ -86,7 +103,10 @@ automatically more efficient.
   that auxiliary lane; rerouting must be explicit.
 - Researchers are read-only. The primary alone owns research fanout.
 - Researchers must not spawn nested subagents.
-- Auxiliary work must substitute for primary implementation, not duplicate it. The primary inspects
+- A delegated research workstream has exclusive investigation ownership. The primary must not repeat
+  the same full investigation; it may spot-check decisive, suspicious, or acceptance-critical evidence
+  before using the report. Verification is not duplicate full investigation.
+- Auxiliary implementation must substitute for primary implementation, not duplicate it. The primary inspects
   the complete actual diff, confirms changed-file scope, reruns required checks, evaluates
   artifact/runtime evidence, and decides acceptance. Verification evidence is required before
   completion.
@@ -106,8 +126,8 @@ sufficient unless the task itself concerns Sol Advisor installation, migration, 
 runtime evidence.
 
 - When spawning a researcher, read only the shared research packet and the selected researcher
-  section in [references/role-contracts.md](references/role-contracts.md). Also read the relevant
-  task-scoped preflight/runtime-evidence sections in
+  section in [references/role-contracts.md](references/role-contracts.md). Also read only researcher
+  isolation plus the relevant task-scoped preflight/runtime-evidence sections in
   [references/operations.md](references/operations.md).
 - When `delegate` or `full` selects an implementer, read only the shared implementation contract and
   the selected implementer section in
