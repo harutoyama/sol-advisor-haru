@@ -1,6 +1,6 @@
 {
   "name": "sol-advisor",
-  "version": "0.102.0",
+  "version": "0.102.1",
   "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and workstream-level research routing with dedicated read-only Luna/Terra researchers.",
   "author": {"name": "Daniel McAteer / Haru fork", "url": "https://github.com/harutoyama/sol-advisor-haru"},
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",

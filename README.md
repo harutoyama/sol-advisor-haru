@@ -55,8 +55,11 @@ split reason.
 
 Every research spawn uses the dedicated `sol_advisor_luna_researcher` or
 `sol_advisor_terra_researcher` profile with `fork_turns: none`. Generic `explorer`, `worker`,
-`default`, or inherited-model fallback is forbidden. Researchers are read-only and cannot spawn
-nested subagents. Delegated research is not repeated wholesale by the primary; the primary performs
+`default`, or inherited-model fallback is forbidden. Because the researcher starts with fresh
+context, its self-contained packet carries only the applicable active cross-cutting execution
+constraints as a compact capsule; it does not copy skill bodies, the skill catalog, or parent
+history. Researchers are read-only and cannot spawn nested subagents. Delegated research is not
+repeated wholesale by the primary; the primary performs
 targeted spot verification of decisive or suspicious evidence. Newly discovered delegatability,
 removed state coupling, conflicting evidence, or an additional independent workstream requires an
 explicit route update; silent route changes remain forbidden.
@@ -79,7 +82,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.102.0"
+workdir="$HOME/Downloads/sol-advisor-haru-0.102.1"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -106,7 +109,7 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.102.0 checkout and run the installer. Existing unmodified 0.100.0 model-specific
+Then use a fresh 0.102.1 checkout and run the installer. Existing unmodified 0.100.0 model-specific
 implementer/reviewer profiles are preserved byte-for-byte; the installer includes the two researcher
 profiles introduced in 0.101.0. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
