@@ -31,13 +31,11 @@ risk: <concise task-specific rationale>
 research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
 ```
 
-`fanout` is `0` for `none`/`inline`, normally `1` for `luna`/`terra`, and `2..5` only for
-`split`. Research routing may change when delegatability changes, not only when volume or complexity
-grows. If inline work reveals a self-contained workstream, a frozen snapshot removes state coupling,
-a new independent source family appears, Luna finds judgment-heavy conflict, or a second substantial
-independent workstream appears, emit an explicit `ROUTE UPDATE` before rerouting. Implementation/review
-mode escalation still requires newly observed risk. Never silently change a research route or silently
-downgrade a mode.
+`fanout` is `0` for `none`/`inline`, normally `1` for `luna`/`terra`, and `2..5` only for `split`.
+Delegatability changes also require `ROUTE UPDATE`: for example a newly self-contained workstream,
+removed state coupling after a frozen snapshot, a new independent source family, Luna-discovered
+judgment conflict, or a second substantial independent workstream. Never silently change research
+routes. Implementation/review escalation still requires newly observed risk.
 
 ## Select the implementation/review route
 
@@ -61,47 +59,39 @@ Resolve unclear requirements in the primary before delegation. Do not default un
 ## Select the research route
 
 Research is orthogonal to `mode`; `mode: solo` does not prohibit a researcher. **Route research
-workstreams, not whole tasks.** Overall workflow sequencing alone is not an inline reason.
+workstreams, not whole tasks.** Overall sequencing alone is not an inline reason.
 
-Dependency rule:
-- **result dependency**: the primary waits for the report -> fan-in; still delegatable.
+- **result dependency**: primary waits for the report -> fan-in; still delegatable.
 - **execution-state dependency**: useful research repeatedly needs primary mutation, live state,
   intervening judgment, or operation results -> `inline`.
 
 Decide in order:
 
 0. **Need:** no substantive research -> `none`.
-1. **Extract:** form coherent workstreams by evidence question, source family, and state ownership.
-2. **Read-only:** cannot complete without mutation -> `inline`.
-3. **State coupling:** execution-state coupled -> `inline`; result dependency alone is not.
+1. **Extract:** coherent workstreams by evidence question, source family, and state ownership.
+2. **Read-only:** mutation required -> `inline`.
+3. **State coupling:** execution-state coupling -> `inline`; result dependency alone is not.
 4. **Packet:** QUESTION, SCOPE, minimal CONTEXT, EVIDENCE REQUIREMENTS, STOP CONDITIONS, and RETURN
-   must be sufficient for self-contained execution.
-5. **Compression/scale:** substantial raw code/log/docs/search evidence compressible to a short report
-   is a delegation benefit.
+   must make the workstream self-contained.
+5. **Compression:** substantial raw evidence compressible to a short report favors delegation.
 6. **Payoff:** require material context isolation/raw-context compression, latency, coverage, or
    fresh-context benefit. Parallelism is not required.
-7. **Coordination cost:** if packet/preflight/integration/spot-verification cost dominates -> `inline`.
-8. **Model:** Luna / High for bounded objective evidence gathering; Terra / High only when the
-   delegated workstream itself needs conflicting-evidence adjudication, scientific/methodological
-   judgment, architecture-sensitive causal analysis, or complex root-cause synthesis.
-9. **Fanout:** one delegated workstream -> `luna` or `terra`, `fanout: 1`; two or more -> `split`
-   only when genuinely independent and splitting adds material benefit.
+7. **Cost:** if packet/preflight/integration/spot-verification cost dominates -> `inline`.
+8. **Model:** Luna / High for bounded objective gathering; Terra / High only when that delegated
+   workstream itself needs evidence adjudication, scientific/methodological judgment,
+   architecture-sensitive causal analysis, or complex root-cause synthesis.
+9. **Fanout:** one delegated workstream -> `luna` or `terra`, `fanout: 1`; use `split` only for
+   genuinely independent workstreams with material marginal benefit.
 
-Route semantics:
+Semantics: `none` = no research; `inline` = tiny/targeted, non-self-contained, state-coupled, or
+coordination-dominated work; `luna` = exactly one bounded delegated workstream; `terra` = exactly
+one judgment-heavy delegated workstream. Luna/Terra may coexist with primary-owned live/state-coupled
+research; overall task risk alone does not justify Terra. `split` = 2-5 delegated workstreams, soft
+default 2. Each third-or-later researcher needs distinct scope, a reason bundling is inferior, and
+material marginal coverage/latency benefit. File count alone never justifies split.
 
-- `none`: no substantive research.
-- `inline`: tiny/targeted reads, small logs, non-self-contained handoff, execution-state coupling,
-  or coordination cost greater than benefit.
-- `luna`: exactly one delegated Luna workstream; primary-owned live/state-coupled research may coexist.
-- `terra`: exactly one delegated judgment-heavy Terra workstream; primary-owned research may coexist.
-  Overall task risk alone does not justify Terra.
-- `split`: 2-5 delegated workstreams, soft default 2. Each third-or-later researcher needs distinct
-  scope, a reason bundling is inferior, and material marginal coverage/latency benefit. File count
-  alone never justifies split.
-
-S8 regression: keep live production state/control and mutation decisions in the primary, while one
-bundled repository + frozen-log + successful-path trace routes to Luna / 1. Waiting for that report
-is result dependency, not execution-state coupling.
+S8 regression: primary owns live production/control/mutation decisions; one bundled repository +
+frozen-log + successful-path trace routes to Luna / 1. Waiting for it is result dependency.
 
 ## Cross-route invariants
 
