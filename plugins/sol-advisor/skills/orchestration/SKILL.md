@@ -84,8 +84,8 @@ automatically more efficient.
 - The role TOMLs own model and reasoning-effort pins. Do not attach per-spawn model or effort
   overrides. Missing, conflicting, unavailable, or unobservable role/model/effort evidence stops
   that auxiliary lane; rerouting must be explicit.
-- Researchers are read-only. The primary alone owns research fanout. Researchers must not spawn
-  nested subagents.
+- Researchers are read-only. The primary alone owns research fanout.
+- Researchers must not spawn nested subagents.
 - Auxiliary work must substitute for primary implementation, not duplicate it. The primary inspects
   the complete actual diff, confirms changed-file scope, reruns required checks, evaluates
   artifact/runtime evidence, and decides acceptance. Verification evidence is required before
