@@ -172,7 +172,7 @@ if grep -Fq -- '--check --check-role' "$skill"; then fail "root skill still embe
 if grep -Fq 'SELECTIVE ROUTE' "$contracts"; then fail "role contracts duplicate root route declaration"; fi
 
 grep -Fqi 'Routine coding is not automatically a solo task' "$readme" || fail "README does not preserve routine coding route"
-grep -Fqi 'Auxiliary work must substitute' "$skill" || fail "skill permits duplicate auxiliary implementation"
+grep -Fqi 'Auxiliary implementation must substitute' "$skill" || fail "skill permits duplicate auxiliary implementation"
 grep -Fqi 'Verification evidence is required' "$skill" || fail "skill omits verification evidence gate"
 grep -Fq 'agents.default_subagent_model' "$ops" || fail "operations omit default-subagent precedence"
 grep -Fqi 'explicit spawn values take precedence' "$ops" || fail "operations omit explicit-spawn precedence"
