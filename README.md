@@ -37,24 +37,29 @@ Research is orthogonal to `mode`. Declare `research: none | inline | luna | terr
 `fanout: 0..5` alongside the implementation/review mode. `mode: solo` means no implementation
 or review auxiliary; it does **not** prohibit a research auxiliary.
 
-Use `inline` for short lookups, a few files, strongly sequential investigation, or cases where
-handoff would require most of the parent context. Prefer one Luna / High researcher for bounded,
-self-contained code/log/docs/Web exploration whose raw evidence can be compressed into a short
-report. Use Terra / High for contradictory evidence, scientific or architecture-sensitive
-judgment, or complex root-cause analysis. Use `split` only when there are at least two substantial
-independent research workstreams; default to one researcher and never exceed five concurrent
-researchers. Do not micro-shard related lookups.
+Route **research workstreams, not whole tasks**. A result dependency (the primary must wait for the
+report) is still delegatable. Keep a workstream inline when useful observations repeatedly depend on
+primary-owned mutation, live state, intervening judgment, or operation results. Delegate only
+read-only, self-contained workstreams whose substantial raw evidence can be compressed into a much
+shorter report and whose context isolation/compression, latency, coverage, or fresh-context benefit
+exceeds handoff and integration cost. Parallel execution is useful but is not required.
+
+Use Luna / High for one bounded objective evidence-gathering workstream. Use Terra / High only when
+that delegated workstream itself requires conflicting-evidence adjudication, scientific or
+methodological judgment, architecture-sensitive causal analysis, or complex root-cause synthesis;
+overall task risk alone is not enough. `research: luna` or `terra` may coexist with
+primary-owned live/state-coupled research. Use `split` for two to five genuinely independent
+delegated workstreams, with a soft default of two; each third-or-later researcher needs distinct
+scope, a reason it cannot be bundled, and material marginal benefit. File count alone is not a
+split reason.
 
 Every research spawn uses the dedicated `sol_advisor_luna_researcher` or
 `sol_advisor_terra_researcher` profile with `fork_turns: none`. Generic `explorer`, `worker`,
 `default`, or inherited-model fallback is forbidden. Researchers are read-only and cannot spawn
-nested subagents. If an initial inline inspection reveals materially more scope or complexity than
-expected, the primary may explicitly issue a route update to Luna, Terra, or split; silent route
-changes are forbidden.
-
-Subagents are not automatically more efficient. Route on task independence, expected raw-context
-volume, handoff cost, expected result size, parallel speed/coverage benefit, and coordination
-overhead. If delegation does not clearly pay for itself, keep the research in the primary.
+nested subagents. Delegated research is not repeated wholesale by the primary; the primary performs
+targeted spot verification of decisive or suspicious evidence. Newly discovered delegatability,
+removed state coupling, conflicting evidence, or an additional independent workstream requires an
+explicit route update; silent route changes remain forbidden.
 
 ## Install
 
@@ -74,7 +79,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.101.0"
+workdir="$HOME/Downloads/sol-advisor-haru-0.102.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -101,9 +106,9 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.101.0 checkout and run the installer. Existing unmodified 0.100.0 model-specific
-implementer/reviewer profiles are preserved byte-for-byte; the installer adds the two researcher
-profiles. If any 0.7.0 capability profiles are
+Then use a fresh 0.102.0 checkout and run the installer. Existing unmodified 0.100.0 model-specific
+implementer/reviewer profiles are preserved byte-for-byte; the installer includes the two researcher
+profiles introduced in 0.101.0. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
 unmodified 0.7.0 SHA-256 values are:
 
