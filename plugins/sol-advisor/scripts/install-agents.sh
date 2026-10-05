@@ -1,5 +1,5 @@
 #!/bin/sh
-# Install Sol Advisor custom-agent templates without changing Codex configuration.
+# Install Sol Advisor's model-specific custom-agent templates without changing Codex config.
 
 set -eu
 
@@ -7,11 +7,15 @@ usage() {
   cat <<'EOF'
 Usage: install-agents.sh [--target-dir PATH] [--check] [--check-role ROLE ...]
 
-Roles: delegate, escalation, audit
+Roles: luna, terra, sol
 
 Normal mode installs the three current profiles. It never overwrites modified, symlinked,
-non-regular, or obsolete Sol Advisor profiles. --check is non-mutating. --check-role is
-repeatable and implies --check.
+non-regular, conflicting, or obsolete Sol Advisor profiles. --check is non-mutating.
+--check-role is repeatable and implies --check.
+
+Haru fork 0.7.0 capability profiles are migration hazards. If present, the installer
+classifies and reports them, performs no mutation, and exits nonzero. Remove or archive only
+the exact reported files after inspection, then rerun.
 EOF
 }
 
@@ -22,6 +26,17 @@ fail() {
 
 exists() {
   [ -e "$1" ] || [ -L "$1" ]
+}
+
+sha256_file() {
+  path=$1
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$path" 2>/dev/null | awk 'NF >= 1 && length($1) == 64 { print $1; exit }'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$path" 2>/dev/null | awk 'NF >= 1 && length($1) == 64 { print $1; exit }'
+  else
+    return 1
+  fi
 }
 
 selected() {
@@ -35,9 +50,9 @@ selected() {
 
 role_paths() {
   case "$1" in
-    delegate) source=$delegate_template; file=$delegate_file ;;
-    escalation) source=$escalation_template; file=$escalation_file ;;
-    audit) source=$audit_template; file=$audit_file ;;
+    luna) source=$luna_template; file=$luna_file ;;
+    terra) source=$terra_template; file=$terra_file ;;
+    sol) source=$sol_template; file=$sol_file ;;
     *) fail "internal unknown role: $1" ;;
   esac
 }
@@ -53,6 +68,23 @@ classify() {
     printf '%s\n' current
   else
     printf '%s\n' conflict
+  fi
+}
+
+classify_obsolete() {
+  destination=$1
+  expected_digest=$2
+  if ! exists "$destination"; then
+    printf '%s\n' absent
+  elif [ -L "$destination" ] || [ ! -f "$destination" ]; then
+    printf '%s\n' unsafe
+  else
+    digest=$(sha256_file "$destination" || true)
+    if [ -n "$digest" ] && [ "$digest" = "$expected_digest" ]; then
+      printf '%s\n' exact-0.7.0
+    else
+      printf '%s\n' modified-or-unknown
+    fi
   fi
 }
 
@@ -102,8 +134,8 @@ while [ "$#" -gt 0 ]; do
     --check-role)
       [ "$#" -ge 2 ] || fail "--check-role requires a role."
       case "$2" in
-        delegate|escalation|audit) ;;
-        *) fail "unknown --check-role '$2'; expected delegate, escalation, or audit." ;;
+        luna|terra|sol) ;;
+        *) fail "unknown --check-role '$2'; expected luna, terra, or sol." ;;
       esac
       check_only=1
       check_roles=$check_roles$2,
@@ -125,15 +157,23 @@ case "$target_dir" in
 esac
 [ "$target_dir" != "/" ] || fail "refusing filesystem root as target."
 
-delegate_file=sol-advisor-delegate-implementer.toml
-escalation_file=sol-advisor-escalation-implementer.toml
-audit_file=sol-advisor-audit-reviewer.toml
+luna_file=sol-advisor-luna-implementer.toml
+terra_file=sol-advisor-terra-implementer.toml
+sol_file=sol-advisor-sol-reviewer.toml
 
-delegate_template=$template_dir/$delegate_file
-escalation_template=$template_dir/$escalation_file
-audit_template=$template_dir/$audit_file
+luna_template=$template_dir/$luna_file
+terra_template=$template_dir/$terra_file
+sol_template=$template_dir/$sol_file
 
-for template in "$delegate_template" "$escalation_template" "$audit_template"; do
+obsolete_delegate=sol-advisor-delegate-implementer.toml
+obsolete_escalation=sol-advisor-escalation-implementer.toml
+obsolete_audit=sol-advisor-audit-reviewer.toml
+
+obsolete_delegate_sha256=1594d2ac0fa527301b92afaf635a14a4e89b640d20f8673b6406d87298bc31c5
+obsolete_escalation_sha256=85a257f74155ea717c4591acb3c24667d1498d5fbc3244029fda6290f7f080af
+obsolete_audit_sha256=b11c1c8a9773cfbcb62fa855f7723bbf5fc9df4cf91a5c9dc2be2a01b898f597
+
+for template in "$luna_template" "$terra_template" "$sol_template"; do
   [ -f "$template" ] && [ ! -L "$template" ] ||
     fail "shipped template is missing or unsafe: $template"
 done
@@ -142,21 +182,40 @@ if exists "$target_dir" && { [ -L "$target_dir" ] || [ ! -d "$target_dir" ]; }; 
   fail "target directory is not a real directory: $target_dir"
 fi
 
-legacy_found=0
-for legacy in   sol-advisor-luna-implementer.toml   sol-advisor-terra-implementer.toml   sol-advisor-sol-reviewer.toml
+obsolete_found=0
+for spec in \
+  "$obsolete_delegate:$obsolete_delegate_sha256" \
+  "$obsolete_escalation:$obsolete_escalation_sha256" \
+  "$obsolete_audit:$obsolete_audit_sha256"
 do
-  legacy_path=$target_dir/$legacy
-  if exists "$legacy_path"; then
-    printf '%s\n' "OBSOLETE: $legacy_path" >&2
-    legacy_found=1
-  fi
+  name=${spec%%:*}
+  expected=${spec#*:}
+  path=$target_dir/$name
+  state=$(classify_obsolete "$path" "$expected")
+  case "$state" in
+    absent) ;;
+    exact-0.7.0)
+      printf '%s\n' "OBSOLETE 0.7.0 UNMODIFIED: $path" >&2
+      obsolete_found=1
+      ;;
+    modified-or-unknown)
+      printf '%s\n' "OBSOLETE MODIFIED OR UNKNOWN: $path" >&2
+      obsolete_found=1
+      ;;
+    unsafe)
+      printf '%s\n' "OBSOLETE UNSAFE: $path" >&2
+      obsolete_found=1
+      ;;
+    *) fail "internal obsolete classification error for $path" ;;
+  esac
 done
-if [ "$legacy_found" -ne 0 ]; then
-  fail "obsolete Sol Advisor profiles remain; inspect and remove or archive the reported paths manually, then retry."
+
+if [ "$obsolete_found" -ne 0 ]; then
+  fail "obsolete 0.7.0 capability profiles remain; no changes were made. Inspect the exact reported paths, remove or archive only files you have verified, then rerun."
 fi
 
 preflight_failed=0
-for role in delegate escalation audit; do
+for role in luna terra sol; do
   selected "$role" || continue
   role_paths "$role"
   destination=$target_dir/$file
@@ -174,7 +233,7 @@ for role in delegate escalation audit; do
       preflight_failed=1
       ;;
     conflict)
-      printf '%s\n' "ERROR: modified destination will not be overwritten: $destination" >&2
+      printf '%s\n' "ERROR: modified or stale destination will not be overwritten: $destination" >&2
       preflight_failed=1
       ;;
     *) fail "internal classification error for $destination" ;;
@@ -183,7 +242,7 @@ done
 [ "$preflight_failed" -eq 0 ] || exit 1
 
 if [ "$check_only" -eq 1 ]; then
-  for role in delegate escalation audit; do
+  for role in luna terra sol; do
     selected "$role" || continue
     role_paths "$role"
     destination=$target_dir/$file
@@ -200,7 +259,7 @@ fi
 [ -d "$target_dir" ] && [ ! -L "$target_dir" ] ||
   fail "target directory became unsafe: $target_dir"
 
-for role in delegate escalation audit; do
+for role in luna terra sol; do
   role_paths "$role"
   destination=$target_dir/$file
   case "$(classify "$source" "$destination")" in
@@ -210,11 +269,11 @@ for role in delegate escalation audit; do
   esac
 done
 
-for role in delegate escalation audit; do
+for role in luna terra sol; do
   role_paths "$role"
   destination=$target_dir/$file
   [ "$(classify "$source" "$destination")" = current ] ||
     fail "post-install verification failed: $destination"
 done
 
-printf '%s\n' "Installed Sol Advisor agent profiles. Start a fresh Codex task."
+printf '%s\n' "Installed Sol Advisor model-specific agent profiles. Start a fresh Codex task."
