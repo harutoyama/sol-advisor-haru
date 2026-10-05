@@ -7,22 +7,18 @@ description: "Codex-native selective routing: Sol owns architecture and acceptan
 
 Act as the architect and primary owner. Own the user's intent, architecture, route choice,
 decomposition, complete worker specifications, parent verification, escalation decisions, and
-final acceptance. The implementation/review modes remain `solo`, `delegate`, `audit`, and `full`.
-Research is a separate axis: `none`, `inline`, `luna`, `terra`, or `split`.
+final acceptance.
 
-Read [references/role-contracts.md](references/role-contracts.md) before delegation or review.
-Use [references/operations.md](references/operations.md) for exact role names, preflight,
-runtime evidence, sandbox interpretation, migration, and maintainer procedures.
+This root file is the canonical owner of route selection and cross-route invariants. Keep it in
+context whenever the skill triggers. Load supporting references only when the selected route or
+an operational task requires their detailed contracts.
 
-## Confirm the primary session
+## Primary session and route declaration
 
-Run the primary Codex session on `gpt-6.1-sol` with `high` reasoning. Verify the current
-model and effort when runtime metadata exposes them. If either differs, tell the user to select
-GPT-6.1 Sol / High and stop before delegation or review. If runtime metadata does not expose
-them, ask the user to confirm the selected primary before using an auxiliary lane. A skill cannot
-change the primary model itself.
-
-## Declare the route before task tools
+Run the primary Codex session on `gpt-6.1-sol` with `high` reasoning. The skill cannot change the
+primary model. Verify model/effort from runtime metadata when available. Before using any auxiliary
+lane, stop if observed metadata conflicts; if those fields are unavailable, ask the user to confirm
+GPT-6.1 Sol / High.
 
 Before the first task tool call, emit:
 
@@ -35,140 +31,92 @@ risk: <concise task-specific rationale>
 research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
 ```
 
-No task tool call may precede this declaration. `fanout` is `0` for `none`/`inline`, normally `1`
-for `luna`/`terra`, and `2..5` only for `split`. A later read-only inspection may reveal materially
-more research volume or complexity than expected. In that case, emit an explicit `ROUTE UPDATE`
-with the observed reason before changing `inline`/`none` to `luna`, `terra`, or `split`. Never
-silently change a research route. Implementation/review mode escalation still requires newly
-observed risk; never silently downgrade.
+`fanout` is `0` for `none`/`inline`, normally `1` for `luna`/`terra`, and `2..5` only for
+`split`. A later read-only inspection may reveal materially more research volume or complexity than
+expected. Before changing `none`/`inline` to `luna`, `terra`, or `split`, emit an explicit
+`ROUTE UPDATE` with the observed reason. Implementation/review mode escalation still requires newly
+observed risk. Never silently change a research route or silently downgrade a mode.
 
-## Research routing
-
-Do not equate "research" with "spawn a subagent." Adding agents consumes tokens and coordination
-capacity. Before spawning, weigh task independence, expected raw-context volume, handoff cost,
-expected result size, parallel speed or coverage benefit, and coordination overhead.
-
-Keep research in the primary (`inline`) for short lookups, a few-file checks, strongly sequential
-investigation, or any task whose handoff would require most of the parent context. Use one
-`sol_advisor_luna_researcher` for bounded self-contained code/log/docs/Web investigation,
-multi-file inspection, or simple comparison where substantial raw evidence can be reduced to a
-short report. Use one `sol_advisor_terra_researcher` when the investigation requires resolving
-conflicting evidence, scientific or methodological judgment, architecture-sensitive analysis, or
-complex root-cause reasoning.
-
-Use `split` only when there are at least two substantial independent research workstreams. Default
-to one researcher; concurrent research fanout is capped at five. Do not split small related lookups
-into one-agent-per-question fragments; bundle them into one coherent packet whenever possible.
-
-`mode: solo` only prohibits implementation/review auxiliaries. It may still use research auxiliaries.
-Research fanout is owned only by the primary. Researchers must not spawn nested subagents.
-
-All research spawns must name a dedicated Sol Advisor researcher profile and use
-`fork_turns: none`. Never use the generic `explorer`, `worker`, `default`, another generic agent, or
-silent parent-model inheritance as a fallback. If a selected researcher profile cannot be
-preflighted or observed with its required model/effort, stop that lane. The primary may explicitly
-route-update to another valid research lane or to `inline`; it must not silently substitute.
-
-## Implementation/review route selection
+## Select the implementation/review route
 
 Do not use `solo` as a catch-all merely because delegation is optional.
 
-- `solo`: use when implementation/review delegation is unnecessary: very small changes, tasks where
-  delegation overhead is larger than the work, architecture/planning/requirement resolution,
-  coding-light work, or work the primary can clearly complete more simply itself. This does not
-  prohibit a research auxiliary selected by the independent research axis.
-- `delegate` -> Luna / Max: prefer this when the primary has resolved the requirements and can
-  provide a bounded, fully specified, interface-stable, low-risk implementation contract.
-  Typical examples include a clear function addition, routine tests, a small-to-medium
-  refactor with settled interfaces, a clear bug fix, or specified multi-file edits.
-- `delegate` -> Terra / High: use when implementation is judgment-heavy, architecture-sensitive,
-  context-heavy, high-risk, or wide in blast radius, or when a Luna result reveals that the work
-  was misclassified.
-- `audit`: primary implements and verifies, then a fresh read-only Sol / High reviewer inspects
-  the accumulated change set.
+- `solo`: use when implementation/review delegation is unnecessary: very small changes, work where
+  delegation overhead dominates, architecture/planning/requirement resolution, coding-light work,
+  or work plainly simpler in the primary.
+- `delegate` -> Luna / Max: prefer when requirements are resolved and the primary can provide a
+  bounded, fully specified, interface-stable, low-risk implementation contract.
+- `delegate` -> Terra / High: use for judgment-heavy, architecture-sensitive, context-heavy,
+  high-risk, or wide-blast-radius implementation, including complexity newly revealed by Luna.
+- `audit`: primary implements and verifies, then a fresh Sol / High reviewer inspects the complete
+  accumulated change set.
 - `full`: broad or high-risk exception. One selected implementer executes the settled
-  specification, the primary verifies, then a fresh read-only Sol / High reviewer reviews.
+  specification, the primary verifies, then a fresh Sol / High reviewer reviews.
 
-When route choice is unclear because requirements are unresolved, resolve that ambiguity in the
-primary session first. Do not resolve uncertainty by defaulting all coding to `solo`.
+Resolve unclear requirements in the primary before delegation. Do not default unresolved coding to
+`solo` merely to avoid deciding the contract.
 
-Auxiliary work must substitute for primary implementation, not duplicate it. If a worker
-implements the change, the primary inspects the actual diff, checks changed-file scope, reruns
-verification, and decides acceptance instead of reimplementing the same code.
+## Select the research route
 
-## Preflight selected auxiliaries only
+Research is orthogonal to `mode`. `mode: solo` prohibits implementation/review auxiliaries, not a
+research auxiliary.
 
-Use the installed model-specific custom-agent profiles:
+- `none`: no research is needed.
+- `inline`: keep short lookups, few-file checks, strongly sequential investigation, or handoffs
+  requiring most of the parent context in the primary.
+- `luna`: use one bounded researcher for self-contained code/log/docs/Web investigation, multi-file
+  inspection, or simple comparison where substantial raw evidence can be compressed into a short
+  report.
+- `terra`: use one judgment-heavy researcher for conflicting evidence, scientific or
+  methodological judgment, architecture-sensitive investigation, or complex root-cause analysis.
+- `split`: use only for at least two substantial independent workstreams. Default to one researcher;
+  concurrent research fanout is capped at five. Do not micro-shard related lookups.
 
-- `sol_advisor_luna_implementer` -> `gpt-6-luna` / `max`
-- `sol_advisor_terra_implementer` -> `gpt-5.6-terra` / `high`
-- `sol_advisor_sol_reviewer` -> `gpt-6.1-sol` / `high`, requested read-only sandbox
-- `sol_advisor_luna_researcher` -> `gpt-6-luna` / `high`, read-only; nested delegation disabled
-- `sol_advisor_terra_researcher` -> `gpt-5.6-terra` / `high`, read-only; nested delegation disabled
+Before spawning, weigh task independence, expected raw-context volume, handoff cost, expected result size,
+parallel speed or coverage benefit, and coordination overhead. More subagents are not
+automatically more efficient.
 
-Preflight only roles selected by the declared route. Public spawn/details metadata is
-authoritative when available; use the local runtime inspector only for fields omitted from
-public metadata. Missing, conflicting, unavailable, or unobservable role/model/effort evidence
-stops that auxiliary lane. Never silently substitute a role, model, or effort.
+## Cross-route invariants
 
-The role TOMLs own the model and effort pins. Do not attach per-spawn model or reasoning
-overrides. If a host or caller supplies an explicit override, it must resolve to the exact same
-role pin; a conflicting override invalidates the lane.
+- All auxiliary spawns use the exact selected Sol Advisor custom-agent profile and
+  `fork_turns: none`. Never fall back to generic `explorer`, `worker`, `default`, another generic
+  agent, or silent parent-model inheritance.
+- The role TOMLs own model and reasoning-effort pins. Do not attach per-spawn model or effort
+  overrides. Missing, conflicting, unavailable, or unobservable role/model/effort evidence stops
+  that auxiliary lane; rerouting must be explicit.
+- Researchers are read-only. The primary alone owns research fanout.
+- Researchers must not spawn nested subagents.
+- Auxiliary work must substitute for primary implementation, not duplicate it. The primary inspects
+  the complete actual diff, confirms changed-file scope, reruns required checks, evaluates
+  artifact/runtime evidence, and decides acceptance. Verification evidence is required before
+  completion.
+- A Luna result may justify Terra only when it reveals newly observed complexity, risk,
+  architectural sensitivity, context burden, or wider blast radius. A corrected Luna retry is
+  appropriate for a specification error but is not required before Terra escalation.
+- `audit` and `full` use a new fresh Sol reviewer only after primary verification. The reviewer is
+  read-only by contract, returns `ship`, `fix-first`, or `rethink`, and never fixes its own findings.
+  Any implementation change invalidates the prior verdict and requires primary re-verification plus
+  a new fresh review.
+- Reviewer acceptance uses observed sandbox/permission evidence, not the requested sandbox alone.
 
-## Research packet and return contract
+## Load supporting references only when needed
 
-Give each researcher a self-contained packet instead of the parent conversation:
+For an ordinary `solo + inline` task, do not read either supporting reference; this root contract is
+sufficient unless the task itself concerns Sol Advisor installation, migration, maintenance, or
+runtime evidence.
 
-```text
-QUESTION
-<One precise question the researcher must answer.>
+- When spawning a researcher, read only the shared research packet and the selected researcher
+  section in [references/role-contracts.md](references/role-contracts.md). Also read the relevant
+  task-scoped preflight/runtime-evidence sections in
+  [references/operations.md](references/operations.md).
+- When `delegate` or `full` selects an implementer, read only the shared implementation contract and
+  the selected implementer section in
+  [references/role-contracts.md](references/role-contracts.md), plus the relevant preflight/runtime
+  evidence sections in [references/operations.md](references/operations.md).
+- When `audit` or `full` selects review, read the fresh reviewer contract in
+  [references/role-contracts.md](references/role-contracts.md) and the reviewer isolation plus
+  preflight/runtime-evidence sections in [references/operations.md](references/operations.md).
+- For installation, migration, release, manifest, or maintainer work, read only the applicable
+  sections of [references/operations.md](references/operations.md).
 
-SCOPE
-- <allowed files, systems, sources, or hypotheses>
-
-CONTEXT
-- <only the minimal facts needed to work independently>
-
-EVIDENCE REQUIREMENTS
-- <what counts as evidence: file/line refs, commands, authoritative docs, reproducible observations>
-
-STOP CONDITIONS
-- <conditions that should return partial/blocked rather than broaden scope or implement>
-
-RETURN
-RESEARCH REPORT
-STATUS: complete | partial | blocked
-QUESTION: <restated question>
-FINDINGS: <short synthesized findings>
-EVIDENCE: <compact citations, file refs, commands, or observations>
-CONFLICTS: <contradictory evidence or none>
-GAPS: <unknowns, blocked areas, or none>
-```
-
-Researchers are read-only: no implementation, mutation, formatting, fixes, commits, or PR actions.
-They must not spawn subagents. They should return synthesized evidence, not raw file contents,
-long search logs, or unnecessary tool traces.
-
-## Worker specification and parent verification
-
-Every implementer prompt must contain OBJECTIVE, FILES AND OWNERSHIP, INTERFACES,
-CONSTRAINTS, VERIFICATION, and the structured return contract in role-contracts.md.
-
-Treat worker reports as claims. The primary must inspect the complete actual diff, confirm changed
-file scope, rerun the requested checks, and evaluate artifact/runtime evidence before acceptance.
-Verification evidence is required before completion.
-
-A Luna result may justify escalation to Terra only when it reveals newly observed complexity,
-risk, architectural sensitivity, context burden, or wider blast radius. A corrected Luna retry
-is appropriate for a specification error but is not a prerequisite for Terra escalation.
-
-## Fresh review
-
-For `audit` and `full`, spawn a new `sol_advisor_sol_reviewer` after primary verification.
-The reviewer requests `sandbox_mode = "read-only"`, but runtime policy can broaden the effective
-sandbox. Accept a verdict only after checking observed role/model/effort and sandbox/permission
-evidence as described in operations.md.
-
-The reviewer returns exactly `ship`, `fix-first`, or `rethink` and never implements its
-own fixes. Any implementation change invalidates the prior verdict and requires primary
-re-verification plus a new fresh review.
+Do not load unrelated role or operations sections merely because they exist.

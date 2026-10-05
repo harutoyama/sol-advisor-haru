@@ -112,11 +112,11 @@ for role in sol_advisor_luna_implementer sol_advisor_terra_implementer sol_advis
   grep -Fq "$role" "$contracts" || fail "role contract omits $role"
   grep -Fq "$role" "$ops" || fail "operations omit $role"
 done
-for doc in "$skill" "$contracts" "$ops"; do
-  grep -Fq 'research: none | inline | luna | terra | split' "$doc" || fail "research route declaration missing from $doc"
-  grep -Fq 'fork_turns: none' "$doc" || fail "fresh-context contract missing from $doc"
-  grep -Fq 'explorer' "$doc" || fail "generic explorer prohibition missing from $doc"
-done
+
+grep -Fq 'mode: solo | delegate | audit | full' "$skill" || fail "implementation/review route declaration missing from root skill"
+grep -Fq 'research: none | inline | luna | terra | split' "$skill" || fail "research route declaration missing from root skill"
+grep -Fq 'fork_turns: none' "$skill" || fail "fresh-context invariant missing from root skill"
+grep -Fq 'explorer' "$skill" || fail "generic explorer prohibition missing from root skill"
 grep -Fq 'task independence' "$skill" || fail "research routing omits task independence"
 grep -Fq 'expected raw-context volume' "$skill" || fail "research routing omits raw-context volume"
 grep -Fq 'handoff cost' "$skill" || fail "research routing omits handoff cost"
@@ -125,16 +125,39 @@ grep -Fq 'parallel speed or coverage benefit' "$skill" || fail "research routing
 grep -Fq 'coordination overhead' "$skill" || fail "research routing omits coordination overhead"
 grep -Fq 'concurrent research fanout is capped at five' "$skill" || fail "fanout cap missing"
 grep -Fq 'ROUTE UPDATE' "$skill" || fail "route update contract missing"
-grep -Fq 'Researchers must not spawn nested subagents.' "$skill" || fail "nested delegation contract missing"
+grep -Fq 'Researchers must not spawn nested subagents.' "$skill" || fail "nested delegation invariant missing"
+grep -Fq 'For an ordinary `solo + inline` task, do not read either supporting reference' "$skill" ||
+  fail "solo + inline progressive-disclosure rule missing"
+grep -Fq '[references/role-contracts.md](references/role-contracts.md)' "$skill" ||
+  fail "root skill does not link role contracts"
+grep -Fq '[references/operations.md](references/operations.md)' "$skill" ||
+  fail "root skill does not link operations"
+
 for heading in QUESTION SCOPE CONTEXT 'EVIDENCE REQUIREMENTS' 'STOP CONDITIONS' RETURN 'RESEARCH REPORT' 'STATUS: complete | partial | blocked' FINDINGS: EVIDENCE: CONFLICTS: GAPS:; do
-  grep -Fq "$heading" "$skill" || fail "research packet missing $heading"
+  grep -Fq "$heading" "$contracts" || fail "research packet missing $heading"
 done
+for heading in OBJECTIVE 'FILES AND OWNERSHIP' INTERFACES CONSTRAINTS VERIFICATION 'IMPLEMENTATION REPORT' CHANGES: VERIFIED: 'JUDGMENT CALLS:'; do
+  grep -Fq "$heading" "$contracts" || fail "implementation contract missing $heading"
+done
+grep -Fq 'VERDICT: ship | fix-first | rethink' "$contracts" || fail "reviewer return contract missing"
+grep -Fq 'agent_type: sol_advisor_luna_researcher' "$contracts" || fail "Luna research spawn contract missing"
+grep -Fq 'agent_type: sol_advisor_terra_researcher' "$contracts" || fail "Terra research spawn contract missing"
+grep -Fq 'agent_type: sol_advisor_luna_implementer' "$contracts" || fail "Luna implementation spawn contract missing"
+grep -Fq 'agent_type: sol_advisor_terra_implementer' "$contracts" || fail "Terra implementation spawn contract missing"
+grep -Fq 'agent_type: sol_advisor_sol_reviewer' "$contracts" || fail "Sol review spawn contract missing"
+
+if grep -Fq 'RESEARCH REPORT' "$skill"; then fail "root skill still embeds the research return contract"; fi
+if grep -Fq 'IMPLEMENTATION REPORT' "$skill"; then fail "root skill still embeds the implementation return contract"; fi
+if grep -Fq 'VERDICT: ship | fix-first | rethink' "$skill"; then fail "root skill still embeds the reviewer return contract"; fi
+if grep -Fq -- '--check --check-role' "$skill"; then fail "root skill still embeds operational preflight commands"; fi
+if grep -Fq 'SELECTIVE ROUTE' "$contracts"; then fail "role contracts duplicate root route declaration"; fi
+
 grep -Fqi 'Routine coding is not automatically a solo task' "$readme" || fail "README does not preserve routine coding route"
 grep -Fqi 'Auxiliary work must substitute' "$skill" || fail "skill permits duplicate auxiliary implementation"
 grep -Fqi 'Verification evidence is required' "$skill" || fail "skill omits verification evidence gate"
 grep -Fq 'agents.default_subagent_model' "$ops" || fail "operations omit default-subagent precedence"
 grep -Fqi 'explicit spawn values take precedence' "$ops" || fail "operations omit explicit-spawn precedence"
-pass "implementation/review plus independent research routing contracts"
+pass "progressive-disclosure ownership plus implementation/review/research contracts"
 
 for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
   grep -Fq "$role" "$installer" || fail "installer omits unambiguous role check name $role"
