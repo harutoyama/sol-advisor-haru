@@ -22,6 +22,7 @@ readme=$repo_root/README.md
 installer=$script_dir/install-agents.sh
 inspector=$script_dir/inspect-agent-runtime.sh
 syntax=$script_dir/check-config-syntax.py
+routing_fixtures=$script_dir/fixtures/research-routing-regressions.txt
 
 luna_impl=$agents/sol-advisor-luna-implementer.toml
 terra_impl=$agents/sol-advisor-terra-implementer.toml
@@ -34,7 +35,7 @@ command -v jq >/dev/null 2>&1 || fail "jq is required"
 
 for file in "$portable" "$compat" "$market" "$luna_impl" "$terra_impl" "$sol_review" \
   "$luna_research" "$terra_research" "$skill" "$ops" "$contracts" "$ui" "$readme" \
-  "$installer" "$inspector" "$syntax"; do
+  "$installer" "$inspector" "$syntax" "$routing_fixtures"; do
   [ -f "$file" ] || fail "missing required file: $file"
 done
 
@@ -49,11 +50,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.101.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.102.0" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.101.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.102.0" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.101.0 manifests and marketplace path"
+pass "0.102.0 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_impl" || fail "Luna implementation model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_impl" || fail "Luna implementation effort pin"
@@ -73,6 +74,7 @@ for researcher in "$luna_research" "$terra_research"; do
   grep -Fq 'enabled = false' "$researcher" || fail "researcher does not disable nested agents"
   grep -Fq 'Do not spawn, delegate to, or coordinate any subagent.' "$researcher" || fail "researcher instructions omit nested-delegation prohibition"
   grep -Fq 'strictly read-only' "$researcher" || fail "researcher instructions omit read-only contract"
+  grep -Fq 'external systems' "$researcher" || fail "researcher instructions omit external-system mutation prohibition"
 done
 
 model_count=$(grep -R -hE '^[[:space:]]*model[[:space:]]*=' "$agents" | wc -l | tr -d ' ')
@@ -117,13 +119,18 @@ grep -Fq 'mode: solo | delegate | audit | full' "$skill" || fail "implementation
 grep -Fq 'research: none | inline | luna | terra | split' "$skill" || fail "research route declaration missing from root skill"
 grep -Fq 'fork_turns: none' "$skill" || fail "fresh-context invariant missing from root skill"
 grep -Fq 'explorer' "$skill" || fail "generic explorer prohibition missing from root skill"
-grep -Fq 'task independence' "$skill" || fail "research routing omits task independence"
-grep -Fq 'expected raw-context volume' "$skill" || fail "research routing omits raw-context volume"
-grep -Fq 'handoff cost' "$skill" || fail "research routing omits handoff cost"
-grep -Fq 'expected result size' "$skill" || fail "research routing omits result size"
-grep -Fq 'parallel speed or coverage benefit' "$skill" || fail "research routing omits parallel benefit"
-grep -Fq 'coordination overhead' "$skill" || fail "research routing omits coordination overhead"
-grep -Fq 'concurrent research fanout is capped at five' "$skill" || fail "fanout cap missing"
+grep -Fq 'Route research workstreams, not whole tasks.' "$skill" || fail "workstream-level research routing missing"
+grep -Fq 'result dependency' "$skill" || fail "result-dependency rule missing"
+grep -Fq 'That is fan-in and remains delegatable.' "$skill" || fail "result dependency incorrectly implies inline"
+grep -Fq 'execution-state dependency' "$skill" || fail "execution-state dependency rule missing"
+grep -Fq 'execution-state coupling -> `inline`' "$skill" || fail "execution-state coupling does not force inline"
+grep -Fq 'context isolation/raw-context' "$skill" || fail "context isolation/compression benefit missing"
+grep -Fq 'coverage, or fresh context. Parallelism is not required.' "$skill" || fail "non-parallel delegation benefit missing"
+grep -Fq 'Primary-owned live/state-coupled research' "$skill" || fail "primary-owned research coexistence missing"
+grep -Fq 'two to five delegated research workstreams' "$skill" || fail "split hard cap semantics missing"
+grep -Fq 'soft default is two' "$skill" || fail "split soft default missing"
+grep -Fq 'For every third or' "$skill" || fail "third-plus marginal-benefit rule missing"
+grep -Fq 'delegatability changes' "$skill" || fail "route update does not cover newly discovered delegatability"
 grep -Fq 'ROUTE UPDATE' "$skill" || fail "route update contract missing"
 grep -Fq 'Researchers must not spawn nested subagents.' "$skill" || fail "nested delegation invariant missing"
 grep -Fq 'For an ordinary `solo + inline` task, do not read either supporting reference' "$skill" ||
@@ -145,7 +152,19 @@ grep -Fq 'agent_type: sol_advisor_terra_researcher' "$contracts" || fail "Terra 
 grep -Fq 'agent_type: sol_advisor_luna_implementer' "$contracts" || fail "Luna implementation spawn contract missing"
 grep -Fq 'agent_type: sol_advisor_terra_implementer' "$contracts" || fail "Terra implementation spawn contract missing"
 grep -Fq 'agent_type: sol_advisor_sol_reviewer' "$contracts" || fail "Sol review spawn contract missing"
+grep -Fq 'researcher-owned until its report returns' "$contracts" || fail "delegated research ownership contract missing"
+grep -Fq 'spot-check or reproduce decisive' "$contracts" || fail "research spot-verification contract missing"
+grep -Fq 'duplicate full investigation' "$contracts" || fail "research non-duplication contract missing"
+grep -Fq 'OBSERVATIONS, INFERENCES, CONFLICTS, ALTERNATIVES, and GAPS' "$contracts" || fail "Terra research return fields missing"
 
+grep -Fq '## Researcher isolation' "$ops" || fail "operations omit researcher isolation"
+grep -Fq 'actual child sandbox' "$ops" || fail "researcher isolation omits effective runtime evidence"
+grep -Fq 'external-system, MCP, or app mutation' "$ops" || fail "researcher isolation omits external mutation rejection"
+grep -Fq 'Filesystem sandboxing and external-tool permissions are separate controls.' "$ops" || fail "filesystem/external permission distinction missing"
+grep -Fq 'Do not invent undocumented role-local tool-allowlist TOML fields.' "$ops" || fail "undocumented tool-allowlist guard missing"
+
+if grep -Fq 'Route research workstreams, not whole tasks.' "$contracts"; then fail "role contracts duplicate root route selection"; fi
+if grep -Fq 'execution-state dependency' "$contracts"; then fail "role contracts duplicate root route decision logic"; fi
 if grep -Fq 'RESEARCH REPORT' "$skill"; then fail "root skill still embeds the research return contract"; fi
 if grep -Fq 'IMPLEMENTATION REPORT' "$skill"; then fail "root skill still embeds the implementation return contract"; fi
 if grep -Fq 'VERDICT: ship | fix-first | rethink' "$skill"; then fail "root skill still embeds the reviewer return contract"; fi
@@ -158,6 +177,19 @@ grep -Fqi 'Verification evidence is required' "$skill" || fail "skill omits veri
 grep -Fq 'agents.default_subagent_model' "$ops" || fail "operations omit default-subagent precedence"
 grep -Fqi 'explicit spawn values take precedence' "$ops" || fail "operations omit explicit-spawn precedence"
 pass "progressive-disclosure ownership plus implementation/review/research contracts"
+
+expected_fixture_lines=7
+[ "$(wc -l < "$routing_fixtures" | tr -d ' ')" -eq "$expected_fixture_lines" ] ||
+  fail "routing regression fixture line count"
+grep -Fqx 'scenario|expected_research|expected_fanout' "$routing_fixtures" || fail "routing fixture header"
+grep -Fqx 'one-symbol lookup|inline|0' "$routing_fixtures" || fail "one-symbol lookup regression"
+grep -Fqx 'live process manipulation only|inline|0' "$routing_fixtures" || fail "live process regression"
+grep -Fqx 'live mutation + independent multi-file repo/log trace|luna|1' "$routing_fixtures" || fail "S8 mixed live/static regression"
+grep -Fqx 'two unrelated substantial static subsystems|split|2' "$routing_fixtures" || fail "two-workstream split regression"
+grep -Fqx 'conflicting scientific/methodological evidence|terra|1' "$routing_fixtures" || fail "Terra methodology regression"
+grep -Fqx 'five tiny related files|inline-or-luna|0-or-1' "$routing_fixtures" || fail "tiny-related-files regression"
+if grep -Fq 'five tiny related files|split|5' "$routing_fixtures"; then fail "tiny files incorrectly split five ways"; fi
+pass "research routing regression fixtures"
 
 for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
   grep -Fq "$role" "$installer" || fail "installer omits unambiguous role check name $role"
@@ -224,9 +256,9 @@ sh "$installer" --target-dir "$upgrade" >/dev/null
 [ "$before_luna" = "$(cksum "$upgrade/sol-advisor-luna-implementer.toml")" ] || fail "0.100.0 Luna implementation profile changed during update"
 [ "$before_terra" = "$(cksum "$upgrade/sol-advisor-terra-implementer.toml")" ] || fail "0.100.0 Terra implementation profile changed during update"
 [ "$before_sol" = "$(cksum "$upgrade/sol-advisor-sol-reviewer.toml")" ] || fail "0.100.0 Sol review profile changed during update"
-cmp -s "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml" || fail "0.100.0 -> 0.101.0 update missing Luna researcher"
-cmp -s "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml" || fail "0.100.0 -> 0.101.0 update missing Terra researcher"
-pass "0.100.0 -> 0.101.0 preserves current profiles and adds researchers"
+cmp -s "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml" || fail "0.100.0 -> current update missing Luna researcher"
+cmp -s "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml" || fail "0.100.0 -> current update missing Terra researcher"
+pass "0.100.0 -> current preserves current profiles and adds researchers"
 
 unknown=$tmp/unknown
 if sh "$installer" --target-dir "$unknown" --check-role unknown >/dev/null 2>&1; then
@@ -297,11 +329,24 @@ printf '%s\n' "$runtime_output" | jq -e --arg id "$runtime_id" '
   and .sandbox_policy_type == "read-only"
 ' >/dev/null || fail "runtime inspector returned wrong Luna research evidence"
 if printf '%s\n' "$runtime_output" | grep -Fq DO_NOT_LEAK; then fail "runtime inspector leaked research payload"; fi
-pass "runtime inspector implementation and research evidence fixtures"
+
+runtime_broad_id=33333333-3333-7333-8333-333333333333
+runtime_broad_rollout=$runtime_day/rollout-2026-10-05T00-00-02-$runtime_broad_id.jsonl
+printf '%s\n' \
+  "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_broad_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_researcher\",\"agent_path\":\"/root/fixture-broad\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
+  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"high","sandbox_policy":{"type":"workspace-write"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  > "$runtime_broad_rollout"
+runtime_broad_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_broad_id")
+printf '%s\n' "$runtime_broad_output" | jq -e --arg id "$runtime_broad_id" '
+  .thread_id == $id
+  and .agent_role == "sol_advisor_luna_researcher"
+  and .sandbox_policy_type == "workspace-write"
+' >/dev/null || fail "runtime inspector did not expose broadened researcher sandbox evidence"
+pass "runtime inspector implementation, read-only research, and broadened-sandbox evidence fixtures"
 
 if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git -C "$repo_root" diff --check
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.101.0 research-routing checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.102.0 workstream research-routing checks completed"
