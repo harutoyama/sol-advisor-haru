@@ -1,49 +1,61 @@
 # Sol Advisor
 
-Sol Advisor is a Codex-native selective-routing workflow for software delivery. It keeps the
-current primary Codex model in charge and routes by task capability rather than model family
-names or generation numbers.
+Sol Advisor is a Codex-native selective-routing workflow. This Haru fork keeps
+architecture, requirement resolution, verification, and acceptance in a GPT-6.1 Sol / High
+primary session, while routing implementation by model:
+
+| Role | Model | Effort | Use |
+|---|---|---|---|
+| Primary architect | GPT-6.1 Sol | High | Architecture, planning, requirement resolution, verification, acceptance |
+| Routine implementer | GPT-6 Luna | Max | Bounded, fully specified, interface-stable routine implementation |
+| Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation |
+| Fresh reviewer | GPT-6.1 Sol | High | Independent final review for audit/full; requests read-only sandbox |
+
+The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
+GPT-6.1 Sol / High selected.
 
 ## Routing modes
 
 | Mode | Use it when | Delivery |
 |---|---|---|
-| `solo` | Default; risk is contained. | Primary plans, implements, verifies, and self-reviews. |
-| `delegate` | Work is bounded, fully specified, low-risk, and interface-stable. | Lightweight implementer executes the complete spec; primary verifies. |
-| `audit` | Independent fresh-context scrutiny matters. | Primary implements and verifies; fresh read-only reviewer audits. |
-| `full` | Broad or high-risk exception. | Delegate or escalation implementer, primary verification, then fresh audit. |
+| `solo` | Very small change; delegation overhead dominates; architecture/planning/requirement resolution; coding-light work. | Primary handles the task directly. |
+| `delegate` | Implementation is fully specified and should be handed to one worker. | Prefer Luna / Max for routine bounded work; use Terra / High when judgment or risk is materially higher. Primary verifies. |
+| `audit` | Primary implementation needs independent final scrutiny. | Primary implements and verifies; fresh Sol / High reviews. |
+| `full` | Broad or high-risk exception. | One selected implementer, primary verification, then fresh Sol / High review. |
 
-A `delegate` route may escalate only when newly observed evidence shows that the work is
-judgment-heavy, high-risk, context-heavy, architecture-sensitive, or has a wide blast radius.
-Auxiliary work substitutes for primary work; it must not duplicate it.
+**Routine coding is not automatically a solo task.** Once the primary can state a complete,
+bounded, low-risk, interface-stable implementation contract, prefer Luna / Max. Do not delegate
+architecture or unresolved requirements merely to increase agent count. Auxiliary work substitutes
+for primary implementation; the primary inspects the actual diff and reruns verification instead
+of reimplementing the same change.
 
 ## Install
 
-Requirements: a current Codex CLI with plugin and custom-agent support, `jq`, `git`, and a
-model available to your account for the primary session.
+Requirements: a current Codex CLI or ChatGPT desktop app with plugin and custom-agent support,
+`jq`, `git`, and access to the selected models.
 
 Register this fork as a marketplace:
 
 ```sh
 codex plugin marketplace add harutoyama/sol-advisor-haru --ref main
+codex plugin marketplace list
 ```
 
-Then install **Sol Advisor** from that marketplace in the ChatGPT desktop Plugins Directory.
-The current public OpenAI documentation documents marketplace management from the CLI, while
-local marketplace plugin installation is performed from the Plugins Directory.
+Install **Sol Advisor (Haru fork)** from that marketplace in the ChatGPT desktop Plugins
+Directory.
 
-Install the companion custom-agent profiles from the same repository:
+Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-tmp_dir="$(mktemp -d)"
-git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$tmp_dir/sol-advisor-haru"
-sh "$tmp_dir/sol-advisor-haru/plugins/sol-advisor/scripts/install-agents.sh"
-rm -rf "$tmp_dir"
+workdir="$HOME/Downloads/sol-advisor-haru-0.100.0"
+git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
+sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
+sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 ```
 
-The installer writes three profiles to `$CODEX_HOME/agents` or `~/.codex/agents`. It is
-fail-closed: it never overwrites a modified file, symlink, non-regular file, or obsolete Sol
-Advisor profile.
+The installer writes three profiles to `$CODEX_HOME/agents` when `CODEX_HOME` is set,
+otherwise to `~/.codex/agents`. It is fail-closed: it never overwrites a modified file,
+symlink, non-regular file, unknown conflicting profile, or obsolete 0.7.0 capability profile.
 
 Start a fresh Codex task after installing the agents:
 
@@ -51,34 +63,66 @@ Start a fresh Codex task after installing the agents:
 Use $sol-advisor:orchestration to build this feature and verify it. Declare the SELECTIVE ROUTE before task tools.
 ```
 
-## Update
+## Update from Haru fork 0.7.0
 
-Refresh the marketplace snapshot:
+Refresh the configured marketplace snapshot:
 
 ```sh
+codex plugin marketplace list
 codex plugin marketplace upgrade sol-advisor
 ```
 
-Then refresh/reinstall Sol Advisor from the Plugins Directory and rerun the companion installer
-from a fresh checkout using the install command above.
+Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-If the installer reports obsolete Sol Advisor profiles, inspect and remove only the exact paths
-it reports, then rerun the installer. It intentionally does not delete or migrate those files.
+Then use a fresh 0.100.0 checkout and run the installer. If any 0.7.0 capability profiles are
+still present, the installer stops before mutation and prints their exact paths. The known
+unmodified 0.7.0 SHA-256 values are:
 
-## Uninstall / migration
+| Obsolete 0.7.0 profile | SHA-256 |
+|---|---|
+| `sol-advisor-delegate-implementer.toml` | `1594d2ac0fa527301b92afaf635a14a4e89b640d20f8673b6406d87298bc31c5` |
+| `sol-advisor-escalation-implementer.toml` | `85a257f74155ea717c4591acb3c24667d1498d5fbc3244029fda6290f7f080af` |
+| `sol-advisor-audit-reviewer.toml` | `b11c1c8a9773cfbcb62fa855f7723bbf5fc9df4cf91a5c9dc2be2a01b898f597` |
 
-Remove the configured marketplace when you no longer want this source:
+Inspect the exact installed files before deleting anything:
 
 ```sh
-codex plugin marketplace remove sol-advisor
+agent_dir="${CODEX_HOME:-$HOME/.codex}/agents"
+for f in \
+  sol-advisor-delegate-implementer.toml \
+  sol-advisor-escalation-implementer.toml \
+  sol-advisor-audit-reviewer.toml
+do
+  path="$agent_dir/$f"
+  if [ -e "$path" ] || [ -L "$path" ]; then
+    printf '%s  ' "$path"
+    shasum -a 256 "$path"
+  fi
+done
 ```
 
-Uninstall/disable Sol Advisor in the Plugins Directory separately. Then review
-`~/.codex/agents/` (or `$CODEX_HOME/agents/`) and remove Sol Advisor profiles you no longer
-want. Do not delete modified profiles blindly.
+Only if a file is a regular, non-symlink file and its digest exactly matches the table above,
+remove that exact obsolete file:
+
+```sh
+agent_dir="${CODEX_HOME:-$HOME/.codex}/agents"
+rm -- "$agent_dir/sol-advisor-delegate-implementer.toml"
+rm -- "$agent_dir/sol-advisor-escalation-implementer.toml"
+rm -- "$agent_dir/sol-advisor-audit-reviewer.toml"
+```
+
+If any digest differs, do not delete that file automatically; inspect or archive the user-modified
+profile first. After the obsolete profiles are gone, rerun:
+
+```sh
+sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
+sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
+```
+
+Start a new task/session after the role files change. The skill invocation remains
+`$sol-advisor:orchestration`.
 
 ## Maintainers
 
 See [native operations](plugins/sol-advisor/skills/orchestration/references/operations.md) for
-role installation, runtime evidence, sandbox interpretation, migration behavior, and release
-verification.
+exact role contracts, runtime evidence, migration behavior, and release verification.
