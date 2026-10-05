@@ -50,11 +50,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.102.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.102.1" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.102.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.102.1" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.102.0 manifests and marketplace path"
+pass "0.102.1 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_impl" || fail "Luna implementation model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_impl" || fail "Luna implementation effort pin"
@@ -133,6 +133,7 @@ grep -Fq 'Each third-or-later researcher' "$skill" || fail "third-plus marginal-
 grep -Fq 'Delegatability changes' "$skill" || fail "route update does not cover newly discovered delegatability"
 grep -Fq 'ROUTE UPDATE' "$skill" || fail "route update contract missing"
 grep -Fq 'Researchers must not spawn nested subagents.' "$skill" || fail "nested delegation invariant missing"
+grep -Fq 'active cross-cutting execution constraints' "$skill" || fail "cross-cutting constraint propagation invariant missing"
 grep -Fq 'For an ordinary `solo + inline` task, do not read either supporting reference' "$skill" ||
   fail "solo + inline progressive-disclosure rule missing"
 grep -Fq '[references/role-contracts.md](references/role-contracts.md)' "$skill" ||
@@ -140,7 +141,7 @@ grep -Fq '[references/role-contracts.md](references/role-contracts.md)' "$skill"
 grep -Fq '[references/operations.md](references/operations.md)' "$skill" ||
   fail "root skill does not link operations"
 
-for heading in QUESTION SCOPE CONTEXT 'EVIDENCE REQUIREMENTS' 'STOP CONDITIONS' RETURN 'RESEARCH REPORT' 'STATUS: complete | partial | blocked' FINDINGS: EVIDENCE: CONFLICTS: GAPS:; do
+for heading in QUESTION SCOPE CONTEXT 'ACTIVE CROSS-CUTTING CONSTRAINTS' 'EVIDENCE REQUIREMENTS' 'STOP CONDITIONS' RETURN 'RESEARCH REPORT' 'STATUS: complete | partial | blocked' FINDINGS: EVIDENCE: CONFLICTS: GAPS:; do
   grep -Fq "$heading" "$contracts" || fail "research packet missing $heading"
 done
 for heading in OBJECTIVE 'FILES AND OWNERSHIP' INTERFACES CONSTRAINTS VERIFICATION 'IMPLEMENTATION REPORT' CHANGES: VERIFIED: 'JUDGMENT CALLS:'; do
@@ -155,6 +156,14 @@ grep -Fq 'agent_type: sol_advisor_sol_reviewer' "$contracts" || fail "Sol review
 grep -Fq 'researcher-owned until its report returns' "$contracts" || fail "delegated research ownership contract missing"
 grep -Fq 'spot-check or reproduce decisive' "$contracts" || fail "research spot-verification contract missing"
 grep -Fq 'duplicate full investigation' "$contracts" || fail "research non-duplication contract missing"
+grep -Fq 'delegated-work-relevant subset' "$contracts" || fail "research packet omits compact applicable constraint subset"
+grep -Fq 'Do not depend on a particular skill name or path' "$contracts" || fail "constraint propagation is not generic"
+grep -Fq 'instead of the parent conversation' "$contracts" || fail "research packet no longer excludes parent-history inheritance"
+grep -Fq 'per-command caps do not make' "$contracts" || fail "aggregate output budget invariant missing"
+grep -Fq 'never concatenate multiple raw results' "$contracts" || fail "parallel raw-result concatenation prohibition missing"
+grep -Fq 'size/count/status' "$contracts" || fail "progressive retrieval first-pass invariant missing"
+grep -Fq 'narrow/filter the scope and retrieve again' "$contracts" || fail "truncation narrowing invariant missing"
+grep -Fq 'summary plus precise evidence references' "$contracts" || fail "compact evidence return invariant missing"
 grep -Fq 'OBSERVATIONS, INFERENCES, CONFLICTS, ALTERNATIVES, and GAPS' "$contracts" || fail "Terra research return fields missing"
 
 grep -Fq '## Researcher isolation' "$ops" || fail "operations omit researcher isolation"
@@ -170,6 +179,7 @@ if grep -Fq 'IMPLEMENTATION REPORT' "$skill"; then fail "root skill still embeds
 if grep -Fq 'VERDICT: ship | fix-first | rethink' "$skill"; then fail "root skill still embeds the reviewer return contract"; fi
 if grep -Fq -- '--check --check-role' "$skill"; then fail "root skill still embeds operational preflight commands"; fi
 if grep -Fq 'SELECTIVE ROUTE' "$contracts"; then fail "role contracts duplicate root route declaration"; fi
+if grep -Fq 'ACTIVE CROSS-CUTTING CONSTRAINTS' "$skill"; then fail "root skill embeds detailed research packet fields"; fi
 
 grep -Fqi 'Routine coding is not automatically a solo task' "$readme" || fail "README does not preserve routine coding route"
 grep -Fqi 'Auxiliary implementation must substitute' "$skill" || fail "skill permits duplicate auxiliary implementation"
@@ -349,4 +359,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.102.0 workstream research-routing checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.102.1 research delegation-contract checks completed"
