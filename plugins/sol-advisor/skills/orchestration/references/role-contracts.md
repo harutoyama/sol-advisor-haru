@@ -13,10 +13,14 @@ Before the first task tool call, the primary emits:
 ```text
 SELECTIVE ROUTE
 mode: solo | delegate | audit | full
+research: none | inline | luna | terra | split
+fanout: 0 | 1 | 2 | 3 | 4 | 5
 risk: <concise task-specific rationale>
+research_rationale: <why this research lane is worth its context/coordination cost>
 ```
 
-Do not treat `solo` as the automatic answer to every coding task. Use it for very small changes,
+`mode` controls implementation/review only; research is orthogonal, so `solo` may still use a
+researcher. Do not treat `solo` as the automatic answer to every coding task. Use it for very small changes,
 delegation-overhead cases, architecture/planning/requirement resolution, coding-light work, or
 work plainly simpler in the primary. Prefer Luna / Max when routine implementation is bounded,
 fully specified, interface-stable, and low-risk. Use Terra / High for materially harder or
@@ -25,6 +29,98 @@ never silently downgrade.
 
 Confirm GPT-6.1 Sol / High in the primary session before using auxiliaries. Preflight only the
 roles selected by the route.
+
+## Research routing contract
+
+Research defaults to the primary unless delegation has a clear payoff. Evaluate task independence,
+expected raw-context volume, handoff cost, result size, parallel speed/coverage benefit, and
+coordination overhead. More subagents are not automatically more efficient.
+
+- `none`: no research is needed.
+- `inline`: primary performs the lookup/inspection directly. Prefer this for short or strongly
+  sequential investigation, few-file checks, or handoffs that require most of the parent context.
+- `luna`: exactly one `sol_advisor_luna_researcher` for bounded, self-contained, evidence-heavy
+  exploration that can return a compact summary.
+- `terra`: exactly one `sol_advisor_terra_researcher` for conflict resolution, methodological or
+  scientific judgment, architecture-sensitive investigation, or complex root-cause analysis.
+- `split`: two to five substantial independent research workstreams. Bundle related small lookups;
+  do not micro-shard one question per agent.
+
+The primary alone owns fanout. Researchers may not spawn subagents. Every research spawn names one
+of the dedicated researcher profiles and uses `fork_turns: none`.
+
+Never use the generic `explorer`, `worker`, `default`, or silent parent-model inheritance as a
+research fallback. If a dedicated profile is unavailable or routing evidence conflicts, stop the
+lane. The primary may explicitly route-update to another dedicated lane or `inline`, but may not
+silently substitute.
+
+After an initial read-only inspection, an unexpectedly large or complex investigation may justify
+an explicit `ROUTE UPDATE` from `none`/`inline` to `luna`, `terra`, or `split`. State the observed
+reason before spawning. Silent research-route changes are forbidden.
+
+## Shared research packet
+
+Every researcher receives a self-contained packet with these semantic sections:
+
+```text
+QUESTION
+<precise question>
+
+SCOPE
+<allowed files/systems/sources/hypotheses>
+
+CONTEXT
+<minimal facts needed; never the whole parent conversation>
+
+EVIDENCE REQUIREMENTS
+<required citations, file/line refs, commands, authoritative sources, or observations>
+
+STOP CONDITIONS
+<when to stop and return partial/blocked instead of broadening scope or implementing>
+
+RETURN
+RESEARCH REPORT
+STATUS: complete | partial | blocked
+QUESTION: <restated question>
+FINDINGS: <short synthesis>
+EVIDENCE: <compact supporting evidence>
+CONFLICTS: <contradictory evidence or none>
+GAPS: <unknowns or none>
+```
+
+Do not return raw file contents, long search logs, or unnecessary tool traces.
+
+## Luna / High bounded research
+
+Use for focused code exploration, log investigation, documentation/Web lookup, multi-file
+inspection, or simple comparison. The installed role pins `gpt-6-luna` at `high`, requests
+`sandbox_mode = "read-only"`, and disables multi-agent tools.
+
+Spawn exactly:
+
+```text
+agent_type: sol_advisor_luna_researcher
+fork_turns: none
+```
+
+Read only. Do not implement, mutate, commit, or spawn nested subagents. If the investigation
+requires material methodology/architecture judgment or conflict resolution, stop with evidence so
+the primary can explicitly route-update to Terra.
+
+## Terra / High judgment-heavy research
+
+Use for multiple-evidence conflict resolution, scientific/methodological judgment,
+architecture-sensitive investigation, or complex root-cause analysis. The installed role pins
+`gpt-5.6-terra` at `high`, requests `sandbox_mode = "read-only"`, and disables multi-agent tools.
+
+Spawn exactly:
+
+```text
+agent_type: sol_advisor_terra_researcher
+fork_turns: none
+```
+
+Read only. Do not implement, mutate, commit, or spawn nested subagents.
 
 ## Shared implementation contract
 
@@ -66,7 +162,8 @@ The primary inspects the actual diff and reruns verification.
 
 ## Mode contracts
 
-- `solo`: primary implements and verifies; no auxiliary.
+- `solo`: primary implements and verifies; no implementation/review auxiliary. A research auxiliary
+  is still allowed when selected by the independent research route.
 - `delegate`: spawn exactly one Luna or Terra implementer; primary verifies; no fresh reviewer.
 - `audit`: primary implements and verifies; spawn a fresh Sol reviewer; reviewer does not
   implement.

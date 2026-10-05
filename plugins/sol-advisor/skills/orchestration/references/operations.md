@@ -19,6 +19,8 @@ not change that model.
 | `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Delegate/full bounded routine implementation |
 | `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Delegate/full judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation |
 | `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | Audit/full fresh review; requests read-only sandbox |
+| `sol_advisor_luna_researcher` | `gpt-6-luna` | `high` | Bounded/focused read-only research; multi-agent tools disabled |
+| `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Judgment-heavy read-only research; multi-agent tools disabled |
 
 Each custom-agent TOML pins its own model and reasoning effort. Native spawn requests name the role
 and use a fresh context:
@@ -38,6 +40,16 @@ agent_type: sol_advisor_sol_reviewer
 fork_turns: none
 ```
 
+```text
+agent_type: sol_advisor_luna_researcher
+fork_turns: none
+```
+
+```text
+agent_type: sol_advisor_terra_researcher
+fork_turns: none
+```
+
 Do not attach per-spawn model or reasoning overrides. Codex configuration can define
 `agents.default_subagent_model` and `agents.default_subagent_reasoning_effort`.
 Explicit spawn values take precedence over those defaults. This workflow instead uses role-pinned
@@ -51,11 +63,33 @@ The primary emits before task tools:
 ```text
 SELECTIVE ROUTE
 mode: solo | delegate | audit | full
+research: none | inline | luna | terra | split
+fanout: 0 | 1 | 2 | 3 | 4 | 5
 risk: <concise task-specific rationale>
+research_rationale: <delegation/context-efficiency rationale>
 ```
 
 `solo` is limited to very small changes, delegation-overhead cases, architecture/planning,
 requirement resolution, coding-light work, or work that is plainly simpler in the primary.
+
+`mode` governs implementation/review only. `research` is orthogonal, so `mode: solo` may still
+use a researcher. `fanout` is zero for `none`/`inline`, normally one for `luna`/`terra`, and two
+through five only for `split`.
+
+Research routing weighs task independence, expected raw-context volume, handoff cost, result size,
+parallel speed/coverage benefit, and coordination overhead. Subagents can increase token usage;
+keep short, sequential, few-file, or context-heavy handoffs inline. Default to one researcher.
+`split` requires at least two substantial independent workstreams and is capped at five.
+
+Only `sol_advisor_luna_researcher` and `sol_advisor_terra_researcher` may be used for research.
+Generic `explorer`, `worker`, `default`, or parent-model inheritance are not fallbacks. Research
+spawns always use `fork_turns: none`; the parent sends only the self-contained QUESTION/SCOPE/
+CONTEXT/EVIDENCE REQUIREMENTS/STOP CONDITIONS/RETURN packet. Both researcher profiles request
+read-only sandbox and set `agents.enabled = false`, so fanout remains a primary-only concern.
+
+After read-only inspection, the primary may explicitly emit `ROUTE UPDATE` when unexpectedly large
+or complex research justifies changing `none`/`inline` to `luna`, `terra`, or `split`. State the
+reason before spawning; silent route changes are invalid.
 When implementation is bounded, fully specified, interface-stable, and low-risk, prefer Luna /
 Max. Use Terra / High when the implementation needs materially more judgment or carries higher
 risk. `full` remains the broad/high-risk exception. Auxiliary work substitutes for primary
@@ -71,19 +105,30 @@ sh plugins/sol-advisor/scripts/install-agents.sh --check
 Selective checks:
 
 ```sh
-sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna
-sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra
-sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role sol
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-implementation
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-implementation
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role sol-review
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-research
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-research
 ```
 
-| Route | Required companion checks |
+| Implementation/review route | Required companion checks |
 |---|---|
-| solo | None |
-| delegate (Luna) | `--check --check-role luna` |
-| delegate (Terra) | `--check --check-role terra` |
-| audit | `--check --check-role sol` |
-| full (Luna) | `--check --check-role luna --check-role sol` |
-| full (Terra) | `--check --check-role terra --check-role sol` |
+| solo | None for implementation/review |
+| delegate (Luna) | `--check --check-role luna-implementation` |
+| delegate (Terra) | `--check --check-role terra-implementation` |
+| audit | `--check --check-role sol-review` |
+| full (Luna) | `--check --check-role luna-implementation --check-role sol-review` |
+| full (Terra) | `--check --check-role terra-implementation --check-role sol-review` |
+
+Research adds its own independent check:
+
+| Research route | Required companion check |
+|---|---|
+| none / inline | None |
+| luna | `--check --check-role luna-research` |
+| terra | `--check --check-role terra-research` |
+| split | one check per selected dedicated researcher role |
 
 Unknown roles fail before mutation. Cache a successful check only for the current task.
 
@@ -95,7 +140,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.100.0 installer treats any of them as a migration hazard and stops before changing the
+The 0.101.0 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -121,7 +166,8 @@ sh "$runtime_inspector" <native-subagent-thread-id>
 ```
 
 Accepted routing is Luna / max for routine implementation, Terra / high for harder implementation,
-and GPT-6.1 Sol / high for audit/full review. If public and local evidence both exist, they must
+GPT-6.1 Sol / high for audit/full review, Luna / high for bounded research, and Terra / high for
+judgment-heavy research. If public and local evidence both exist, they must
 agree. The inspector is evidence, not a model-selection fallback.
 
 ## Reviewer isolation
@@ -158,6 +204,7 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.100.0 manifests, exact three-role set, model/effort pins, routing
-contracts, 0.7.0 migration fixtures, stale role/model references, JSON/TOML/YAML syntax, shell
-syntax, installer safety, and runtime-inspector fixture.
+The verifier checks the 0.101.0 manifests, exact five-role set, implementation/research model and
+effort pins, researcher read-only/nested-delegation constraints, research route/fork contract,
+generic-agent prohibition, installer fresh install, 0.100.0 -> 0.101.0 update behavior, 0.7.0
+migration safety, JSON/TOML/YAML/shell syntax, and implementation plus research runtime fixtures.
