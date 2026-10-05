@@ -72,8 +72,8 @@ research auxiliary.
 - `split`: use only for at least two substantial independent workstreams. Default to one researcher;
   concurrent research fanout is capped at five. Do not micro-shard related lookups.
 
-Before spawning, weigh task independence, expected raw-context volume, handoff cost, expected result
-size, parallel speed or coverage benefit, and coordination overhead. More subagents are not
+Before spawning, weigh task independence, expected raw-context volume, handoff cost, expected result size,
+parallel speed or coverage benefit, and coordination overhead. More subagents are not
 automatically more efficient.
 
 ## Cross-route invariants
