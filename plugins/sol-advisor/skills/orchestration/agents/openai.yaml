@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "Declare a capability-based solo, delegate, audit, or exceptional full route before task tools"
-  default_prompt: "Use $orchestration to declare a SELECTIVE ROUTE before task tools; default to solo and delegate only bounded low-risk work."
+  short_description: "Sol architects; Luna handles routine coding; Terra handles harder implementation; fresh Sol reviews"
+  default_prompt: "Use $orchestration to declare a SELECTIVE ROUTE before task tools; keep architecture in Sol, prefer Luna / Max for fully specified routine coding, and use Terra / High or fresh Sol only when the task contract calls for them."

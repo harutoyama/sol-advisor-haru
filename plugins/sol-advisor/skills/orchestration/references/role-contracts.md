@@ -1,13 +1,14 @@
 # Native Codex role contracts
 
-Sol Advisor uses capability-named custom agents. Model family names are not routing concepts.
-The delegate profile is the only profile allowed to pin a concrete model. Escalation and audit
-contain no concrete high-capability model slug; their spawns explicitly reuse the primary
-session's resolved model and reasoning effort.
+Use these contracts with Sol Advisor's model-specific native custom agents. They do not launch a
+nested Codex CLI or change the primary model.
+
+For task-scoped preflight, runtime evidence, sandbox interpretation, and maintainer commands, use
+[operations.md](operations.md).
 
 ## Selective route
 
-Before task tools:
+Before the first task tool call, the primary emits:
 
 ```text
 SELECTIVE ROUTE
@@ -15,12 +16,19 @@ mode: solo | delegate | audit | full
 risk: <concise task-specific rationale>
 ```
 
-Solo is the default. A route changes only by escalation after newly observed risk is recorded.
-Auxiliary work substitutes for primary work and must not duplicate it.
+Do not treat `solo` as the automatic answer to every coding task. Use it for very small changes,
+delegation-overhead cases, architecture/planning/requirement resolution, coding-light work, or
+work plainly simpler in the primary. Prefer Luna / Max when routine implementation is bounded,
+fully specified, interface-stable, and low-risk. Use Terra / High for materially harder or
+higher-risk implementation. A route may only escalate after newly observed risk is recorded;
+never silently downgrade.
 
-## Shared implementation packet
+Confirm GPT-6.1 Sol / High in the primary session before using auxiliaries. Preflight only the
+roles selected by the route.
 
-Every delegate or escalation prompt contains all five sections:
+## Shared implementation contract
+
+Every Luna or Terra prompt must contain all five sections:
 
 ```text
 OBJECTIVE
@@ -59,55 +67,60 @@ The primary inspects the actual diff and reruns verification.
 ## Mode contracts
 
 - `solo`: primary implements and verifies; no auxiliary.
-- `delegate`: spawn exactly one `sol_advisor_delegate_implementer`; primary verifies.
-- `audit`: primary implements and verifies; spawn a fresh
-  `sol_advisor_audit_reviewer` with explicit primary model/effort; reviewer does not implement.
-- `full`: spawn one implementer, primary verifies, then spawn a fresh audit reviewer. Use
-  `sol_advisor_delegate_implementer` only while implementation remains bounded; otherwise use
-  `sol_advisor_escalation_implementer` with explicit primary model/effort.
+- `delegate`: spawn exactly one Luna or Terra implementer; primary verifies; no fresh reviewer.
+- `audit`: primary implements and verifies; spawn a fresh Sol reviewer; reviewer does not
+  implement.
+- `full`: broad/high-risk exception. Spawn one selected implementer, primary verifies, then
+  spawn a fresh Sol reviewer.
 
-## Delegate implementer
+Auxiliary work substitutes for primary implementation; it must not duplicate it.
 
-Use only for bounded, fully specified, low-risk, interface-stable work.
+## Luna / Max routine implementation
+
+Use when the primary has already resolved requirements and the work is bounded, fully specified,
+interface-stable, low-risk, and routine. The installed role pins `gpt-6-luna` at `max`.
+
+Spawn exactly:
 
 ```text
-agent_type: sol_advisor_delegate_implementer
+agent_type: sol_advisor_luna_implementer
 fork_turns: none
 ```
 
-Do not attach per-spawn model or reasoning overrides. The delegate custom-agent file owns the
-single lightweight model pin. If the result reveals judgment-heavy, high-risk, context-heavy,
-architecture-sensitive, or wide-blast-radius work, stop and escalate rather than stretching
-the delegate contract.
+Do not attach per-spawn model or reasoning overrides. If the work reveals material judgment,
+architecture sensitivity, context burden, high risk, or wide blast radius, stop and return that
+evidence for Terra routing. A corrected Luna attempt is appropriate for a specification error but
+is not a prerequisite for Terra.
 
-## Escalation implementer
+## Terra / High higher-complexity implementation
 
-Use for judgment-heavy, high-risk, context-heavy, architecture-sensitive, or wide-blast-radius
-implementation. Resolve the primary session's current model and effort first, then spawn:
+Use for judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius
+implementation, including risk revealed by a Luna result. The installed role pins
+`gpt-5.6-terra` at `high`.
 
-```text
-agent_type: sol_advisor_escalation_implementer
-fork_turns: none
-model: <primary-resolved-model>
-reasoning_effort: <primary-resolved-effort>
-```
-
-The role TOML intentionally omits model and effort. Explicit spawn values are required because
-user/project `agents.default_subagent_*` settings may otherwise reroute an omitted value.
-If the primary values cannot be observed or the host cannot apply the explicit values, stop the
-lane rather than substituting another capability.
-
-## Fresh audit reviewer
-
-Only for `audit` or `full`, after parent verification. Resolve the same primary values and
-spawn:
+Spawn exactly:
 
 ```text
-agent_type: sol_advisor_audit_reviewer
+agent_type: sol_advisor_terra_implementer
 fork_turns: none
-model: <primary-resolved-model>
-reasoning_effort: <primary-resolved-effort>
 ```
+
+Do not attach per-spawn model or reasoning overrides.
+
+## Fresh Sol / High reviewer
+
+Only for `audit` or `full`, after primary verification. The installed role pins
+`gpt-6.1-sol` at `high` and requests `sandbox_mode = "read-only"`.
+
+Spawn exactly:
+
+```text
+agent_type: sol_advisor_sol_reviewer
+fork_turns: none
+```
+
+Do not attach per-spawn model or reasoning overrides. Observe the actual role, model, effort,
+sandbox policy, and permission profile before accepting its verdict.
 
 Prompt:
 
@@ -131,13 +144,17 @@ REVIEW
 Inspect correctness, completeness, regressions, scope discipline, interface preservation,
 test adequacy, and material risk.
 
-AUDIT REVIEW
+SOL REVIEW
 VERDICT: ship | fix-first | rethink
 REASON: <decisive evidence-based reason>
 FINDINGS: <precise file references and required fixes, or none>
 RESIDUAL RISK: <largest remaining risk, or none>
 ```
 
-The reviewer TOML requests read-only sandboxing. Runtime overrides may broaden the effective
-sandbox, so use observed isolation, not requested isolation. Confirm the spawned model and
-effort equal the primary values. Any fix invalidates the verdict and requires a new fresh audit.
+A reviewer never fixes its own findings. Any implementation correction invalidates the prior
+verdict and requires primary re-verification plus a new fresh reviewer.
+
+Use observed isolation, not requested isolation. If the host broadens the sandbox, proceed only
+when hard isolation is not required, the prompt forbids mutation, and the primary captures exact
+before/after repository and artifact state. If isolation is unobservable, hard isolation is
+required, or any mutation occurs, reject the review.

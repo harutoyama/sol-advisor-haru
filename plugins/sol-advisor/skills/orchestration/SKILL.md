@@ -1,30 +1,25 @@
 ---
 name: orchestration
-description: "Codex-native capability-based selective routing: solo default, bounded delegation, parent verification, fresh audit, and evidence-gated escalation."
+description: "Codex-native model-specific selective routing: Sol architects and verifies, Luna handles routine coding, Terra handles harder implementation, and fresh Sol reviews selected routes."
 ---
 
 # Sol Advisor Orchestration
 
 Act as the architect and primary owner. Own the user's intent, architecture, route choice,
-decomposition, implementation or delegation, verification, escalation decisions, and final
-acceptance. The exact modes are `solo`, `delegate`, `audit`, and `full`.
+decomposition, complete worker specifications, parent verification, escalation decisions, and
+final acceptance. The exact modes are `solo`, `delegate`, `audit`, and `full`.
 
 Read [references/role-contracts.md](references/role-contracts.md) before delegation or review.
-Use [references/operations.md](references/operations.md) for installation, exact role names,
-runtime evidence, sandbox interpretation, and maintainer procedures.
+Use [references/operations.md](references/operations.md) for exact role names, preflight,
+runtime evidence, sandbox interpretation, migration, and maintainer procedures.
 
-## Use the current primary model
+## Confirm the primary session
 
-Do not require a named model family or generation for the primary session. The current
-resolved model and reasoning effort chosen for the user's Codex session define the primary
-capability lane. `solo` uses that lane directly.
-
-For escalation and audit, do not rely on omission alone to inherit the parent. Current Codex
-configuration can define `agents.default_subagent_model` and
-`agents.default_subagent_reasoning_effort`, which may otherwise take precedence. Spawn the
-escalation implementer and audit reviewer with explicit model and effort values equal to the
-current primary session's resolved values. If those values cannot be observed or explicitly
-applied, fail closed for that auxiliary lane.
+Run the primary Codex session on `gpt-6.1-sol` with `high` reasoning. Verify the current
+model and effort when runtime metadata exposes them. If either differs, tell the user to select
+GPT-6.1 Sol / High and stop before delegation or review. If runtime metadata does not expose
+them, ask the user to confirm the selected primary before using an auxiliary lane. A skill cannot
+change the primary model itself.
 
 ## Declare the route before task tools
 
@@ -36,50 +31,72 @@ mode: solo | delegate | audit | full
 risk: <concise task-specific rationale>
 ```
 
-Solo is the default. No task tool call may precede this declaration. A later route declaration
-may only escalate after newly observed risk is recorded; never silently downgrade.
+No task tool call may precede this declaration. A later declaration may only escalate after
+newly observed risk is recorded; never silently downgrade.
 
 ## Route selection
 
-- `solo`: default. Primary plans, implements, verifies, and self-reviews. No auxiliary.
-- `delegate`: only for bounded, fully specified, low-risk work with clear interfaces and
-  little judgment. One delegate implementer executes the complete specification; primary
-  verifies. No fresh reviewer.
-- `audit`: primary implements and verifies, then a fresh audit reviewer inspects the
-  accumulated change set. No implementer auxiliary.
-- `full`: exceptional broad or high-risk case. Use one delegate implementer only if the
-  implementation remains bounded; otherwise use the escalation implementer. Primary verifies,
-  then a fresh audit reviewer reviews.
+Do not use `solo` as a catch-all merely because delegation is optional.
 
-Auxiliary work must substitute for primary work, not duplicate it.
+- `solo`: use for very small changes, tasks where delegation overhead is larger than the work,
+  architecture/planning/requirement resolution, coding-light work, or work the primary can
+  clearly complete more simply itself.
+- `delegate` -> Luna / Max: prefer this when the primary has resolved the requirements and can
+  provide a bounded, fully specified, interface-stable, low-risk implementation contract.
+  Typical examples include a clear function addition, routine tests, a small-to-medium
+  refactor with settled interfaces, a clear bug fix, or specified multi-file edits.
+- `delegate` -> Terra / High: use when implementation is judgment-heavy, architecture-sensitive,
+  context-heavy, high-risk, or wide in blast radius, or when a Luna result reveals that the work
+  was misclassified.
+- `audit`: primary implements and verifies, then a fresh read-only Sol / High reviewer inspects
+  the accumulated change set.
+- `full`: broad or high-risk exception. One selected implementer executes the settled
+  specification, the primary verifies, then a fresh read-only Sol / High reviewer reviews.
 
-## Escalation
+When route choice is unclear because requirements are unresolved, resolve that ambiguity in the
+primary session first. Do not resolve uncertainty by defaulting all coding to `solo`.
 
-Use the escalation implementer when delegate work proves judgment-heavy, high-risk,
-context-heavy, architecture-sensitive, or wider in blast radius than specified. Escalation
-requires newly observed evidence if the task began on a lower-risk route. Spawn the escalation
-role with the primary session's resolved model and reasoning effort explicitly.
+Auxiliary work must substitute for primary implementation, not duplicate it. If a worker
+implements the change, the primary inspects the actual diff, checks changed-file scope, reruns
+verification, and decides acceptance instead of reimplementing the same code.
 
-A specification correction may justify one corrected delegate attempt, but a retry is not a
-prerequisite for escalation when the result itself reveals material risk.
+## Preflight selected auxiliaries only
 
-## Parent verification
+Use the installed model-specific custom-agent profiles:
+
+- `sol_advisor_luna_implementer` -> `gpt-6-luna` / `max`
+- `sol_advisor_terra_implementer` -> `gpt-5.6-terra` / `high`
+- `sol_advisor_sol_reviewer` -> `gpt-6.1-sol` / `high`, requested read-only sandbox
+
+Preflight only roles selected by the declared route. Public spawn/details metadata is
+authoritative when available; use the local runtime inspector only for fields omitted from
+public metadata. Missing, conflicting, unavailable, or unobservable role/model/effort evidence
+stops that auxiliary lane. Never silently substitute a role, model, or effort.
+
+The role TOMLs own the model and effort pins. Do not attach per-spawn model or reasoning
+overrides. If a host or caller supplies an explicit override, it must resolve to the exact same
+role pin; a conflicting override invalidates the lane.
+
+## Worker specification and parent verification
 
 Every implementer prompt must contain OBJECTIVE, FILES AND OWNERSHIP, INTERFACES,
 CONSTRAINTS, VERIFICATION, and the structured return contract in role-contracts.md.
 
-Treat auxiliary reports as claims. The primary must inspect the actual diff, confirm changed
-file scope, rerun the requested checks, and evaluate artifact/runtime evidence before
-acceptance. Verification evidence is required before completion.
+Treat worker reports as claims. The primary must inspect the complete actual diff, confirm changed
+file scope, rerun the requested checks, and evaluate artifact/runtime evidence before acceptance.
+Verification evidence is required before completion.
 
-## Fresh audit
+A Luna result may justify escalation to Terra only when it reveals newly observed complexity,
+risk, architectural sensitivity, context burden, or wider blast radius. A corrected Luna retry
+is appropriate for a specification error but is not a prerequisite for Terra escalation.
 
-For `audit` and `full`, spawn a new audit reviewer with fresh context after parent
-verification. Pass the primary session's resolved model and reasoning effort explicitly. The
-role requests `read-only`, but Codex can reapply parent live sandbox overrides. Accept a
-review only after the actual model/effort and sandbox/permission evidence matches the contract
-in operations.md.
+## Fresh review
+
+For `audit` and `full`, spawn a new `sol_advisor_sol_reviewer` after primary verification.
+The reviewer requests `sandbox_mode = "read-only"`, but runtime policy can broaden the effective
+sandbox. Accept a verdict only after checking observed role/model/effort and sandbox/permission
+evidence as described in operations.md.
 
 The reviewer returns exactly `ship`, `fix-first`, or `rethink` and never implements its
-own fixes. Any implementation change invalidates the prior verdict and requires parent
-re-verification plus a new fresh audit.
+own fixes. Any implementation change invalidates the prior verdict and requires primary
+re-verification plus a new fresh review.
