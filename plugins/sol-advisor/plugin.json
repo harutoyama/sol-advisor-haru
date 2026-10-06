@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sol-advisor",
-  "version": "0.102.1",
+  "version": "0.102.2",
   "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and workstream-level research routing with dedicated read-only Luna/Terra researchers."
 }
