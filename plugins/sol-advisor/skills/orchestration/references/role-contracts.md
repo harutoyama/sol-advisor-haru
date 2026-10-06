@@ -80,8 +80,9 @@ agent_type: sol_advisor_luna_researcher
 fork_turns: none
 ```
 
-The installed profile is `sol_advisor_luna_researcher`. Stay inside the supplied research packet.
-If the investigation requires material scientific, methodological, architectural, or
+The installed profile is `sol_advisor_luna_researcher`, pinned to `gpt-6-luna` / `max`. Stay inside
+the supplied research packet. If the investigation requires material scientific, methodological,
+architectural, or
 conflict-resolution judgment beyond the bounded scope, stop and return the evidence and gap so the
 primary can explicitly route-update.
 

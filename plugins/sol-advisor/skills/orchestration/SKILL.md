@@ -77,7 +77,7 @@ Decide in order:
 6. **Payoff:** require material context isolation/raw-context compression, latency, coverage, or
    fresh-context benefit. Parallelism is not required.
 7. **Cost:** if packet/preflight/integration/spot-verification cost dominates -> `inline`.
-8. **Model:** Luna / High for bounded objective gathering; Terra / High only when that delegated
+8. **Model:** Luna / Max for bounded objective gathering; Terra / High only when that delegated
    workstream itself needs evidence adjudication, scientific/methodological judgment,
    architecture-sensitive causal analysis, or complex root-cause synthesis.
 9. **Fanout:** one delegated workstream -> `luna` or `terra`, `fanout: 1`; use `split` only for

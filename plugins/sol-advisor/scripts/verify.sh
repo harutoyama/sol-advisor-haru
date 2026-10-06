@@ -50,11 +50,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.102.1" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.102.2" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.102.1" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.102.2" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.102.1 manifests and marketplace path"
+pass "0.102.2 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_impl" || fail "Luna implementation model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_impl" || fail "Luna implementation effort pin"
@@ -64,7 +64,7 @@ grep -Fq 'model = "gpt-6.1-sol"' "$sol_review" || fail "Sol reviewer model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$sol_review" || fail "Sol reviewer effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$sol_review" || fail "Sol reviewer read-only request"
 grep -Fq 'model = "gpt-6-luna"' "$luna_research" || fail "Luna research model pin"
-grep -Fq 'model_reasoning_effort = "high"' "$luna_research" || fail "Luna research effort pin"
+grep -Fq 'model_reasoning_effort = "max"' "$luna_research" || fail "Luna research effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$luna_research" || fail "Luna researcher read-only request"
 grep -Fq 'model = "gpt-5.6-terra"' "$terra_research" || fail "Terra research model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$terra_research" || fail "Terra research effort pin"
@@ -332,23 +332,23 @@ runtime_rollout=$runtime_day/rollout-2026-10-05T00-00-01-$runtime_id.jsonl
 printf '%s\n' \
   '{"type":"response_item","payload":{"prompt":"DO_NOT_LEAK_RESEARCH"}}' \
   "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_researcher\",\"agent_path\":\"/root/fixture\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
-  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"high","sandbox_policy":{"type":"read-only"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"max","sandbox_policy":{"type":"read-only"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
   > "$runtime_rollout"
 runtime_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_id")
 printf '%s\n' "$runtime_output" | jq -e --arg id "$runtime_id" '
   .thread_id == $id
   and .agent_role == "sol_advisor_luna_researcher"
   and .model == "gpt-6-luna"
-  and .effort == "high"
+  and .effort == "max"
   and .sandbox_policy_type == "read-only"
-' >/dev/null || fail "runtime inspector returned wrong Luna research evidence"
+' >/dev/null || fail "runtime inspector returned wrong Luna/Max research evidence"
 if printf '%s\n' "$runtime_output" | grep -Fq DO_NOT_LEAK; then fail "runtime inspector leaked research payload"; fi
 
 runtime_broad_id=33333333-3333-7333-8333-333333333333
 runtime_broad_rollout=$runtime_day/rollout-2026-10-05T00-00-02-$runtime_broad_id.jsonl
 printf '%s\n' \
   "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_broad_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_researcher\",\"agent_path\":\"/root/fixture-broad\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
-  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"high","sandbox_policy":{"type":"workspace-write"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"max","sandbox_policy":{"type":"workspace-write"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
   > "$runtime_broad_rollout"
 runtime_broad_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_broad_id")
 printf '%s\n' "$runtime_broad_output" | jq -e --arg id "$runtime_broad_id" '
@@ -363,4 +363,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.102.1 research delegation-contract checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.102.2 research delegation-contract checks completed"

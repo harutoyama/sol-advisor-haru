@@ -10,7 +10,7 @@ primary session, while routing implementation by model:
 | Routine implementer | GPT-6 Luna | Max | Bounded, fully specified, interface-stable routine implementation |
 | Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation |
 | Fresh reviewer | GPT-6.1 Sol | High | Independent final review for audit/full; requests read-only sandbox |
-| Bounded researcher | GPT-6 Luna | High | Focused read-only code/log/docs/Web investigation with compact evidence return |
+| Bounded researcher | GPT-6 Luna | Max | Focused read-only code/log/docs/Web investigation with compact evidence return |
 | Judgment-heavy researcher | GPT-5.6 Terra | High | Read-only investigation requiring conflict resolution, methodology, architecture, or complex root-cause judgment |
 
 The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
@@ -44,7 +44,7 @@ read-only, self-contained workstreams whose substantial raw evidence can be comp
 shorter report and whose context isolation/compression, latency, coverage, or fresh-context benefit
 exceeds handoff and integration cost. Parallel execution is useful but is not required.
 
-Use Luna / High for one bounded objective evidence-gathering workstream. Use Terra / High only when
+Use Luna / Max for one bounded objective evidence-gathering workstream. Use Terra / High only when
 that delegated workstream itself requires conflicting-evidence adjudication, scientific or
 methodological judgment, architecture-sensitive causal analysis, or complex root-cause synthesis;
 overall task risk alone is not enough. `research: luna` or `terra` may coexist with
@@ -82,7 +82,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.102.1"
+workdir="$HOME/Downloads/sol-advisor-haru-0.102.2"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -109,7 +109,7 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.102.1 checkout and run the installer. Existing unmodified 0.100.0 model-specific
+Then use a fresh 0.102.2 checkout and run the installer. Existing unmodified 0.100.0 model-specific
 implementer/reviewer profiles are preserved byte-for-byte; the installer includes the two researcher
 profiles introduced in 0.101.0. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known

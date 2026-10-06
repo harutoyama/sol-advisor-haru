@@ -21,7 +21,7 @@ change that model.
 | `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Delegate/full routine implementation |
 | `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Delegate/full higher-complexity implementation |
 | `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | Audit/full fresh review; requests read-only sandbox |
-| `sol_advisor_luna_researcher` | `gpt-6-luna` | `high` | Bounded/focused read-only research; nested agents disabled |
+| `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Bounded/focused read-only research; nested agents disabled |
 | `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Judgment-heavy read-only research; nested agents disabled |
 
 Each custom-agent TOML pins its own model and reasoning effort. Do not attach per-spawn model or
@@ -80,7 +80,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.102.0 installer treats any of them as a migration hazard and stops before changing the
+The 0.102.2 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -106,7 +106,7 @@ sh "$runtime_inspector" <native-subagent-thread-id>
 ```
 
 Accepted routing evidence is Luna / max for routine implementation, Terra / high for
-higher-complexity implementation, GPT-6.1 Sol / high for audit/full review, Luna / high for bounded
+higher-complexity implementation, GPT-6.1 Sol / high for audit/full review, Luna / max for bounded
 research, and Terra / high for judgment-heavy research. If public and local evidence both exist,
 they must agree. The inspector is evidence, not a model-selection fallback.
 
@@ -162,7 +162,7 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.102.0 manifests, exact five-role set, implementation/research model and
+The verifier checks the 0.102.2 manifests, exact five-role set, implementation/research model and
 effort pins, workstream-level routing semantics, result-vs-execution-state dependency rules,
 researcher isolation/external-mutation constraints, split limits, root/reference ownership,
 regression fixtures, installer fresh install, 0.100.0 -> current update behavior, 0.7.0 migration
