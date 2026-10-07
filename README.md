@@ -1,8 +1,8 @@
 # Sol Advisor
 
 Sol Advisor is a Codex-native Sol-led orchestration workflow. This Haru fork starts the primary
-GPT-6.1 Sol task on High by default, performs a tool-free pre-task effort gate, and then uses
-specialized Luna roles only for bounded work that meaningfully replaces primary execution.
+GPT-6.1 Sol task on High by default, performs a tool-free pre-task effort gate, and then prefers
+specialized Luna roles for substantial bounded workstreams that can be instructed independently.
 
 | Role | Model | Effort | Use |
 |---|---|---|---|
@@ -29,15 +29,16 @@ cost, or acceptance with materially high error cost keep High.
 | Mode | Use it when | Delivery |
 |---|---|---|
 | `solo` | Truly tiny/localized work, planning, or parent-owned architecture/security/breaking-change decisions. | Sol handles it directly. |
-| `delegate` | A bounded child can replace primary work with clear ownership and evidence. | Use only the needed Luna role; Terra remains a judgment-heavy implementation exception. |
+| `delegate` | A substantial bounded workstream can be instructed independently with clear ownership and evidence. | Prefer the needed Luna role; Terra remains a judgment-heavy implementation exception. |
 | `audit` | Implementation must remain Sol-owned and high-risk independent scrutiny is warranted. | Sol implements/verifies; fresh Sol / High reviews. |
 | `full` | Delegated broad/high-risk implementation needs a fresh final review. | Bounded delegated execution (Terra only by exception), parent integration/verification, fresh Sol review. |
 
 Delegation is substitution, not addition. Normal fanout is 0-1; use two children only for genuinely
 independent substantial surfaces, and treat three or more as exceptional. Do not mechanically chain
 explorer -> worker -> tester. Each child is one-shot, with at most one follow-up for a concrete gap.
-The primary reuses returned evidence, inspects the actual diff, and repeats only acceptance-critical
-checks.
+The primary reuses returned evidence, inspects the actual diff, and performs acceptance-critical
+verification without re-running the delegated investigation or edit. Parent integration and final
+acceptance are not delegation contraindications.
 
 Budgeting uses a completion reserve rather than fixed model percentages: stop spawning when the
 remaining primary capacity may not cover integration, acceptance, and the final response.
@@ -49,8 +50,8 @@ Research remains orthogonal to implementation/review mode. Declare
 
 - `none`: no substantive research.
 - `inline`: tiny lookup or evidence coupled to live primary mutation/state.
-- `luna`: self-contained substantive read-only repo/log/docs/Web/API/version investigation when the
-  handoff replaces primary investigation and its context/parallelism benefit exceeds coordination cost.
+- `luna`: prefer for substantive, self-contained, read-only repo/log/docs/Web/API/version
+  investigation; parent synthesis or handoff overhead alone does not make it inline.
 - Judgment-heavy research remains Luna for evidence gathering; Luna returns conflicts/gaps and the
   primary Sol performs scientific/methodological or architecture-sensitive adjudication.
 - `split`: two genuinely independent substantial questions; three to five researchers are

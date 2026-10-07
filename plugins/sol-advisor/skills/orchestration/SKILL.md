@@ -1,14 +1,15 @@
 ---
 name: orchestration
-description: "Codex-native Sol-led routing: GPT-6.1 Sol owns architecture, integration, and acceptance; bounded Luna roles are used when they replace parent work with clear scope or evidence value; Terra and fresh Sol review remain explicit exceptions."
+description: "Codex-native Sol-led routing: GPT-6.1 Sol owns architecture, integration, and acceptance; bounded Luna roles are preferred for substantial independently assignable workstreams; Terra and fresh Sol review remain explicit exceptions."
 ---
 
 # Sol Advisor Orchestration
 
 Act as the architect and primary owner. Own the user's intent, architecture, decomposition,
-integration, escalation decisions, and final acceptance. Delegate only bounded work that
-meaningfully replaces primary execution; otherwise keep it in Sol. Do not run the same
-investigation or implementation in both parent and child.
+integration, escalation decisions, and final acceptance. Prefer Luna for any substantial bounded
+workstream that can be instructed independently; keep tiny/localized, strongly live-state-coupled,
+or unresolved judgment work in Sol. Parent integration and acceptance do not make delegation
+additive. Do not run the same investigation or implementation in both parent and child.
 
 This root file is the canonical owner of route selection and cross-route invariants. Keep it in
 context whenever the skill triggers. Load supporting references only when the selected route or
@@ -59,7 +60,7 @@ mode: solo | delegate | audit | full
 research: none | inline | luna | split
 fanout: 0 | 1 | 2 | 3 | 4 | 5
 risk: <concise task-specific rationale>
-research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
+research_rationale: <why this research route matches scope, independence, and live-state coupling>
 ```
 
 `fanout` is `0` for `none`/`inline`, normally `1` for one delegated workstream, and `2` only when two substantial workstreams are genuinely independent. `3..5` is exceptional and requires an explicit reason each added child cannot be bundled or deferred.
@@ -70,16 +71,19 @@ routes. Implementation/review escalation still requires newly observed risk.
 
 ## Select the implementation/review route
 
-Use **Sol-led bounded delegation**. Delegation is useful only when a child can own a self-contained
-surface and its work substitutes for primary execution. If the primary would need to perform nearly
-the same investigation, edit, or verification afterward, keep that work in Sol.
+Use **Sol-led bounded delegation**. Prefer Luna whenever a substantial bounded workstream can be
+instructed independently with a clear objective, ownership, stop conditions, and acceptance
+evidence. Parent integration, actual-diff inspection, and acceptance-critical verification are not
+delegation contraindications. Keep work in Sol when it is tiny/localized, strongly live-state
+coupled, or cannot yet be bounded because architecture, security, interface, migration, or material
+requirements remain unresolved. Do not choose `solo` merely because it seems faster or delegation
+has overhead when a substantial bounded workstream exists.
 
 - `solo`: use for tiny/localized work, strongly sequential or live-state-coupled execution, and
   work that cannot yet be bounded because architecture, security policy, breaking-interface
   decisions, migration policy, or materially ambiguous requirements remain unresolved.
-- `delegate`: use a Luna role when the parent can state a bounded objective, ownership, stop
-  conditions, and acceptance evidence. Choose only the role that replaces work the parent would
-  otherwise need to do:
+- `delegate`: prefer the matching Luna role for a substantial bounded workstream that can be
+  independently instructed. Choose only the role that owns that distinct workstream:
   - `sol_advisor_luna_explorer` for repository mapping, call/data-flow tracing, relevant
     tests/configuration, and implementation-boundary discovery;
   - `sol_advisor_luna_worker` for bounded implementation with its local
@@ -94,8 +98,8 @@ the same investigation, edit, or verification afterward, keep that work in Sol.
 - `full`: delegated implementation plus a fresh Sol / High final review for broad or high-risk
   changes. The writer is Luna by default and Terra only under the exception above.
 
-Do not mechanically chain explorer -> worker -> tester. Use only stages whose output removes work
-from the primary. Use the Luna tester for bounded independent verification rather than inventing a
+Do not mechanically chain explorer -> worker -> tester. Use only stages that own a distinct bounded
+workstream. Use the Luna tester for bounded independent verification rather than inventing a
 separate Luna review lane.
 
 Independent read-only exploration/research workstreams may run in parallel when useful. Serialize
@@ -109,9 +113,9 @@ Research is orthogonal to `mode`; `mode: solo` does not prohibit a researcher. R
 
 1. No substantive research -> `none`.
 2. Tiny lookup or evidence that repeatedly depends on live primary mutation/state -> `inline`.
-3. Use `luna` / fanout 1 for a self-contained read-only workstream when context isolation,
-   compression, fresh context, or true parallelism is worth the handoff and the report substitutes
-   for primary investigation.
+3. Prefer `luna` / fanout 1 for any substantive, self-contained, read-only workstream. Parent
+   synthesis, result dependency, or handoff overhead alone is not a reason to keep such research
+   inline.
 4. If gathered evidence requires scientific/methodological adjudication, architecture-sensitive
    causal synthesis, or complex root-cause judgment, Luna returns the evidence/conflict and the
    primary Sol owns that judgment. Do not route research to Terra.
@@ -144,7 +148,8 @@ investigation.
   skill bodies, catalogs, or parent history.
 - Delegation is substitution, not addition. Once a scope is assigned, the primary does not perform
   the same investigation or implementation in parallel or repeat it after return except for narrow
-  acceptance-critical spot-checks. Reuse the child's compact evidence.
+  acceptance-critical spot-checks. Primary integration, actual-diff inspection, and
+  acceptance-critical verification are not duplicate execution. Reuse the child's compact evidence.
 - Normal active auxiliary fanout is `0-1`. Use `2` only for genuinely independent substantial
   surfaces. Fanout `3+` is exceptional and requires explicit marginal-value justification.
 - Each child is one-shot: spawn -> report -> terminate. Use at most one follow-up to the same child,
