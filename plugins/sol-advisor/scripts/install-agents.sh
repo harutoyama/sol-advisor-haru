@@ -291,4 +291,4 @@ for role in luna-exploration luna-worker luna-testing luna-implementation terra-
     fail "post-install verification failed: $destination"
 done
 
-printf '%s\n' "Installed Sol Advisor Luna-first exploration, worker, testing, implementation compatibility, review, and research profiles. Start a fresh Codex task."
+printf '%s\n' "Installed Sol Advisor Luna-first exploration, worker, testing, implementation compatibility, review, and research profiles. Start a fresh GPT-6.1 Sol / High task by default; the skill may redirect bounded work to a fresh Medium task before task tools."
