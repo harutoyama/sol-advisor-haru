@@ -11,9 +11,10 @@ session while routing routine execution to specialized Luna roles by default:
 | Worker | GPT-6 Luna | Max | Default bounded implementation with local edit -> verify -> repair |
 | Tester | GPT-6 Luna | Max | Reproduction, targeted verification, regression evidence |
 | Researcher | GPT-6 Luna | Max | Default substantive read-only docs/repo/log/Web research |
-| Higher-complexity implementer/researcher | GPT-5.6 Terra | High | Judgment-heavy exception only |
+| Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy implementation exception only |
 | Fresh reviewer | GPT-6.1 Sol | High | High-risk independent final review only |
 | Legacy Luna implementer | GPT-6 Luna | Max | 0.102.x compatibility; not preferred for new routing |
+| Legacy Terra researcher | GPT-5.6 Terra | High | 0.102.x compatibility; not selected by current routing |
 
 The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
 GPT-6.1 Sol / High selected.
@@ -39,16 +40,16 @@ same change or mechanically duplicate every child check.
 ## Research routing
 
 Research remains orthogonal to implementation/review mode. Declare
-`research: none | inline | luna | terra | split` and `fanout: 0..5`.
+`research: none | inline | luna | split` and `fanout: 0..5`.
 
 - `none`: no substantive research.
 - `inline`: tiny lookup or evidence coupled to live primary mutation/state.
 - `luna`: **default for substantive self-contained read-only repo/log/docs/Web/API/version
   investigation**.
-- `terra`: only when the research workstream itself needs conflict adjudication,
-  scientific/methodological judgment, architecture-sensitive causal synthesis, or similarly heavy
-  reasoning.
-- `split`: two to five genuinely independent substantial questions, normally two.
+- Judgment-heavy research remains Luna for evidence gathering; Luna returns conflicts/gaps and the
+  primary Sol performs scientific/methodological or architecture-sensitive adjudication.
+- `split`: two to five genuinely independent substantial questions, normally two, using Luna
+  researchers.
 
 Waiting for a delegated report is only a result dependency and does not force inline research.
 Researchers use `fork_turns: none`, return compact evidence, cannot spawn nested agents, and do
@@ -157,8 +158,8 @@ The Luna-first topology and role split were compared against
 Apache-2.0 projects. Sol Advisor keeps its existing MIT codebase and uses independently adapted
 routing/contracts rather than copying their role-file text. In particular, this fork adopts the
 explorer/worker/tester/researcher separation and parallel-workstream discipline while retaining its
-own fail-closed installer, runtime evidence checks, `fork_turns: none`, Terra exception lane, and
-high-risk-only fresh Sol review.
+own fail-closed installer, runtime evidence checks, `fork_turns: none`, implementation-only Terra
+exception lane, and high-risk-only fresh Sol review.
 
 ## Maintainers
 
