@@ -162,7 +162,7 @@ grep -Fq 'agent_type: sol_advisor_terra_implementer' "$contracts" || fail "Terra
 grep -Fq 'agent_type: sol_advisor_sol_reviewer' "$contracts" || fail "Sol review spawn contract missing"
 grep -Fq 'edit -> verify -> repair' "$contracts" || fail "worker repair-loop contract missing"
 grep -Fq 'compact `EXPLORATION REPORT`' "$contracts" || fail "compact explorer report missing"
-grep -Fq 'compact `WORKER REPORT`' "$contracts" || fail "compact worker report missing"
+grep -Fq '`WORKER REPORT`' "$contracts" || fail "worker report contract missing"
 grep -Fq 'compact `TEST REPORT`' "$contracts" || fail "compact tester report missing"
 grep -Fq 'compatibility only' "$contracts" || fail "legacy implementer compatibility boundary missing"
 
