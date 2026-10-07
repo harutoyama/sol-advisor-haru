@@ -1,12 +1,13 @@
 # Sol Advisor
 
-Sol Advisor is a Codex-native Luna-first orchestration workflow. This Haru fork keeps
-architecture, decomposition, integration, and final acceptance in a GPT-6.1 Sol / High primary
-session while routing routine execution to specialized Luna roles by default:
+Sol Advisor is a Codex-native Luna-first orchestration workflow. This Haru fork starts the primary
+GPT-6.1 Sol task on High by default, performs a tool-free pre-task effort gate, and then keeps Sol
+focused on architecture, decomposition, integration, and final acceptance while routing routine
+execution to specialized Luna roles by default.
 
 | Role | Model | Effort | Use |
 |---|---|---|---|
-| Primary architect/integrator | GPT-6.1 Sol | High | Architecture, decomposition, integration, escalation, final acceptance |
+| Primary architect/integrator | GPT-6.1 Sol | High default; Medium when the pre-task gate permits | Architecture, decomposition, integration, escalation, final acceptance |
 | Explorer | GPT-6 Luna | Max | Read-only repo mapping, call/data-flow, tests/config, implementation boundaries |
 | Worker | GPT-6 Luna | Max | Default bounded implementation with local edit -> verify -> repair |
 | Tester | GPT-6 Luna | Max | Reproduction, targeted verification, regression evidence |
@@ -16,8 +17,13 @@ session while routing routine execution to specialized Luna roles by default:
 | Legacy Luna implementer | GPT-6 Luna | Max | 0.102.x compatibility; not preferred for new routing |
 | Legacy Terra researcher | GPT-5.6 Terra | High | 0.102.x compatibility; not selected by current routing |
 
-The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
-GPT-6.1 Sol / High selected.
+Start the Codex / ChatGPT Desktop task with GPT-6.1 Sol / High selected by default. Before any
+task tool call, the skill classifies the whole task as `medium-recommended` or `high`. If Medium
+is sufficient, it stops the High task and tells you to restart the same task as a fresh Sol / Medium task;
+it does not change reasoning effort inside the active task. Planning, routine verification, ordinary
+bounded coding, or normal review alone are not reasons to keep High. Architecture ambiguity,
+complex RCA, wide blast radius, irreversible/security/data-loss/production risk, expensive retry
+cost, or acceptance with materially high error cost keep High.
 
 ## Routing modes
 
