@@ -13,8 +13,16 @@ The repo marketplace at `.agents/plugins/marketplace.json` points to `./plugins/
 
 ## Role pins and primary evidence
 
-The primary task is expected to run on `gpt-6.1-sol` with `high` reasoning. The skill does not
-change that model.
+The primary task starts on `gpt-6.1-sol` / `high` by default. Before task tools, the root skill
+performs its primary-effort gate. A `medium-recommended` decision may proceed only in a fresh
+`gpt-6.1-sol` / `medium` task; a `high` decision requires `gpt-6.1-sol` / `high`. Runtime
+metadata must match the gate before work starts. Missing or conflicting evidence is fail-closed.
+
+Do not implement the gate by changing reasoning effort inside an active task/session. Current Codex
+code has step-scoped reasoning-effort machinery on supported surfaces, but this workflow
+intentionally treats primary effort as a task-start decision so one task has one primary effort and
+one auditable runtime contract. The gate therefore redirects to a fresh task when the current
+effort does not match.
 
 | Role type | Model | Effort | Operational use |
 |---|---|---|---|
@@ -80,7 +88,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.102.2 installer treats any of them as a migration hazard and stops before changing the
+The 0.103.0 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -162,7 +170,7 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.102.2 manifests, exact five-role set, implementation/research model and
+The verifier checks the 0.103.0 manifests, exact five-role set, implementation/research model and
 effort pins, workstream-level routing semantics, result-vs-execution-state dependency rules,
 researcher isolation/external-mutation constraints, split limits, root/reference ownership,
 regression fixtures, installer fresh install, 0.100.0 -> current update behavior, 0.7.0 migration
