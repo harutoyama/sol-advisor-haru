@@ -14,17 +14,47 @@ This root file is the canonical owner of route selection and cross-route invaria
 context whenever the skill triggers. Load supporting references only when the selected route or
 an operational task requires their detailed contracts.
 
-## Primary session and route declaration
+## Primary effort gate and route declaration
 
-Run the primary Codex session on `gpt-6.1-sol` with `high` reasoning. The skill cannot change the
-primary model. Verify model/effort from runtime metadata when available. Before using any auxiliary
-lane, stop if observed metadata conflicts; if those fields are unavailable, ask the user to confirm
-GPT-6.1 Sol / High.
+Start the primary Codex task on `gpt-6.1-sol` / `high` by default. The skill does not change the
+primary model or reasoning effort inside an active task/session. Before the first task tool call,
+classify the whole task once using only the user's request and already-available context; do not
+inspect the repository, research external sources, spawn auxiliaries, or begin implementation first.
 
-Before the first task tool call, emit:
+Emit:
+
+```text
+PRIMARY EFFORT
+primary_effort: medium-recommended | high
+effort_rationale: <concise task-specific reason>
+```
+
+Choose `medium-recommended` only when all material conditions are true: requirements and interfaces
+are sufficiently resolved; architecture is stable; root-cause analysis is absent or bounded; blast
+radius is contained; changes are reversible; security, privacy, data-loss, migration, and production
+risk are low; failure/retry cost is modest; and final acceptance is routine. Ordinary planning,
+routine verification, normal code review, multi-step tool use, or a typical bounded implementation
+does not by itself justify staying on High.
+
+Keep `high` when any material condition applies: architecture or requirement ambiguity that needs
+judgment; complex root-cause analysis with multiple plausible layers; wide or cross-system blast
+radius; irreversible, security-sensitive, privacy-sensitive, data-loss, migration, or production
+risk; expensive failure/retry or rollback; or acceptance whose error cost is materially high. When
+uncertain because the missing information itself is consequential, keep High.
+
+If the gate says `medium-recommended` and runtime metadata does not already confirm
+`gpt-6.1-sol` / `medium`, return only a short instruction to restart this same task with GPT-6.1
+Sol / Medium and invoke Sol Advisor again. Stop before task tools. Do not attempt an in-session
+effort update. If the gate says `high`, require GPT-6.1 Sol / High before task tools. On a fresh
+Medium task, rerun the gate; proceed only when it again says `medium-recommended`. Verify
+model/effort from runtime metadata when available; if required fields are unavailable, ask the user
+to confirm the required primary configuration. Any observed mismatch is fail-closed.
+
+After the required primary configuration is confirmed, emit:
 
 ```text
 SELECTIVE ROUTE
+primary_effort: medium | high
 mode: solo | delegate | audit | full
 research: none | inline | luna | split
 fanout: 0 | 1 | 2 | 3 | 4 | 5
@@ -32,7 +62,7 @@ risk: <concise task-specific rationale>
 research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
 ```
 
-`fanout` is `0` for `none`/`inline`, normally `1` for `luna`/`terra`, and `2..5` only for `split`.
+`fanout` is `0` for `none`/`inline`, normally `1` for `luna`, and `2..5` only for `split`.
 Delegatability changes also require `ROUTE UPDATE`: for example a newly self-contained workstream,
 removed state coupling after a frozen snapshot, a new independent source family, Luna-discovered
 judgment conflict, or a second substantial independent workstream. Never silently change research
