@@ -203,7 +203,7 @@ grep -Fq 'complex root-cause analysis' "$skill" || fail "High RCA rule missing"
 grep -Fq 'wide or cross-system blast' "$skill" || fail "High blast-radius rule missing"
 grep -Fq 'failure/retry or rollback' "$skill" || fail "High retry-cost rule missing"
 grep -Fq 'Do not attempt an in-session' "$skill" || fail "in-session effort switching is not prohibited"
-grep -Fq 'fresh Medium task' "$readme" || fail "README omits fresh Medium restart contract"
+grep -Fq 'fresh Sol / Medium task' "$readme" || fail "README omits fresh Sol / Medium restart contract"
 grep -Fq 'step-scoped reasoning-effort machinery' "$ops" ||
   fail "operations omit current Codex effort-update implementation note"
 grep -Fq 'one task has one primary effort' "$ops" ||
