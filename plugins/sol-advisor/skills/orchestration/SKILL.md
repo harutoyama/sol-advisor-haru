@@ -1,14 +1,14 @@
 ---
 name: orchestration
-description: "Codex-native Luna-first routing: GPT-6.1 Sol / High owns architecture, decomposition, integration, and acceptance while model-pinned Luna roles handle routine exploration, implementation, testing, and research by default; Terra and fresh Sol review are exceptions for judgment-heavy or high-risk work."
+description: "Codex-native Sol-led routing: GPT-6.1 Sol owns architecture, integration, and acceptance; bounded Luna roles are used when they replace parent work with clear scope or evidence value; Terra and fresh Sol review remain explicit exceptions."
 ---
 
 # Sol Advisor Orchestration
 
 Act as the architect and primary owner. Own the user's intent, architecture, decomposition,
-integration, escalation decisions, and final acceptance. Default routine execution volume to
-model-pinned Luna roles; keep Sol focused on decisions and acceptance rather than repeating work
-that a bounded child can perform.
+integration, escalation decisions, and final acceptance. Delegate only bounded work that
+meaningfully replaces primary execution; otherwise keep it in Sol. Do not run the same
+investigation or implementation in both parent and child.
 
 This root file is the canonical owner of route selection and cross-route invariants. Keep it in
 context whenever the skill triggers. Load supporting references only when the selected route or
@@ -62,7 +62,7 @@ risk: <concise task-specific rationale>
 research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
 ```
 
-`fanout` is `0` for `none`/`inline`, normally `1` for `luna`, and `2..5` only for `split`.
+`fanout` is `0` for `none`/`inline`, normally `1` for one delegated workstream, and `2` only when two substantial workstreams are genuinely independent. `3..5` is exceptional and requires an explicit reason each added child cannot be bundled or deferred.
 Delegatability changes also require `ROUTE UPDATE`: for example a newly self-contained workstream,
 removed state coupling after a frozen snapshot, a new independent source family, Luna-discovered
 judgment conflict, or a second substantial independent workstream. Never silently change research
@@ -70,19 +70,20 @@ routes. Implementation/review escalation still requires newly observed risk.
 
 ## Select the implementation/review route
 
-Use **Luna-first routing**. The question is not "is this task simple enough for Luna?"; the question
-is "is there a concrete reason this execution step must stay with Sol or move to Terra?"
+Use **Sol-led bounded delegation**. Delegation is useful only when a child can own a self-contained
+surface and its work substitutes for primary execution. If the primary would need to perform nearly
+the same investigation, edit, or verification afterward, keep that work in Sol.
 
-- `solo`: reserve for genuinely tiny/localized work where delegation overhead is larger than the
-  work, coding-light planning, or execution that cannot yet be bounded because architecture,
-  security policy, breaking-interface decisions, data migration policy, or materially ambiguous
-  requirements are still unresolved. Sol resolves those decisions first.
-- `delegate`: default for non-trivial repository execution after the parent has settled the
-  direction. Use Luna roles as needed:
+- `solo`: use for tiny/localized work, strongly sequential or live-state-coupled execution, and
+  work that cannot yet be bounded because architecture, security policy, breaking-interface
+  decisions, migration policy, or materially ambiguous requirements remain unresolved.
+- `delegate`: use a Luna role when the parent can state a bounded objective, ownership, stop
+  conditions, and acceptance evidence. Choose only the role that replaces work the parent would
+  otherwise need to do:
   - `sol_advisor_luna_explorer` for repository mapping, call/data-flow tracing, relevant
     tests/configuration, and implementation-boundary discovery;
-  - `sol_advisor_luna_worker` as the default writer for bounded implementation, including its
-    local edit -> verify -> repair loop;
+  - `sol_advisor_luna_worker` for bounded implementation with its local
+    `edit -> verify -> repair` loop;
   - `sol_advisor_luna_tester` for reproduction, targeted verification, and regression evidence.
 - `delegate` -> Terra / High only when the implementation itself remains judgment-heavy after Sol
   has settled architecture: e.g. complex cross-cutting tradeoffs, unusually context-heavy logic, or
@@ -93,12 +94,11 @@ is "is there a concrete reason this execution step must stay with Sol or move to
 - `full`: delegated implementation plus a fresh Sol / High final review for broad or high-risk
   changes. The writer is Luna by default and Terra only under the exception above.
 
-For non-trivial multi-file work or cross-component debugging, normally delegate at least one Luna
-role. Exploration is preferred before implementation when the relevant path is not already known.
-Testing is preferred after implementation when behavior or regression risk is non-trivial. Do not
-spawn roles mechanically when they add no evidence.
+Do not mechanically chain explorer -> worker -> tester. Use only stages whose output removes work
+from the primary. Use the Luna tester for bounded independent verification rather than inventing a
+separate Luna review lane.
 
-Independent read-only exploration/research workstreams should run in parallel when useful. Serialize
+Independent read-only exploration/research workstreams may run in parallel when useful. Serialize
 dependent work such as explore -> architecture decision -> worker -> tester -> final review.
 Never assign overlapping write ownership to multiple workers without explicit parent partitioning.
 
@@ -107,20 +107,19 @@ Never assign overlapping write ownership to multiple workers without explicit pa
 Research is orthogonal to `mode`; `mode: solo` does not prohibit a researcher. Route research
 **workstreams, not whole tasks**.
 
-Use a light decision rule:
-
 1. No substantive research -> `none`.
 2. Tiny lookup or evidence that repeatedly depends on live primary mutation/state -> `inline`.
-3. Substantive self-contained read-only repository, log, documentation, Web, API, dependency, or
-   version-specific investigation -> **default `luna` / fanout 1**.
+3. Use `luna` / fanout 1 for a self-contained read-only workstream when context isolation,
+   compression, fresh context, or true parallelism is worth the handoff and the report substitutes
+   for primary investigation.
 4. If gathered evidence requires scientific/methodological adjudication, architecture-sensitive
    causal synthesis, or complex root-cause judgment, Luna returns the evidence/conflict and the
    primary Sol owns that judgment. Do not route research to Terra.
-5. Two or more genuinely independent substantial questions -> `split`, normally fanout 2 and at
-   most 5, using independent Luna researchers.
+5. Use `split` for two genuinely independent substantial questions. Fanout 3..5 is exceptional and
+   requires distinct scope plus material marginal benefit for every additional researcher.
 
 Result dependency is not a reason to keep research inline: the parent may wait for a Luna report.
-File count alone is not a reason to split. Overall task risk alone is not a reason to use Terra.
+File count or task size alone is not a delegation reason.
 
 Every delegated research packet remains self-contained and bounded. Prefer authoritative sources,
 return compact evidence, and avoid sending large raw logs or whole files back to the parent.
@@ -135,7 +134,7 @@ investigation.
   `sol_advisor_luna_researcher`, `sol_advisor_terra_implementer`, and
   `sol_advisor_sol_reviewer`. `sol_advisor_luna_implementer` and
   `sol_advisor_terra_researcher` remain installed only for backward compatibility and are not
-  selected by the current Luna-first route.
+  selected by the current route.
 - The role TOMLs own model and reasoning-effort pins. Do not attach per-spawn model or effort
   overrides. Missing, conflicting, unavailable, or unobservable role/model/effort evidence stops
   that auxiliary lane; rerouting must be explicit.
@@ -143,11 +142,16 @@ investigation.
   roles also cannot spawn nested subagents. The primary alone owns fanout and integration.
 - Preserve only delegated-work-relevant active constraints in child packets. Do not copy entire
   skill bodies, catalogs, or parent history.
-- A delegated explorer/researcher owns its investigation scope until return. The primary may
-  spot-check decisive or suspicious evidence but should not repeat the complete investigation.
-- A Luna worker owns its assigned implementation surface. The primary inspects the actual final
-  diff and acceptance-critical evidence; it should not reimplement the same change or blindly rerun
-  every local worker check. Required user/repository acceptance checks still belong to the primary.
+- Delegation is substitution, not addition. Once a scope is assigned, the primary does not perform
+  the same investigation or implementation in parallel or repeat it after return except for narrow
+  acceptance-critical spot-checks. Reuse the child's compact evidence.
+- Normal active auxiliary fanout is `0-1`. Use `2` only for genuinely independent substantial
+  surfaces. Fanout `3+` is exceptional and requires explicit marginal-value justification.
+- Each child is one-shot: spawn -> report -> terminate. Use at most one follow-up to the same child,
+  only for a concrete missing fact or clarification; otherwise integrate, reroute, or finish.
+- Before any new spawn, reserve enough primary capacity for integration, actual-diff/evidence
+  inspection, acceptance-critical verification, and the final response. If that completion reserve
+  is doubtful, stop spawning and converge from existing evidence.
 - A Luna worker or tester should stop rather than self-expand when it encounters unresolved
   architecture, security-sensitive design, breaking API/schema changes, dependency additions, data
   migration policy, cross-owner conflicts, or materially ambiguous requirements.

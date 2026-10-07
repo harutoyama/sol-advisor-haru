@@ -27,12 +27,12 @@ effort does not match.
 | Role type | Model | Effort | Operational use |
 |---|---|---|---|
 | `sol_advisor_luna_explorer` | `gpt-6-luna` | `max` | Read-only repository exploration; nested agents disabled |
-| `sol_advisor_luna_worker` | `gpt-6-luna` | `max` | Default routine implementation with local edit/verify/repair; nested agents disabled |
+| `sol_advisor_luna_worker` | `gpt-6-luna` | `max` | Bounded routine implementation with local edit/verify/repair; nested agents disabled |
 | `sol_advisor_luna_tester` | `gpt-6-luna` | `max` | Targeted verification and regression evidence; nested agents disabled |
 | `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Legacy 0.102.x implementation compatibility profile |
 | `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Judgment-heavy implementation exception |
 | `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | High-risk fresh final review; requests read-only sandbox |
-| `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Default substantive read-only research; nested agents disabled |
+| `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Bounded substantive read-only research; nested agents disabled |
 | `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Legacy 0.102.x research compatibility profile |
 
 Each custom-agent TOML pins its own model and reasoning effort. Do not attach per-spawn model or
@@ -85,6 +85,16 @@ Research adds its own independent check:
 Unknown roles fail before mutation. Cache a successful check only for the current task. Missing,
 conflicting, unavailable, or unobservable role/model/effort evidence stops that lane rather than
 triggering a silent substitute.
+
+## Convergence reserve and waits
+
+Do not assign fixed token or quota percentages to Sol, Luna, or review. Before a new spawn, preserve
+enough primary capacity to integrate returned work, inspect the actual diff/evidence, perform
+acceptance-critical verification, and answer the user. If that reserve is doubtful, stop exploratory
+expansion and converge from evidence already collected.
+
+For long-running processes or child work, use native wait/status mechanisms when available. Do not
+spend repeated model turns polling unchanged state.
 
 ## 0.7.0 capability-role migration
 
@@ -178,7 +188,7 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.103.0 manifests, exact eight-role set, Luna-first explorer/worker/tester
+The verifier checks the 0.103.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
 pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
 external-mutation constraints, root/reference ownership,
 regression fixtures, installer fresh install, 0.102.2 -> current update behavior, 0.7.0 migration

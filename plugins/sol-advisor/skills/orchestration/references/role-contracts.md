@@ -5,7 +5,9 @@ This file owns the detailed prompt, execution, and return contracts for auxiliar
 For task-scoped preflight, runtime evidence, sandbox interpretation, migration, and maintainer
 procedures, use [`operations.md`](operations.md).
 
-Read only the sections named by the root progressive-disclosure rules.
+Read only the sections named by the root progressive-disclosure rules. Fanout, lifecycle,
+follow-up limits, non-duplication, and completion reserve are owned by the root contract and are not
+redefined here.
 
 ## Shared research packet
 
@@ -65,11 +67,8 @@ Researchers are read-only: no implementation, mutation, formatting, fixes, commi
 actions, or nested delegation. Return synthesized evidence, not raw file contents, long search
 logs, or unnecessary tool traces.
 
-The delegated workstream is researcher-owned until its report returns. The primary may continue
-separate live/state-coupled research, but it must not investigate the same delegated scope in
-parallel or repeat the full investigation afterward. Before relying on a report, the primary may
-spot-check or reproduce decisive, suspicious, or acceptance-critical evidence. That verification
-is deliberately narrower than duplicate full investigation.
+Apply the root substitution rule: use the returned evidence as the workstream result and repeat
+only narrow acceptance-critical or suspicious checks.
 
 ## Luna bounded researcher
 
@@ -88,7 +87,7 @@ primary can explicitly route-update.
 
 ## Legacy Terra researcher (compatibility only)
 
-The current Luna-first route does not select Terra for research. Luna gathers bounded evidence and
+The current route does not select Terra for research. Luna gathers bounded evidence and
 returns conflicts or gaps; the primary Sol owns judgment-heavy scientific, methodological,
 architectural, or causal adjudication. Keep this profile only so existing 0.102.x installations
 remain fail-closed and byte-stable.
@@ -118,10 +117,10 @@ disables nested agents. Give it one bounded repository question plus the relevan
 constraints. Typical objectives are locating files/symbols, tracing call or data flow, identifying
 tests/configuration, and defining the smallest implementation surface.
 
-Its return is a compact `EXPLORATION REPORT`. The parent should use the cited paths/symbols and
-spot-check decisive evidence rather than repeat the entire exploration.
+Its return is a compact `EXPLORATION REPORT` with the cited paths, symbols, flow, boundaries,
+and gaps needed by the parent.
 
-## Luna default worker
+## Luna worker
 
 For routine bounded implementation inside a settled architecture, spawn:
 
@@ -132,14 +131,14 @@ fork_turns: none
 
 The installed profile is pinned to `gpt-6-luna` / `max` and disables nested agents. The parent
 supplies the objective, exact ownership, settled interfaces, constraints, and acceptance criteria.
-The worker is the default writer for non-trivial routine execution and uses a local
+When selected for bounded routine implementation, the worker uses a local
 `edit -> verify -> repair` loop.
 
 The worker must stop rather than expand scope when it encounters unresolved architecture,
 security-sensitive design, breaking API/schema changes, dependency additions, data migration
-policy, another worker's ownership, or materially ambiguous requirements. It returns a compact `WORKER REPORT` with changed files, decisive verification, repair iterations, decisions needed,
-and gaps. The parent inspects the final diff and acceptance-critical evidence without
-reimplementing the same change.
+policy, another worker's ownership, or materially ambiguous requirements. It returns a compact
+`WORKER REPORT` with changed files, decisive verification, repair iterations, decisions needed,
+and gaps.
 
 ## Luna tester
 
@@ -194,12 +193,12 @@ JUDGMENT CALLS: <material decisions or none>
 GAPS: <unfinished work, ambiguity, or none>
 ```
 
-Worker reports are claims. The primary inspects the actual diff and reruns verification before
-acceptance.
+Worker reports are evidence, not acceptance. Primary acceptance follows the actual-diff and
+acceptance-evidence rules in `operations.md`.
 
 ## Legacy Luna routine implementer (compatibility only)
 
-The current Luna-first route uses `sol_advisor_luna_worker`. The older implementation profile is
+The current route uses `sol_advisor_luna_worker`. The older implementation profile is
 kept installed so existing 0.102.x setups remain fail-closed and byte-stable. Use it only when an
 explicit compatibility/migration path requires the legacy role.
 
@@ -211,7 +210,7 @@ fork_turns: none
 ```
 
 The installed profile is `sol_advisor_luna_implementer`. Execute only the settled legacy
-implementation contract. Do not choose this profile for new Luna-first routing. If compatibility
+implementation contract. Do not choose this profile for normal routing. If compatibility
 work proves judgment-heavy or requires broader parent-owned decisions, stop and return that
 evidence for explicit rerouting.
 
