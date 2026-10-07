@@ -55,11 +55,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.104.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.104.1" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.104.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.104.1" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.104.0 manifests and marketplace path"
+pass "0.104.1 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_explorer" || fail "Luna explorer model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_explorer" || fail "Luna explorer effort pin"
@@ -427,4 +427,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.104.0 Sol-led bounded delegation contract checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.104.1 Sol-led bounded delegation contract checks completed"

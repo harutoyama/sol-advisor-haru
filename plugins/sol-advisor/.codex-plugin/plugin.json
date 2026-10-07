@@ -1,6 +1,6 @@
 {
   "name": "sol-advisor",
-  "version": "0.104.0",
+  "version": "0.104.1",
   "description": "Haru fork of Sol Advisor with a High-default primary effort preflight and Sol-led bounded model-pinned delegation.",
   "author": {
     "name": "Daniel McAteer / Haru fork",
