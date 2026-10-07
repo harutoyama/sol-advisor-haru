@@ -104,7 +104,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.103.0 installer treats any of them as a migration hazard and stops before changing the
+The 0.104.0 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -188,7 +188,7 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.103.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
+The verifier checks the 0.104.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
 pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
 external-mutation constraints, root/reference ownership,
 regression fixtures, installer fresh install, 0.102.2 -> current update behavior, 0.7.0 migration
