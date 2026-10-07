@@ -30,7 +30,7 @@
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
       "Use $sol-advisor:orchestration to run the PRIMARY EFFORT gate before task tools. Start from Sol / High by default; if the task is medium-recommended, stop and restart it as a fresh Sol / Medium task instead of switching effort in-session.",
-      "After the primary effort matches, declare the SELECTIVE ROUTE; keep architecture and final acceptance in Sol, delegate only bounded work that substitutes for primary execution, normally keep fanout at 0-1, and reserve Terra and fresh Sol review for explicit exception cases."
+      "After the primary effort matches, declare the SELECTIVE ROUTE; keep architecture and final acceptance in Sol, prefer Luna for substantial bounded workstreams that can be independently instructed while keeping delegation substitution-based, normally keep fanout at 0-1, and reserve Terra and fresh Sol review for explicit exception cases."
     ]
   }
 }
