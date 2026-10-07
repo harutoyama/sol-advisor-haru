@@ -126,7 +126,7 @@ done
 pass "stale runtime models and capability-role contracts absent"
 
 for role in sol_advisor_luna_explorer sol_advisor_luna_worker sol_advisor_luna_tester \
-  sol_advisor_luna_worker sol_advisor_terra_implementer sol_advisor_sol_reviewer \
+  sol_advisor_luna_implementer sol_advisor_terra_implementer sol_advisor_sol_reviewer \
   sol_advisor_luna_researcher sol_advisor_terra_researcher; do
   grep -Fq "$role" "$contracts" || fail "role contract omits $role"
   grep -Fq "$role" "$ops" || fail "operations omit $role"
@@ -232,7 +232,7 @@ pass "installer works with CODEX_HOME unset"
 fresh=$tmp/fresh
 sh "$installer" --target-dir "$fresh" >/dev/null
 sh "$installer" --target-dir "$fresh" --check >/dev/null
-for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
+for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
   sh "$installer" --target-dir "$fresh" --check --check-role "$role" >/dev/null
 done
 cmp -s "$luna_explorer" "$fresh/sol-advisor-luna-explorer.toml" || fail "fresh Luna explorer mismatch"
@@ -250,13 +250,19 @@ mkdir "$upgrade"
 cp "$luna_impl" "$upgrade/sol-advisor-luna-implementer.toml"
 cp "$terra_impl" "$upgrade/sol-advisor-terra-implementer.toml"
 cp "$sol_review" "$upgrade/sol-advisor-sol-reviewer.toml"
+cp "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml"
+cp "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml"
 before_luna=$(cksum "$upgrade/sol-advisor-luna-implementer.toml")
 before_terra=$(cksum "$upgrade/sol-advisor-terra-implementer.toml")
 before_sol=$(cksum "$upgrade/sol-advisor-sol-reviewer.toml")
+before_luna_research=$(cksum "$upgrade/sol-advisor-luna-researcher.toml")
+before_terra_research=$(cksum "$upgrade/sol-advisor-terra-researcher.toml")
 sh "$installer" --target-dir "$upgrade" >/dev/null
-[ "$before_luna" = "$(cksum "$upgrade/sol-advisor-luna-implementer.toml")" ] || fail "0.100.0 Luna implementation profile changed during update"
-[ "$before_terra" = "$(cksum "$upgrade/sol-advisor-terra-implementer.toml")" ] || fail "0.100.0 Terra implementation profile changed during update"
-[ "$before_sol" = "$(cksum "$upgrade/sol-advisor-sol-reviewer.toml")" ] || fail "0.100.0 Sol review profile changed during update"
+[ "$before_luna" = "$(cksum "$upgrade/sol-advisor-luna-implementer.toml")" ] || fail "0.102.2 Luna implementation profile changed during update"
+[ "$before_terra" = "$(cksum "$upgrade/sol-advisor-terra-implementer.toml")" ] || fail "0.102.2 Terra implementation profile changed during update"
+[ "$before_sol" = "$(cksum "$upgrade/sol-advisor-sol-reviewer.toml")" ] || fail "0.102.2 Sol review profile changed during update"
+[ "$before_luna_research" = "$(cksum "$upgrade/sol-advisor-luna-researcher.toml")" ] || fail "0.102.2 Luna research profile changed during update"
+[ "$before_terra_research" = "$(cksum "$upgrade/sol-advisor-terra-researcher.toml")" ] || fail "0.102.2 Terra research profile changed during update"
 cmp -s "$luna_explorer" "$upgrade/sol-advisor-luna-explorer.toml" || fail "0.102.x -> current update missing Luna explorer"
 cmp -s "$luna_worker" "$upgrade/sol-advisor-luna-worker.toml" || fail "0.102.x -> current update missing Luna worker"
 cmp -s "$luna_tester" "$upgrade/sol-advisor-luna-tester.toml" || fail "0.102.x -> current update missing Luna tester"
@@ -346,7 +352,7 @@ printf '%s\n' "$runtime_broad_output" | jq -e --arg id "$runtime_broad_id" '
   and .agent_role == "sol_advisor_luna_researcher"
   and .sandbox_policy_type == "workspace-write"
 ' >/dev/null || fail "runtime inspector did not expose broadened researcher sandbox evidence"
-pass "runtime inspector implementation, read-only research, and broadened-sandbox evidence fixtures"
+pass "runtime inspector worker, read-only research, and broadened-sandbox evidence fixtures"
 
 if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   git -C "$repo_root" diff --check
