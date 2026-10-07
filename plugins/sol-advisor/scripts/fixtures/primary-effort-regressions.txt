@@ -1,0 +1,9 @@
+scenario|expected_primary_effort
+settled low-risk planning with bounded scope|medium-recommended
+routine verification of a reversible localized change|medium-recommended
+bounded implementation with stable interfaces and cheap retry|medium-recommended
+architecture choice with unresolved cross-component requirements|high
+multi-layer root-cause analysis with several plausible causes|high
+security-sensitive or data-loss-risking migration|high
+wide-blast-radius production change with expensive rollback|high
+acceptance-critical irreversible release decision|high

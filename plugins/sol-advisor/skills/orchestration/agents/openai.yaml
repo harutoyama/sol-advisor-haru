@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "Sol architects; model-pinned implementation, research, and review lanes are selected independently"
-  default_prompt: "Use $orchestration to declare mode plus the independent research route before task tools; keep architecture and acceptance in Sol, and use dedicated model-pinned auxiliaries only when their implementation, research, or review contract justifies the handoff."
+  short_description: "High-default Sol preflight, then selective model-pinned implementation, research, and review"
+  default_prompt: "Use $orchestration to run the PRIMARY EFFORT gate before task tools. Keep Sol / High for architecture-sensitive, complex, high-risk, wide-blast-radius, or acceptance-critical work; redirect bounded lower-risk work to a fresh Sol / Medium task rather than switching effort in-session. After the effort matches, declare the SELECTIVE ROUTE and preserve the model-pinned auxiliary contracts."

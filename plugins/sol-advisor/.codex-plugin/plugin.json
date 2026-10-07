@@ -1,24 +1,36 @@
 {
   "name": "sol-advisor",
-  "version": "0.102.2",
-  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and workstream-level research routing with dedicated read-only Luna/Terra researchers.",
-  "author": {"name": "Daniel McAteer / Haru fork", "url": "https://github.com/harutoyama/sol-advisor-haru"},
+  "version": "0.103.0",
+  "description": "Haru fork of Sol Advisor with a High-default primary effort preflight plus explicit Sol/Luna/Terra model-specific implementation, research, and review routing.",
+  "author": {
+    "name": "Daniel McAteer / Haru fork",
+    "url": "https://github.com/harutoyama/sol-advisor-haru"
+  },
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
   "repository": "https://github.com/harutoyama/sol-advisor-haru",
   "license": "MIT",
-  "keywords": ["codex", "orchestration", "multi-agent", "selective-routing", "gpt-6"],
+  "keywords": [
+    "codex",
+    "orchestration",
+    "multi-agent",
+    "selective-routing",
+    "gpt-6"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
-    "shortDescription": "Sol plans; model-pinned implementers, researchers, and fresh review are used selectively.",
-    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Research is routed independently at the workstream level: short or execution-state-coupled work stays inline, bounded evidence gathering can use GPT-6 Luna / Max, and judgment-heavy investigation can use GPT-5.6 Terra / High. Dedicated researchers are read-only, use fresh context, and do not delegate further. Context isolation/compression, coverage, fresh context, or latency can justify delegation when they exceed coordination cost; parallelism is not required.",
+    "shortDescription": "Sol starts High, redirects bounded work to fresh Medium, then routes model-pinned auxiliaries selectively.",
+    "longDescription": "Sol Advisor starts GPT-6.1 Sol / High by default and performs a tool-free primary-effort gate before substantive work. Bounded low-to-moderate-risk tasks are redirected to a fresh GPT-6.1 Sol / Medium task rather than changing effort in-session; architecture ambiguity, complex RCA, wide blast radius, irreversible/security/data-loss/production risk, expensive retry cost, and acceptance-critical work remain on High. After the primary effort matches, implementation and research routing preserve the existing model-pinned Luna/Terra lanes, fresh Sol review, fail-closed runtime evidence, read-only researchers, and progressive-disclosure contracts.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
-    "capabilities": ["Interactive", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
-      "Use $sol-advisor:orchestration to declare implementation/review and research axes in a SELECTIVE ROUTE before task tools, then build and verify this feature.",
-      "Keep architecture and acceptance in Sol; route self-contained read-only research workstreams to dedicated Luna/Terra researchers when isolation, compression, coverage, fresh context, or latency pays for coordination cost; do not route whole tasks merely because they are sequential."
+      "Use $sol-advisor:orchestration to run the PRIMARY EFFORT gate before task tools. Start from Sol / High by default; if the task is medium-recommended, stop and restart it as a fresh Sol / Medium task instead of switching effort in-session.",
+      "After the primary effort matches, declare the SELECTIVE ROUTE and preserve the existing model-pinned Luna/Terra implementation, research, runtime-evidence, and review contracts."
     ]
   }
 }

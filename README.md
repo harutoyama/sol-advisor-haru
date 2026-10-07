@@ -1,20 +1,27 @@
 # Sol Advisor
 
-Sol Advisor is a Codex-native selective-routing workflow. This Haru fork keeps
-architecture, requirement resolution, verification, and acceptance in a GPT-6.1 Sol / High
-primary session, while routing implementation by model:
+Sol Advisor is a Codex-native selective-routing workflow. This Haru fork starts the primary
+GPT-6.1 Sol task on High by default, then performs a tool-free pre-task effort gate. Bounded,
+low-to-moderate-risk work is redirected to a fresh Sol / Medium task before task tools; work that
+needs materially deeper judgment stays on Sol / High. Implementation and research routing remain
+independent and model-specific:
 
 | Role | Model | Effort | Use |
 |---|---|---|---|
-| Primary architect | GPT-6.1 Sol | High | Architecture, planning, requirement resolution, verification, acceptance |
+| Primary architect | GPT-6.1 Sol | High default; Medium when the pre-task gate permits | Architecture, requirements, route choice, verification, acceptance |
 | Routine implementer | GPT-6 Luna | Max | Bounded, fully specified, interface-stable routine implementation |
 | Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation |
 | Fresh reviewer | GPT-6.1 Sol | High | Independent final review for audit/full; requests read-only sandbox |
 | Bounded researcher | GPT-6 Luna | Max | Focused read-only code/log/docs/Web investigation with compact evidence return |
 | Judgment-heavy researcher | GPT-5.6 Terra | High | Read-only investigation requiring conflict resolution, methodology, architecture, or complex root-cause judgment |
 
-The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
-GPT-6.1 Sol / High selected.
+Start the Codex / ChatGPT Desktop task with GPT-6.1 Sol / High selected by default. Before any
+task tool call, the skill classifies the whole task as `medium-recommended` or `high`. If Medium
+is sufficient, it stops the High task and tells you to restart the same task on Sol / Medium; it
+does not change reasoning effort inside the active task. Planning, routine verification, ordinary
+bounded coding, or normal review alone are not reasons to keep High. Architecture ambiguity,
+complex RCA, wide blast radius, irreversible/security/data-loss/production risk, expensive retry
+cost, or acceptance with materially high error cost keep High.
 
 ## Routing modes
 
@@ -82,7 +89,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.102.2"
+workdir="$HOME/Downloads/sol-advisor-haru-0.103.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -109,7 +116,7 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.102.2 checkout and run the installer. Existing unmodified 0.100.0 model-specific
+Then use a fresh 0.103.0 checkout and run the installer. Existing unmodified 0.100.0 model-specific
 implementer/reviewer profiles are preserved byte-for-byte; the installer includes the two researcher
 profiles introduced in 0.101.0. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known

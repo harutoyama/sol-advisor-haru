@@ -282,4 +282,4 @@ for role in luna-implementation terra-implementation sol-review luna-research te
     fail "post-install verification failed: $destination"
 done
 
-printf '%s\n' "Installed Sol Advisor model-specific implementation, review, and research profiles. Start a fresh Codex task."
+printf '%s\n' "Installed Sol Advisor model-specific implementation, review, and research profiles. Start a fresh GPT-6.1 Sol / High task by default; the skill may redirect bounded work to a fresh Medium task before task tools."
