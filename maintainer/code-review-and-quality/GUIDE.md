@@ -1,6 +1,6 @@
 # Code review and quality — maintainer guide
 
-Adapted from `addyosmani/agent-skills` at commit `c004a74784a08295d52749b04cda634125b9a581`, after comparison with the repository-local versions in `sleep_epilepsy_prototype` and `sleep_staging_CRNN_EEG`.
+Adapted from `addyosmani/agent-skills` at commit `c004a74784a08295d52749b04cda634125b9a581`, after comparison with the two repository-local adaptations recorded in `../THIRD_PARTY.md`.
 
 Use this as the final maintainer review before merging a non-trivial Sol Advisor change. Passing tests are necessary but not sufficient. Review is read-only unless a separate fix pass is requested.
 

@@ -1,6 +1,6 @@
 # Ponytail review — maintainer guide
 
-Adapted from `DietrichGebert/ponytail` at commit `e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156`, after comparison with the versions in `sleep_epilepsy_prototype` and `sleep_staging_CRNN_EEG`.
+Adapted from `DietrichGebert/ponytail` at commit `e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156`, after comparison with the two repository-local adaptations recorded in `../THIRD_PARTY.md`.
 
 Review a diff only for **unnecessary complexity**. This pass does not replace correctness, security, or full final review, and it does not apply fixes.
 

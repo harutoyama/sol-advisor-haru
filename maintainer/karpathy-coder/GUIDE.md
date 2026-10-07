@@ -1,6 +1,6 @@
 # Karpathy Coder — maintainer guide
 
-Adapted from `alirezarezvani/claude-skills` at commit `19392f7a08264ed00486a251f5b2098321771f94`, after comparison with the versions in `sleep_epilepsy_prototype` and `sleep_staging_CRNN_EEG`.
+Adapted from `alirezarezvani/claude-skills` at commit `19392f7a08264ed00486a251f5b2098321771f94`, after comparison with the two repository-local adaptations recorded in `../THIRD_PARTY.md`.
 
 This is a manual maintainer playbook, not an installed Skill. Upstream scripts, slash commands, reviewer agents, and hooks are intentionally not vendored.
 

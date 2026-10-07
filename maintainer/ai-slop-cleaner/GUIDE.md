@@ -1,6 +1,6 @@
 # AI slop cleaner — maintainer guide
 
-Adapted from `Yeachan-Heo/oh-my-claudecode` at commit `5281b19e0d64f8e6dc6767f2130299a88af2dc71`, after comparison with the repository-local versions in `sleep_epilepsy_prototype` and `sleep_staging_CRNN_EEG`.
+Adapted from `Yeachan-Heo/oh-my-claudecode` at commit `5281b19e0d64f8e6dc6767f2130299a88af2dc71`, after comparison with the two repository-local adaptations recorded in `../THIRD_PARTY.md`.
 
 Use this guide manually when Sol Advisor code works but has accumulated duplicate logic, dead paths, speculative flexibility, unnecessary wrappers, or weakly verified cleanup debt. It is for simplification, not feature delivery.
 

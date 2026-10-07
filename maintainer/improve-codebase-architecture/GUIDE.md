@@ -1,6 +1,6 @@
 # Improve codebase architecture — maintainer guide
 
-Adapted from `mattpocock/skills` at commit `c55ee46073ed923f86ce59a5eb3b6d895095d1b7`, after comparison with the versions in `sleep_epilepsy_prototype` and `sleep_staging_CRNN_EEG`.
+Adapted from `mattpocock/skills` at commit `c55ee46073ed923f86ce59a5eb3b6d895095d1b7`, after comparison with the two repository-local adaptations recorded in `../THIRD_PARTY.md`.
 
 The goal is to find architecture that makes Sol Advisor harder to understand or change and to reduce that friction. Do not invent a new architecture merely to run an architecture review.
 
