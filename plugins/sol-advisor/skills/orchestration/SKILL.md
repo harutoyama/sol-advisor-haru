@@ -26,7 +26,7 @@ Before the first task tool call, emit:
 ```text
 SELECTIVE ROUTE
 mode: solo | delegate | audit | full
-research: none | inline | luna | terra | split
+research: none | inline | luna | split
 fanout: 0 | 1 | 2 | 3 | 4 | 5
 risk: <concise task-specific rationale>
 research_rationale: <why inline/delegated research is or is not worth its context and coordination cost>
@@ -83,10 +83,11 @@ Use a light decision rule:
 2. Tiny lookup or evidence that repeatedly depends on live primary mutation/state -> `inline`.
 3. Substantive self-contained read-only repository, log, documentation, Web, API, dependency, or
    version-specific investigation -> **default `luna` / fanout 1**.
-4. Evidence adjudication, scientific/methodological judgment, architecture-sensitive causal
-   synthesis, or complex root-cause reasoning -> `terra` / fanout 1.
+4. If gathered evidence requires scientific/methodological adjudication, architecture-sensitive
+   causal synthesis, or complex root-cause judgment, Luna returns the evidence/conflict and the
+   primary Sol owns that judgment. Do not route research to Terra.
 5. Two or more genuinely independent substantial questions -> `split`, normally fanout 2 and at
-   most 5.
+   most 5, using independent Luna researchers.
 
 Result dependency is not a reason to keep research inline: the parent may wait for a Luna report.
 File count alone is not a reason to split. Overall task risk alone is not a reason to use Terra.
@@ -101,10 +102,10 @@ investigation.
 - All auxiliary spawns use the exact selected Sol Advisor custom-agent profile and
   `fork_turns: none`. The current routing profiles are `sol_advisor_luna_explorer`,
   `sol_advisor_luna_worker`, `sol_advisor_luna_tester`,
-  `sol_advisor_luna_researcher`, `sol_advisor_terra_implementer`,
-  `sol_advisor_terra_researcher`, and `sol_advisor_sol_reviewer`.
-  `sol_advisor_luna_implementer` remains installed only for backward compatibility and is not the
-  preferred current worker lane.
+  `sol_advisor_luna_researcher`, `sol_advisor_terra_implementer`, and
+  `sol_advisor_sol_reviewer`. `sol_advisor_luna_implementer` and
+  `sol_advisor_terra_researcher` remain installed only for backward compatibility and are not
+  selected by the current Luna-first route.
 - The role TOMLs own model and reasoning-effort pins. Do not attach per-spawn model or effort
   overrides. Missing, conflicting, unavailable, or unobservable role/model/effort evidence stops
   that auxiliary lane; rerouting must be explicit.
@@ -134,8 +135,8 @@ investigation.
 Keep progressive disclosure. Read only the detailed contract for a role that the selected route
 actually uses.
 
-- For Luna exploration, worker implementation, Luna testing, Luna/Terra research, Terra
-  implementation, or fresh Sol review, read the corresponding section in
+- For Luna exploration, worker implementation, Luna testing, Luna research, Terra implementation,
+  or fresh Sol review, read the corresponding section in
   [references/role-contracts.md](references/role-contracts.md) plus only the relevant task-scoped
   preflight/runtime-evidence or isolation section in
   [references/operations.md](references/operations.md).
