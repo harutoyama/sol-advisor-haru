@@ -133,7 +133,7 @@ for role in sol_advisor_luna_explorer sol_advisor_luna_worker sol_advisor_luna_t
 done
 
 grep -Fq 'mode: solo | delegate | audit | full' "$skill" || fail "route declaration missing"
-grep -Fq 'research: none | inline | luna | terra | split' "$skill" || fail "research route declaration missing"
+grep -Fq 'research: none | inline | luna | split' "$skill" || fail "research route declaration missing"
 grep -Fq 'Use **Luna-first routing**.' "$skill" || fail "Luna-first routing rule missing"
 grep -Fq 'default for non-trivial repository execution' "$skill" || fail "Luna-first delegate default missing"
 grep -Fq 'sol_advisor_luna_explorer' "$skill" || fail "explorer routing missing"
@@ -145,7 +145,8 @@ grep -Fq 'default `luna` / fanout 1' "$skill" || fail "Luna research default mis
 grep -Fq 'Result dependency is not a reason' "$skill" || fail "result-dependency delegation rule missing"
 grep -Fq 'Independent read-only exploration/research workstreams' "$skill" || fail "parallel read-only workstream rule missing"
 grep -Fq 'should not reimplement the same change' "$skill" || fail "parent non-duplication rule missing"
-grep -Fq 'Terra is an exception' "$skill" || fail "Terra exception rule missing"
+grep -Fq 'Do not route research to Terra.' "$skill" || fail "Terra research exclusion missing"
+grep -Fq 'Terra is an exception' "$skill" || fail "Terra implementation exception rule missing"
 grep -Fq 'Fresh Sol review is a high-risk final gate' "$skill" || fail "reviewer exception rule missing"
 
 grep -Fq 'agent_type: sol_advisor_luna_explorer' "$contracts" || fail "explorer spawn contract missing"
@@ -178,7 +179,7 @@ grep -Fqx 'one-symbol lookup|inline|0' "$routing_fixtures" || fail "one-symbol l
 grep -Fqx 'live process manipulation only|inline|0' "$routing_fixtures" || fail "live process regression"
 grep -Fqx 'live mutation + independent multi-file repo/log trace|luna|1' "$routing_fixtures" || fail "S8 mixed live/static regression"
 grep -Fqx 'two unrelated substantial static subsystems|split|2' "$routing_fixtures" || fail "two-workstream split regression"
-grep -Fqx 'conflicting scientific/methodological evidence|terra|1' "$routing_fixtures" || fail "Terra methodology regression"
+grep -Fqx 'conflicting scientific/methodological evidence|luna|1' "$routing_fixtures" || fail "Luna evidence-gathering methodology regression"
 grep -Fqx 'five tiny related files|inline-or-luna|0-or-1' "$routing_fixtures" || fail "tiny-related-files regression"
 if grep -Fq 'five tiny related files|split|5' "$routing_fixtures"; then fail "tiny files incorrectly split five ways"; fi
 pass "research routing regression fixtures"
