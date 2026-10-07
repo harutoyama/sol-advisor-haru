@@ -137,8 +137,7 @@ The worker is the default writer for non-trivial routine execution and uses a lo
 
 The worker must stop rather than expand scope when it encounters unresolved architecture,
 security-sensitive design, breaking API/schema changes, dependency additions, data migration
-policy, another worker's ownership, or materially ambiguous requirements. It returns a compact
-`WORKER REPORT` with changed files, decisive verification, repair iterations, decisions needed,
+policy, another worker's ownership, or materially ambiguous requirements. It returns a compact `WORKER REPORT` with changed files, decisive verification, repair iterations, decisions needed,
 and gaps. The parent inspects the final diff and acceptance-critical evidence without
 reimplementing the same change.
 
