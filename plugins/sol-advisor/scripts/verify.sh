@@ -23,6 +23,7 @@ installer=$script_dir/install-agents.sh
 inspector=$script_dir/inspect-agent-runtime.sh
 syntax=$script_dir/check-config-syntax.py
 routing_fixtures=$script_dir/fixtures/research-routing-regressions.txt
+delegation_fixtures=$script_dir/fixtures/delegation-routing-regressions.txt
 primary_effort_fixtures=$script_dir/fixtures/primary-effort-regressions.txt
 
 luna_explorer=$agents/sol-advisor-luna-explorer.toml
@@ -39,7 +40,7 @@ command -v jq >/dev/null 2>&1 || fail "jq is required"
 
 for file in "$portable" "$compat" "$market" "$luna_explorer" "$luna_worker" "$luna_tester" \
   "$luna_impl" "$terra_impl" "$sol_review" "$luna_research" "$terra_research" "$skill" "$ops" \
-  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures" "$primary_effort_fixtures"; do
+  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures" "$delegation_fixtures" "$primary_effort_fixtures"; do
   [ -f "$file" ] || fail "missing required file: $file"
 done
 
@@ -54,11 +55,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.104.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.104.1" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.104.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.104.1" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.104.0 manifests and marketplace path"
+pass "0.104.1 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_explorer" || fail "Luna explorer model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_explorer" || fail "Luna explorer effort pin"
@@ -139,13 +140,25 @@ grep -Fq 'Use **Sol-led bounded delegation**.' "$skill" || fail "Sol-led bounded
 grep -Fq 'Delegation is substitution, not addition.' "$skill" || fail "delegation substitution rule missing"
 grep -Fq 'Normal active auxiliary fanout is `0-1`.' "$skill" || fail "bounded fanout rule missing"
 grep -Fq 'Use at most one follow-up' "$skill" || fail "bounded follow-up rule missing"
+grep -Fq 'Prefer Luna whenever a substantial bounded workstream' "$skill" || fail "positive Luna delegation preference missing"
+grep -Fq 'Parent integration, actual-diff inspection, and acceptance-critical verification are not' "$skill" || fail "parent acceptance incorrectly blocks delegation"
+grep -Fq 'Do not choose `solo` merely because it seems faster or delegation' "$skill" || fail "solo-overhead regression guard missing"
+if grep -Fq 'meaningfully replaces primary execution' "$skill" "$readme" "$compat" "$ui"; then
+  fail "restrictive primary-replacement delegation wording remains"
+fi
+if grep -Eq 'delegate only bounded work that (replaces|substitutes for) primary execution' "$ui" "$compat"; then
+  fail "restrictive entry-prompt delegation threshold remains"
+fi
+if grep -Fq 'perform nearly the same investigation, edit, or verification afterward' "$skill"; then
+  fail "restrictive parent-reverification delegation wording remains"
+fi
 grep -Fq 'completion reserve' "$skill" || fail "completion reserve rule missing"
 grep -Fq 'sol_advisor_luna_explorer' "$skill" || fail "explorer routing missing"
 grep -Fq 'sol_advisor_luna_worker' "$skill" || fail "worker routing missing"
 grep -Fq 'sol_advisor_luna_tester' "$skill" || fail "tester routing missing"
 grep -Fq 'fresh Sol / High final review' "$skill" || fail "high-risk review rule missing"
 grep -Fq 'fork_turns: none' "$skill" || fail "fresh-context invariant missing"
-grep -Fq 'Use `luna` / fanout 1 for a self-contained read-only workstream' "$skill" || fail "bounded Luna research rule missing"
+grep -Fq 'Prefer `luna` / fanout 1 for any substantive, self-contained, read-only workstream.' "$skill" || fail "bounded Luna research preference missing"
 grep -Fq 'Result dependency is not a reason' "$skill" || fail "result-dependency delegation rule missing"
 grep -Fq 'Independent read-only exploration/research workstreams' "$skill" || fail "parallel read-only workstream rule missing"
 grep -Fq 'the same investigation or implementation in parallel' "$skill" || fail "parent non-duplication rule missing"
@@ -227,6 +240,25 @@ grep -Fqx 'conflicting scientific/methodological evidence|luna|1' "$routing_fixt
 grep -Fqx 'five tiny related files|inline-or-luna|0-or-1' "$routing_fixtures" || fail "tiny-related-files regression"
 if grep -Fq 'five tiny related files|split|5' "$routing_fixtures"; then fail "tiny files incorrectly split five ways"; fi
 pass "research routing regression fixtures"
+
+expected_delegation_fixture_lines=7
+[ "$(wc -l < "$delegation_fixtures" | tr -d ' ')" -eq "$expected_delegation_fixture_lines" ] ||
+  fail "delegation routing regression fixture line count"
+grep -Fqx 'scenario|expected_mode|expected_research|expected_role|expected_fanout' "$delegation_fixtures" ||
+  fail "delegation routing fixture header"
+grep -Fqx 'substantial repo mapping with unknown implementation surface|delegate|none|sol_advisor_luna_explorer|1' "$delegation_fixtures" ||
+  fail "substantial repo mapping should prefer Luna explorer"
+grep -Fqx 'settled bounded implementation|delegate|none|sol_advisor_luna_worker|1' "$delegation_fixtures" ||
+  fail "settled bounded implementation should prefer Luna worker"
+grep -Fqx 'non-trivial independent regression verification|delegate|none|sol_advisor_luna_tester|1' "$delegation_fixtures" ||
+  fail "independent regression verification should prefer Luna tester"
+grep -Fqx 'substantive static self-contained research|solo|luna|sol_advisor_luna_researcher|1' "$delegation_fixtures" ||
+  fail "substantive static research should prefer Luna researcher"
+grep -Fqx 'tiny local change|solo|none|none|0' "$delegation_fixtures" ||
+  fail "tiny local change should remain solo"
+grep -Fqx 'strongly live-state-coupled operation|solo|none|none|0' "$delegation_fixtures" ||
+  fail "live-state-coupled operation should remain solo"
+pass "positive Luna delegation routing regression fixtures"
 
 for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
   grep -Fq "$role" "$installer" || fail "installer omits unambiguous role check name $role"
@@ -404,4 +436,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.104.0 Sol-led bounded delegation contract checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.104.1 Sol-led bounded delegation contract checks completed"

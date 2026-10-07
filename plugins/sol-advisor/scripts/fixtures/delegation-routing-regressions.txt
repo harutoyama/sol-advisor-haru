@@ -1,0 +1,7 @@
+scenario|expected_mode|expected_research|expected_role|expected_fanout
+substantial repo mapping with unknown implementation surface|delegate|none|sol_advisor_luna_explorer|1
+settled bounded implementation|delegate|none|sol_advisor_luna_worker|1
+non-trivial independent regression verification|delegate|none|sol_advisor_luna_tester|1
+substantive static self-contained research|solo|luna|sol_advisor_luna_researcher|1
+tiny local change|solo|none|none|0
+strongly live-state-coupled operation|solo|none|none|0
