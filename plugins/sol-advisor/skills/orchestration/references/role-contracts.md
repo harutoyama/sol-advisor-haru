@@ -86,20 +86,23 @@ architectural, or
 conflict-resolution judgment beyond the bounded scope, stop and return the evidence and gap so the
 primary can explicitly route-update.
 
-## Terra judgment-heavy researcher
+## Legacy Terra researcher (compatibility only)
 
-When the root selects the judgment-heavy research lane, spawn:
+The current Luna-first route does not select Terra for research. Luna gathers bounded evidence and
+returns conflicts or gaps; the primary Sol owns judgment-heavy scientific, methodological,
+architectural, or causal adjudication. Keep this profile only so existing 0.102.x installations
+remain fail-closed and byte-stable.
+
+Only when an explicit compatibility/migration path requires the legacy role, spawn:
 
 ```text
 agent_type: sol_advisor_terra_researcher
 fork_turns: none
 ```
 
-The installed profile is `sol_advisor_terra_researcher`. Stay inside the supplied research packet.
-Resolve conflicting evidence explicitly and distinguish observation from inference. The return
-must clearly separate OBSERVATIONS, INFERENCES, CONFLICTS, ALTERNATIVES, and GAPS (either inside
-FINDINGS or as labeled subsections). Return partial/blocked when the question cannot be answered
-inside scope.
+The installed profile is `sol_advisor_terra_researcher`. Do not choose it for new Luna-first
+routing. When used for compatibility, stay inside the supplied research packet and preserve its
+existing read-only contract.
 
 ## Luna repository explorer
 
