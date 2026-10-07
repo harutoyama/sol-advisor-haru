@@ -2,5 +2,5 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sol-advisor",
   "version": "0.103.0",
-  "description": "Haru fork of Sol Advisor with GPT-6.1 Sol / High primary orchestration and Luna-first explorer, worker, tester, and researcher execution roles, with Terra and fresh Sol review reserved for exceptions."
+  "description": "Haru fork of Sol Advisor with GPT-6.1 Sol / High primary orchestration and Luna-first explorer, worker, tester, and researcher execution roles; Terra is reserved for judgment-heavy implementation and fresh Sol review for high-risk final scrutiny."
 }
