@@ -13,8 +13,16 @@ The repo marketplace at `.agents/plugins/marketplace.json` points to `./plugins/
 
 ## Role pins and primary evidence
 
-The primary task is expected to run on `gpt-6.1-sol` with `high` reasoning. The skill does not
-change that model.
+The primary task starts on `gpt-6.1-sol` / `high` by default. Before task tools, the root skill
+performs its primary-effort gate. A `medium-recommended` decision may proceed only in a fresh
+`gpt-6.1-sol` / `medium` task; a `high` decision requires `gpt-6.1-sol` / `high`. Runtime
+metadata must match the gate before work starts. Missing or conflicting evidence is fail-closed.
+
+Do not implement the gate by changing reasoning effort inside an active task/session. Current Codex
+code has step-scoped reasoning-effort machinery on supported surfaces, but this workflow
+intentionally treats primary effort as a task-start decision so one task has one primary effort and
+one auditable runtime contract. The gate therefore redirects to a fresh task when the current
+effort does not match.
 
 | Role type | Model | Effort | Operational use |
 |---|---|---|---|
