@@ -23,6 +23,7 @@ installer=$script_dir/install-agents.sh
 inspector=$script_dir/inspect-agent-runtime.sh
 syntax=$script_dir/check-config-syntax.py
 routing_fixtures=$script_dir/fixtures/research-routing-regressions.txt
+primary_effort_fixtures=$script_dir/fixtures/primary-effort-regressions.txt
 
 luna_explorer=$agents/sol-advisor-luna-explorer.toml
 luna_worker=$agents/sol-advisor-luna-worker.toml
@@ -38,7 +39,7 @@ command -v jq >/dev/null 2>&1 || fail "jq is required"
 
 for file in "$portable" "$compat" "$market" "$luna_explorer" "$luna_worker" "$luna_tester" \
   "$luna_impl" "$terra_impl" "$sol_review" "$luna_research" "$terra_research" "$skill" "$ops" \
-  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures"; do
+  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures" "$primary_effort_fixtures"; do
   [ -f "$file" ] || fail "missing required file: $file"
 done
 
@@ -170,6 +171,46 @@ grep -Fq 'exact eight-role set' "$ops" || fail "operations omit eight-role verif
 grep -Fqi 'Luna delegation is the default' "$readme" || fail "README does not describe Luna-first default"
 grep -Fq 'Design references' "$readme" || fail "README omits upstream design/license note"
 pass "Luna-first routing and role contracts"
+
+grep -Fq 'primary_effort: medium-recommended | high' "$skill" ||
+  fail "primary effort gate declaration missing"
+grep -Fq 'using only the user' "$skill" || fail "primary effort gate is not pre-tool"
+grep -Fq 'Ordinary planning,' "$skill" || fail "planning alone incorrectly implies High"
+grep -Fq 'routine verification' "$skill" || fail "routine verification alone incorrectly implies High"
+grep -Fq 'architecture or requirement ambiguity' "$skill" || fail "High architecture ambiguity rule missing"
+grep -Fq 'complex root-cause analysis' "$skill" || fail "High RCA rule missing"
+grep -Fq 'wide or cross-system blast' "$skill" || fail "High blast-radius rule missing"
+grep -Fq 'failure/retry or rollback' "$skill" || fail "High retry-cost rule missing"
+grep -Fq 'Do not attempt an in-session' "$skill" || fail "in-session effort switching is not prohibited"
+grep -Fq 'fresh Sol / Medium task' "$readme" || fail "README omits fresh Sol / Medium restart contract"
+grep -Fq 'step-scoped reasoning-effort machinery' "$ops" ||
+  fail "operations omit current Codex effort-update implementation note"
+grep -Fq 'one task has one primary effort' "$ops" ||
+  fail "operations omit one-effort-per-task invariant"
+pass "primary effort gate and no in-session switching contract"
+
+expected_primary_effort_fixture_lines=9
+[ "$(wc -l < "$primary_effort_fixtures" | tr -d ' ')" -eq "$expected_primary_effort_fixture_lines" ] ||
+  fail "primary effort regression fixture line count"
+grep -Fqx 'scenario|expected_primary_effort' "$primary_effort_fixtures" ||
+  fail "primary effort fixture header"
+grep -Fqx 'settled low-risk planning with bounded scope|medium-recommended' "$primary_effort_fixtures" ||
+  fail "bounded planning effort regression"
+grep -Fqx 'routine verification of a reversible localized change|medium-recommended' "$primary_effort_fixtures" ||
+  fail "routine verification effort regression"
+grep -Fqx 'bounded implementation with stable interfaces and cheap retry|medium-recommended' "$primary_effort_fixtures" ||
+  fail "bounded implementation effort regression"
+grep -Fqx 'architecture choice with unresolved cross-component requirements|high' "$primary_effort_fixtures" ||
+  fail "architecture ambiguity effort regression"
+grep -Fqx 'multi-layer root-cause analysis with several plausible causes|high' "$primary_effort_fixtures" ||
+  fail "complex RCA effort regression"
+grep -Fqx 'security-sensitive or data-loss-risking migration|high' "$primary_effort_fixtures" ||
+  fail "security/data-loss effort regression"
+grep -Fqx 'wide-blast-radius production change with expensive rollback|high' "$primary_effort_fixtures" ||
+  fail "blast-radius/retry-cost effort regression"
+grep -Fqx 'acceptance-critical irreversible release decision|high' "$primary_effort_fixtures" ||
+  fail "critical acceptance effort regression"
+pass "primary Medium/High regression fixtures"
 
 expected_fixture_lines=7
 [ "$(wc -l < "$routing_fixtures" | tr -d ' ')" -eq "$expected_fixture_lines" ] ||
