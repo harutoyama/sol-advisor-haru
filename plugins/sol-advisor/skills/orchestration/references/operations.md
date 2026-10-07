@@ -26,11 +26,14 @@ effort does not match.
 
 | Role type | Model | Effort | Operational use |
 |---|---|---|---|
-| `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Delegate/full routine implementation |
-| `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Delegate/full higher-complexity implementation |
-| `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | Audit/full fresh review; requests read-only sandbox |
-| `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Bounded/focused read-only research; nested agents disabled |
-| `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Judgment-heavy read-only research; nested agents disabled |
+| `sol_advisor_luna_explorer` | `gpt-6-luna` | `max` | Read-only repository exploration; nested agents disabled |
+| `sol_advisor_luna_worker` | `gpt-6-luna` | `max` | Default routine implementation with local edit/verify/repair; nested agents disabled |
+| `sol_advisor_luna_tester` | `gpt-6-luna` | `max` | Targeted verification and regression evidence; nested agents disabled |
+| `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Legacy 0.102.x implementation compatibility profile |
+| `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Judgment-heavy implementation exception |
+| `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | High-risk fresh final review; requests read-only sandbox |
+| `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Default substantive read-only research; nested agents disabled |
+| `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Legacy 0.102.x research compatibility profile |
 
 Each custom-agent TOML pins its own model and reasoning effort. Do not attach per-spawn model or
 reasoning overrides. Codex configuration can define `agents.default_subagent_model` and
@@ -51,21 +54,25 @@ sh plugins/sol-advisor/scripts/install-agents.sh --check
 Preflight only roles selected by the declared route. Selective checks are:
 
 ```sh
-sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-implementation
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-exploration
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-worker
+sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-testing
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-implementation
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role sol-review
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-research
+# legacy compatibility only:
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-research
 ```
 
-| Implementation/review route | Required companion checks |
+| Execution/review need | Required companion checks |
 |---|---|
-| solo | None for implementation/review |
-| delegate (Luna) | `--check --check-role luna-implementation` |
-| delegate (Terra) | `--check --check-role terra-implementation` |
-| audit | `--check --check-role sol-review` |
-| full (Luna) | `--check --check-role luna-implementation --check-role sol-review` |
-| full (Terra) | `--check --check-role terra-implementation --check-role sol-review` |
+| trivial solo | None |
+| Luna exploration | `--check --check-role luna-exploration` |
+| Luna worker | `--check --check-role luna-worker` |
+| Luna tester | `--check --check-role luna-testing` |
+| Terra implementation exception | `--check --check-role terra-implementation` |
+| high-risk fresh review | `--check --check-role sol-review` |
+| legacy 0.102.x Luna implementation compatibility | `--check --check-role luna-implementation` |
 
 Research adds its own independent check:
 
@@ -73,8 +80,7 @@ Research adds its own independent check:
 |---|---|
 | none / inline | None |
 | luna | `--check --check-role luna-research` |
-| terra | `--check --check-role terra-research` |
-| split | one check per selected dedicated researcher role |
+| split | one `--check --check-role luna-research` check; fanout uses the same pinned Luna role |
 
 Unknown roles fail before mutation. Cache a successful check only for the current task. Missing,
 conflicting, unavailable, or unobservable role/model/effort evidence stops that lane rather than
@@ -113,30 +119,31 @@ runtime_inspector="$skill_dir/../../scripts/inspect-agent-runtime.sh"
 sh "$runtime_inspector" <native-subagent-thread-id>
 ```
 
-Accepted routing evidence is Luna / max for routine implementation, Terra / high for
-higher-complexity implementation, GPT-6.1 Sol / high for audit/full review, Luna / max for bounded
-research, and Terra / high for judgment-heavy research. If public and local evidence both exist,
+Accepted routing evidence is Luna / max for explorer, worker, tester, and substantive bounded
+research; Terra / high only for judgment-heavy implementation exceptions; and GPT-6.1 Sol / high
+for fresh high-risk review. The legacy Luna implementer remains Luna / max and the legacy Terra
+researcher remains Terra / high when explicitly used for compatibility. If public and local evidence both exist,
 they must agree. The inspector is evidence, not a model-selection fallback.
 
-## Researcher isolation
+## Explorer and researcher isolation
 
-The researcher TOMLs request `sandbox_mode = "read-only"`, but requested configuration is not
+The explorer and researcher TOMLs request `sandbox_mode = "read-only"`, but requested configuration is not
 proof of effective isolation. Check public runtime metadata or the local runtime inspector for the
-actual child sandbox before trusting a researcher result.
+actual child sandbox before trusting a read-only-role result.
 
 - observed read-only sandbox: proceed;
-- broader observed sandbox: proceed only when hard isolation is not required, the research prompt
+- broader observed sandbox: proceed only when hard isolation is not required, the delegated read-only prompt
   still forbids all mutation, and the primary captures relevant before/after repository and artifact
   state;
-- hard read-only required but sandbox unobservable or broadened: stop that research lane;
+- hard read-only required but sandbox unobservable or broadened: stop that read-only lane;
 - any observed filesystem, repository, external-system, MCP, or app mutation: reject the result.
 
 Filesystem sandboxing and external-tool permissions are separate controls. A read-only filesystem
 sandbox does not prove that an MCP/app tool cannot mutate remote state, and tool annotations such as
-read-only hints are not an authorization boundary. Researchers therefore remain prohibited from
+read-only hints are not an authorization boundary. Read-only roles therefore remain prohibited from
 external-system mutation regardless of filesystem sandbox state.
 
-Do not invent undocumented role-local tool-allowlist TOML fields. Keep the current researcher TOMLs
+Do not invent undocumented role-local tool-allowlist TOML fields. Keep the current explorer/researcher TOMLs
 unless a current OpenAI specification documents a role-local control whose effective behavior can
 also be verified at runtime.
 
@@ -155,8 +162,9 @@ Never claim enforced read-only isolation from the TOML alone.
 ## Acceptance evidence
 
 Auxiliary reports never replace direct primary inspection. Before acceptance, inspect the complete
-actual diff, confirm changed-file scope, rerun the requested checks, and evaluate required
-artifact/runtime evidence. If evidence conflicts with the selected role/model/effort or shows an
+actual diff, confirm changed-file scope, rerun required acceptance-critical checks, and evaluate
+required artifact/runtime evidence. Do not mechanically replay every child-local check when its
+compact evidence is sufficient and the check is not part of final acceptance. If evidence conflicts with the selected role/model/effort or shows an
 unauthorized mutation, reject that auxiliary result and reroute only through an explicit valid lane.
 
 ## Maintainer verification
@@ -170,8 +178,8 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.103.0 manifests, exact five-role set, implementation/research model and
-effort pins, workstream-level routing semantics, result-vs-execution-state dependency rules,
-researcher isolation/external-mutation constraints, split limits, root/reference ownership,
-regression fixtures, installer fresh install, 0.100.0 -> current update behavior, 0.7.0 migration
-safety, JSON/TOML/YAML/shell syntax, and implementation plus research runtime fixtures.
+The verifier checks the 0.103.0 manifests, exact eight-role set, Luna-first explorer/worker/tester
+pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
+external-mutation constraints, root/reference ownership,
+regression fixtures, installer fresh install, 0.102.2 -> current update behavior, 0.7.0 migration
+safety, JSON/TOML/YAML/shell syntax, and worker plus research runtime fixtures.

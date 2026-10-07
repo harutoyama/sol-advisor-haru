@@ -7,9 +7,9 @@ usage() {
   cat <<'EOF'
 Usage: install-agents.sh [--target-dir PATH] [--check] [--check-role ROLE ...]
 
-Roles: luna-implementation, terra-implementation, sol-review, luna-research, terra-research
+Roles: luna-exploration, luna-worker, luna-testing, luna-implementation, terra-implementation, sol-review, luna-research, terra-research
 
-Normal mode installs the five current profiles. It never overwrites modified, symlinked,
+Normal mode installs the eight current profiles. It never overwrites modified, symlinked,
 non-regular, conflicting, or obsolete Sol Advisor profiles. --check is non-mutating.
 --check-role is repeatable and implies --check.
 
@@ -50,6 +50,9 @@ selected() {
 
 role_paths() {
   case "$1" in
+    luna-exploration) source=$luna_explorer_template; file=$luna_explorer_file ;;
+    luna-worker) source=$luna_worker_template; file=$luna_worker_file ;;
+    luna-testing) source=$luna_tester_template; file=$luna_tester_file ;;
     luna-implementation) source=$luna_template; file=$luna_file ;;
     terra-implementation) source=$terra_template; file=$terra_file ;;
     sol-review) source=$sol_template; file=$sol_file ;;
@@ -136,8 +139,8 @@ while [ "$#" -gt 0 ]; do
     --check-role)
       [ "$#" -ge 2 ] || fail "--check-role requires a role."
       case "$2" in
-        luna-implementation|terra-implementation|sol-review|luna-research|terra-research) ;;
-        *) fail "unknown --check-role '$2'; expected luna-implementation, terra-implementation, sol-review, luna-research, or terra-research." ;;
+        luna-exploration|luna-worker|luna-testing|luna-implementation|terra-implementation|sol-review|luna-research|terra-research) ;;
+        *) fail "unknown --check-role '$2'; expected luna-exploration, luna-worker, luna-testing, luna-implementation, terra-implementation, sol-review, luna-research, or terra-research." ;;
       esac
       check_only=1
       check_roles=$check_roles$2,
@@ -159,12 +162,18 @@ case "$target_dir" in
 esac
 [ "$target_dir" != "/" ] || fail "refusing filesystem root as target."
 
+luna_explorer_file=sol-advisor-luna-explorer.toml
+luna_worker_file=sol-advisor-luna-worker.toml
+luna_tester_file=sol-advisor-luna-tester.toml
 luna_file=sol-advisor-luna-implementer.toml
 terra_file=sol-advisor-terra-implementer.toml
 sol_file=sol-advisor-sol-reviewer.toml
 luna_research_file=sol-advisor-luna-researcher.toml
 terra_research_file=sol-advisor-terra-researcher.toml
 
+luna_explorer_template=$template_dir/$luna_explorer_file
+luna_worker_template=$template_dir/$luna_worker_file
+luna_tester_template=$template_dir/$luna_tester_file
 luna_template=$template_dir/$luna_file
 terra_template=$template_dir/$terra_file
 sol_template=$template_dir/$sol_file
@@ -179,7 +188,7 @@ obsolete_delegate_sha256=1594d2ac0fa527301b92afaf635a14a4e89b640d20f8673b6406d87
 obsolete_escalation_sha256=85a257f74155ea717c4591acb3c24667d1498d5fbc3244029fda6290f7f080af
 obsolete_audit_sha256=b11c1c8a9773cfbcb62fa855f7723bbf5fc9df4cf91a5c9dc2be2a01b898f597
 
-for template in "$luna_template" "$terra_template" "$sol_template" "$luna_research_template" "$terra_research_template"; do
+for template in "$luna_explorer_template" "$luna_worker_template" "$luna_tester_template" "$luna_template" "$terra_template" "$sol_template" "$luna_research_template" "$terra_research_template"; do
   [ -f "$template" ] && [ ! -L "$template" ] ||
     fail "shipped template is missing or unsafe: $template"
 done
@@ -221,7 +230,7 @@ if [ "$obsolete_found" -ne 0 ]; then
 fi
 
 preflight_failed=0
-for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
+for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
   selected "$role" || continue
   role_paths "$role"
   destination=$target_dir/$file
@@ -248,7 +257,7 @@ done
 [ "$preflight_failed" -eq 0 ] || exit 1
 
 if [ "$check_only" -eq 1 ]; then
-  for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
+  for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
     selected "$role" || continue
     role_paths "$role"
     destination=$target_dir/$file
@@ -265,7 +274,7 @@ fi
 [ -d "$target_dir" ] && [ ! -L "$target_dir" ] ||
   fail "target directory became unsafe: $target_dir"
 
-for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
+for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
   role_paths "$role"
   destination=$target_dir/$file
   case "$(classify "$source" "$destination")" in
@@ -275,11 +284,11 @@ for role in luna-implementation terra-implementation sol-review luna-research te
   esac
 done
 
-for role in luna-implementation terra-implementation sol-review luna-research terra-research; do
+for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
   role_paths "$role"
   destination=$target_dir/$file
   [ "$(classify "$source" "$destination")" = current ] ||
     fail "post-install verification failed: $destination"
 done
 
-printf '%s\n' "Installed Sol Advisor model-specific implementation, review, and research profiles. Start a fresh GPT-6.1 Sol / High task by default; the skill may redirect bounded work to a fresh Medium task before task tools."
+printf '%s\n' "Installed Sol Advisor Luna-first exploration, worker, testing, implementation compatibility, review, and research profiles. Start a fresh GPT-6.1 Sol / High task by default; the skill may redirect bounded work to a fresh Medium task before task tools."

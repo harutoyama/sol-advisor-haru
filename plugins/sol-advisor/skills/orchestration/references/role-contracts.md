@@ -86,20 +86,77 @@ architectural, or
 conflict-resolution judgment beyond the bounded scope, stop and return the evidence and gap so the
 primary can explicitly route-update.
 
-## Terra judgment-heavy researcher
+## Legacy Terra researcher (compatibility only)
 
-When the root selects the judgment-heavy research lane, spawn:
+The current Luna-first route does not select Terra for research. Luna gathers bounded evidence and
+returns conflicts or gaps; the primary Sol owns judgment-heavy scientific, methodological,
+architectural, or causal adjudication. Keep this profile only so existing 0.102.x installations
+remain fail-closed and byte-stable.
+
+Only when an explicit compatibility/migration path requires the legacy role, spawn:
 
 ```text
 agent_type: sol_advisor_terra_researcher
 fork_turns: none
 ```
 
-The installed profile is `sol_advisor_terra_researcher`. Stay inside the supplied research packet.
-Resolve conflicting evidence explicitly and distinguish observation from inference. The return
-must clearly separate OBSERVATIONS, INFERENCES, CONFLICTS, ALTERNATIVES, and GAPS (either inside
-FINDINGS or as labeled subsections). Return partial/blocked when the question cannot be answered
-inside scope.
+The installed profile is `sol_advisor_terra_researcher`. Do not choose it for new Luna-first
+routing. When used for compatibility, stay inside the supplied research packet and preserve its
+existing read-only contract.
+
+## Luna repository explorer
+
+When repository understanding is useful before implementation, spawn:
+
+```text
+agent_type: sol_advisor_luna_explorer
+fork_turns: none
+```
+
+The installed profile is pinned to `gpt-6-luna` / `max`, requests a read-only sandbox, and
+disables nested agents. Give it one bounded repository question plus the relevant scope and active
+constraints. Typical objectives are locating files/symbols, tracing call or data flow, identifying
+tests/configuration, and defining the smallest implementation surface.
+
+Its return is a compact `EXPLORATION REPORT`. The parent should use the cited paths/symbols and
+spot-check decisive evidence rather than repeat the entire exploration.
+
+## Luna default worker
+
+For routine bounded implementation inside a settled architecture, spawn:
+
+```text
+agent_type: sol_advisor_luna_worker
+fork_turns: none
+```
+
+The installed profile is pinned to `gpt-6-luna` / `max` and disables nested agents. The parent
+supplies the objective, exact ownership, settled interfaces, constraints, and acceptance criteria.
+The worker is the default writer for non-trivial routine execution and uses a local
+`edit -> verify -> repair` loop.
+
+The worker must stop rather than expand scope when it encounters unresolved architecture,
+security-sensitive design, breaking API/schema changes, dependency additions, data migration
+policy, another worker's ownership, or materially ambiguous requirements. It returns a compact `WORKER REPORT` with changed files, decisive verification, repair iterations, decisions needed,
+and gaps. The parent inspects the final diff and acceptance-critical evidence without
+reimplementing the same change.
+
+## Luna tester
+
+For independent reproduction, targeted verification, or regression evidence, spawn:
+
+```text
+agent_type: sol_advisor_luna_tester
+fork_turns: none
+```
+
+The installed profile is pinned to `gpt-6-luna` / `max` and disables nested agents. It may use a
+workspace-write sandbox because normal test commands can create caches or artifacts, but it must
+not edit production code. Test-file edits require explicit ownership from the parent.
+
+Ask for the smallest command or reproduction that proves or disproves the delegated behavior.
+The return is a compact `TEST REPORT` with commands, decisive results, regression findings,
+coverage gaps, and one next action.
 
 ## Shared implementation contract
 
@@ -140,19 +197,23 @@ GAPS: <unfinished work, ambiguity, or none>
 Worker reports are claims. The primary inspects the actual diff and reruns verification before
 acceptance.
 
-## Luna routine implementer
+## Legacy Luna routine implementer (compatibility only)
 
-When the root selects Luna implementation, spawn:
+The current Luna-first route uses `sol_advisor_luna_worker`. The older implementation profile is
+kept installed so existing 0.102.x setups remain fail-closed and byte-stable. Use it only when an
+explicit compatibility/migration path requires the legacy role.
+
+When that compatibility path selects the legacy Luna implementer, spawn:
 
 ```text
 agent_type: sol_advisor_luna_implementer
 fork_turns: none
 ```
 
-The installed profile is `sol_advisor_luna_implementer`. Execute only the settled implementation
-contract. If work proves judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide
-in blast radius, stop and return that evidence for explicit Terra routing. A corrected Luna retry
-is appropriate for a specification error but is not a prerequisite for Terra escalation.
+The installed profile is `sol_advisor_luna_implementer`. Execute only the settled legacy
+implementation contract. Do not choose this profile for new Luna-first routing. If compatibility
+work proves judgment-heavy or requires broader parent-owned decisions, stop and return that
+evidence for explicit rerouting.
 
 ## Terra higher-complexity implementer
 

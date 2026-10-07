@@ -1,7 +1,7 @@
 {
   "name": "sol-advisor",
   "version": "0.103.0",
-  "description": "Haru fork of Sol Advisor with a High-default primary effort preflight plus explicit Sol/Luna/Terra model-specific implementation, research, and review routing.",
+  "description": "Haru fork of Sol Advisor with a High-default primary effort preflight and Luna-first model-pinned execution roles.",
   "author": {
     "name": "Daniel McAteer / Haru fork",
     "url": "https://github.com/harutoyama/sol-advisor-haru"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
-    "shortDescription": "Sol starts High, redirects bounded work to fresh Medium, then routes model-pinned auxiliaries selectively.",
-    "longDescription": "Sol Advisor starts GPT-6.1 Sol / High by default and performs a tool-free primary-effort gate before substantive work. Bounded low-to-moderate-risk tasks are redirected to a fresh GPT-6.1 Sol / Medium task rather than changing effort in-session; architecture ambiguity, complex RCA, wide blast radius, irreversible/security/data-loss/production risk, expensive retry cost, and acceptance-critical work remain on High. After the primary effort matches, implementation and research routing preserve the existing model-pinned Luna/Terra lanes, fresh Sol review, fail-closed runtime evidence, read-only researchers, and progressive-disclosure contracts.",
+    "shortDescription": "Sol starts High, gates Medium vs High pre-tool, then uses Luna-first execution.",
+    "longDescription": "Sol Advisor starts GPT-6.1 Sol / High by default and performs a tool-free primary-effort gate before substantive work. Bounded low-to-moderate-risk tasks are redirected to a fresh GPT-6.1 Sol / Medium task rather than changing effort in-session. After the primary effort matches, GPT-6.1 Sol owns architecture, decomposition, integration, escalation, and final acceptance while GPT-6 Luna / Max explorer, worker, tester, and researcher roles handle non-trivial routine execution by default. GPT-5.6 Terra / High is reserved for judgment-heavy implementation exceptions, and fresh GPT-6.1 Sol / High review is reserved for high-risk final scrutiny. All auxiliary roles keep explicit model pins, fork_turns: none, runtime evidence checks, and fail-closed installation.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": [
@@ -30,7 +30,7 @@
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
       "Use $sol-advisor:orchestration to run the PRIMARY EFFORT gate before task tools. Start from Sol / High by default; if the task is medium-recommended, stop and restart it as a fresh Sol / Medium task instead of switching effort in-session.",
-      "After the primary effort matches, declare the SELECTIVE ROUTE and preserve the existing model-pinned Luna/Terra implementation, research, runtime-evidence, and review contracts."
+      "After the primary effort matches, declare the SELECTIVE ROUTE; keep architecture and final acceptance in Sol and use Luna-first explorer, worker, tester, and researcher roles for routine execution. Reserve Terra and fresh Sol review for explicit exception cases."
     ]
   }
 }

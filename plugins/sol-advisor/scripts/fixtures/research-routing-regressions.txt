@@ -3,5 +3,5 @@ one-symbol lookup|inline|0
 live process manipulation only|inline|0
 live mutation + independent multi-file repo/log trace|luna|1
 two unrelated substantial static subsystems|split|2
-conflicting scientific/methodological evidence|terra|1
+conflicting scientific/methodological evidence|luna|1
 five tiny related files|inline-or-luna|0-or-1
