@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "Sol architects; model-pinned implementation, research, and review lanes are selected independently"
-  default_prompt: "Use $orchestration to declare mode plus the independent research route before task tools; keep architecture and acceptance in Sol, and use dedicated model-pinned auxiliaries only when their implementation, research, or review contract justifies the handoff."
+  short_description: "Sol architects and integrates; Luna executes routine exploration, coding, testing, and research"
+  default_prompt: "Use $orchestration to declare the route before task tools; keep GPT-6.1 Sol / High as architect and final acceptance owner, default non-trivial routine execution to the model-pinned Luna explorer/worker/tester/researcher roles, and reserve Terra or fresh Sol review for explicit exception cases."
