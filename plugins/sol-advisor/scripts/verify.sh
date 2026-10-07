@@ -143,6 +143,12 @@ grep -Fq 'Use at most one follow-up' "$skill" || fail "bounded follow-up rule mi
 grep -Fq 'Prefer Luna whenever a substantial bounded workstream' "$skill" || fail "positive Luna delegation preference missing"
 grep -Fq 'Parent integration, actual-diff inspection, and acceptance-critical verification are not' "$skill" || fail "parent acceptance incorrectly blocks delegation"
 grep -Fq 'Do not choose `solo` merely because it seems faster or delegation' "$skill" || fail "solo-overhead regression guard missing"
+if grep -Fq 'meaningfully replaces primary execution' "$skill" "$readme" "$compat"; then
+  fail "restrictive primary-replacement delegation wording remains"
+fi
+if grep -Fq 'perform nearly the same investigation, edit, or verification afterward' "$skill"; then
+  fail "restrictive parent-reverification delegation wording remains"
+fi
 grep -Fq 'completion reserve' "$skill" || fail "completion reserve rule missing"
 grep -Fq 'sol_advisor_luna_explorer' "$skill" || fail "explorer routing missing"
 grep -Fq 'sol_advisor_luna_worker' "$skill" || fail "worker routing missing"
