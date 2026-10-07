@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
     "shortDescription": "Sol architects and integrates; Luna handles routine exploration, implementation, testing, and research.",
-    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High as the primary architect, decomposer, integrator, and final acceptance owner. Non-trivial routine execution is Luna-first: GPT-6 Luna / Max explorers map repositories, workers implement bounded changes with local edit/verify/repair loops, testers reproduce and verify behavior, and researchers handle substantive self-contained read-only investigation. GPT-5.6 Terra / High is reserved for judgment-heavy implementation or research that exceeds a bounded Luna contract. Fresh GPT-6.1 Sol / High review is reserved for high-risk final scrutiny. All auxiliary roles keep explicit model pins, fresh context with fork_turns: none, runtime evidence checks, and fail-closed installation.",
+    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High as the primary architect, decomposer, integrator, and final acceptance owner. Non-trivial routine execution is Luna-first: GPT-6 Luna / Max explorers map repositories, workers implement bounded changes with local edit/verify/repair loops, testers reproduce and verify behavior, and researchers handle substantive self-contained read-only investigation. GPT-5.6 Terra / High is reserved for judgment-heavy implementation that exceeds a bounded Luna worker contract; research remains on Luna and judgment-heavy evidence adjudication stays with the primary Sol. Fresh GPT-6.1 Sol / High review is reserved for high-risk final scrutiny. All auxiliary roles keep explicit model pins, fresh context with fork_turns: none, runtime evidence checks, and fail-closed installation.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": [
@@ -30,7 +30,7 @@
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
       "Use $sol-advisor:orchestration to declare the route before task tools. Keep architecture and final acceptance in GPT-6.1 Sol / High, and use Luna-first explorer, worker, tester, and researcher roles for non-trivial routine execution.",
-      "Use Terra only when a bounded Luna role returns concrete judgment-heavy limitations, and use a fresh Sol reviewer only for high-risk final scrutiny."
+      "Use Terra only when a bounded Luna worker returns concrete judgment-heavy implementation limitations, and use a fresh Sol reviewer only for high-risk final scrutiny."
     ]
   }
 }
