@@ -1,17 +1,19 @@
 # Sol Advisor
 
-Sol Advisor is a Codex-native selective-routing workflow. This Haru fork keeps
-architecture, requirement resolution, verification, and acceptance in a GPT-6.1 Sol / High
-primary session, while routing implementation by model:
+Sol Advisor is a Codex-native Luna-first orchestration workflow. This Haru fork keeps
+architecture, decomposition, integration, and final acceptance in a GPT-6.1 Sol / High primary
+session while routing routine execution to specialized Luna roles by default:
 
 | Role | Model | Effort | Use |
 |---|---|---|---|
-| Primary architect | GPT-6.1 Sol | High | Architecture, planning, requirement resolution, verification, acceptance |
-| Routine implementer | GPT-6 Luna | Max | Bounded, fully specified, interface-stable routine implementation |
-| Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation |
-| Fresh reviewer | GPT-6.1 Sol | High | Independent final review for audit/full; requests read-only sandbox |
-| Bounded researcher | GPT-6 Luna | Max | Focused read-only code/log/docs/Web investigation with compact evidence return |
-| Judgment-heavy researcher | GPT-5.6 Terra | High | Read-only investigation requiring conflict resolution, methodology, architecture, or complex root-cause judgment |
+| Primary architect/integrator | GPT-6.1 Sol | High | Architecture, decomposition, integration, escalation, final acceptance |
+| Explorer | GPT-6 Luna | Max | Read-only repo mapping, call/data-flow, tests/config, implementation boundaries |
+| Worker | GPT-6 Luna | Max | Default bounded implementation with local edit -> verify -> repair |
+| Tester | GPT-6 Luna | Max | Reproduction, targeted verification, regression evidence |
+| Researcher | GPT-6 Luna | Max | Default substantive read-only docs/repo/log/Web research |
+| Higher-complexity implementer/researcher | GPT-5.6 Terra | High | Judgment-heavy exception only |
+| Fresh reviewer | GPT-6.1 Sol | High | High-risk independent final review only |
+| Legacy Luna implementer | GPT-6 Luna | Max | 0.102.x compatibility; not preferred for new routing |
 
 The skill does not switch the primary model. Start the Codex / ChatGPT Desktop task with
 GPT-6.1 Sol / High selected.
@@ -20,49 +22,37 @@ GPT-6.1 Sol / High selected.
 
 | Mode | Use it when | Delivery |
 |---|---|---|
-| `solo` | Very small change; delegation overhead dominates; architecture/planning/requirement resolution; coding-light work. | Primary handles the task directly. |
-| `delegate` | Implementation is fully specified and should be handed to one worker. | Prefer Luna / Max for routine bounded work; use Terra / High when judgment or risk is materially higher. Primary verifies. |
-| `audit` | Primary implementation needs independent final scrutiny. | Primary implements and verifies; fresh Sol / High reviews. |
-| `full` | Broad or high-risk exception. | One selected implementer, primary verification, then fresh Sol / High review. |
+| `solo` | Truly tiny/localized work, planning, or parent-owned architecture/security/breaking-change decisions. | Sol handles it directly. |
+| `delegate` | Default for non-trivial repository execution once direction is settled. | Use Luna explorer/worker/tester as needed; Terra only for judgment-heavy implementation exceptions. |
+| `audit` | Implementation must remain Sol-owned and high-risk independent scrutiny is warranted. | Sol implements/verifies; fresh Sol / High reviews. |
+| `full` | Delegated broad/high-risk implementation needs a fresh final review. | Luna-first execution (Terra only by exception), parent integration/verification, fresh Sol review. |
 
-**Routine coding is not automatically a solo task.** Once the primary can state a complete,
-bounded, low-risk, interface-stable implementation contract, prefer Luna / Max. Do not delegate
-architecture or unresolved requirements merely to increase agent count. Auxiliary work substitutes
-for primary implementation; the primary inspects the actual diff and reruns verification instead
-of reimplementing the same change.
+For non-trivial multi-file work and cross-component debugging, Luna delegation is the default rather
+than something unlocked by a strict positive gate. The primary resolves architecture and materially
+ambiguous requirements, then delegates routine execution. Independent exploration/research can run
+in parallel; dependent work is serialized. One writer owns a file/subsystem at a time.
+
+The Luna worker returns compact evidence after its local `edit -> verify -> repair` loop. The
+primary inspects the actual diff and reruns acceptance-critical checks, but does not reimplement the
+same change or mechanically duplicate every child check.
 
 ## Research routing
 
-Research is orthogonal to `mode`. Declare `research: none | inline | luna | terra | split` and
-`fanout: 0..5` alongside the implementation/review mode. `mode: solo` means no implementation
-or review auxiliary; it does **not** prohibit a research auxiliary.
+Research remains orthogonal to implementation/review mode. Declare
+`research: none | inline | luna | terra | split` and `fanout: 0..5`.
 
-Route **research workstreams, not whole tasks**. A result dependency (the primary must wait for the
-report) is still delegatable. Keep a workstream inline when useful observations repeatedly depend on
-primary-owned mutation, live state, intervening judgment, or operation results. Delegate only
-read-only, self-contained workstreams whose substantial raw evidence can be compressed into a much
-shorter report and whose context isolation/compression, latency, coverage, or fresh-context benefit
-exceeds handoff and integration cost. Parallel execution is useful but is not required.
+- `none`: no substantive research.
+- `inline`: tiny lookup or evidence coupled to live primary mutation/state.
+- `luna`: **default for substantive self-contained read-only repo/log/docs/Web/API/version
+  investigation**.
+- `terra`: only when the research workstream itself needs conflict adjudication,
+  scientific/methodological judgment, architecture-sensitive causal synthesis, or similarly heavy
+  reasoning.
+- `split`: two to five genuinely independent substantial questions, normally two.
 
-Use Luna / Max for one bounded objective evidence-gathering workstream. Use Terra / High only when
-that delegated workstream itself requires conflicting-evidence adjudication, scientific or
-methodological judgment, architecture-sensitive causal analysis, or complex root-cause synthesis;
-overall task risk alone is not enough. `research: luna` or `terra` may coexist with
-primary-owned live/state-coupled research. Use `split` for two to five genuinely independent
-delegated workstreams, with a soft default of two; each third-or-later researcher needs distinct
-scope, a reason it cannot be bundled, and material marginal benefit. File count alone is not a
-split reason.
-
-Every research spawn uses the dedicated `sol_advisor_luna_researcher` or
-`sol_advisor_terra_researcher` profile with `fork_turns: none`. Generic `explorer`, `worker`,
-`default`, or inherited-model fallback is forbidden. Because the researcher starts with fresh
-context, its self-contained packet carries only the applicable active cross-cutting execution
-constraints as a compact capsule; it does not copy skill bodies, the skill catalog, or parent
-history. Researchers are read-only and cannot spawn nested subagents. Delegated research is not
-repeated wholesale by the primary; the primary performs
-targeted spot verification of decisive or suspicious evidence. Newly discovered delegatability,
-removed state coupling, conflicting evidence, or an additional independent workstream requires an
-explicit route update; silent route changes remain forbidden.
+Waiting for a delegated report is only a result dependency and does not force inline research.
+Researchers use `fork_turns: none`, return compact evidence, cannot spawn nested agents, and do
+not mutate the workspace or external systems.
 
 ## Install
 
@@ -82,14 +72,15 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.102.2"
+workdir="$HOME/Downloads/sol-advisor-haru-0.103.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 ```
 
-The installer writes five profiles to `$CODEX_HOME/agents` when `CODEX_HOME` is set,
-otherwise to `~/.codex/agents`. It is fail-closed: it never overwrites a modified file,
+The installer writes eight profiles to `$CODEX_HOME/agents` when `CODEX_HOME` is set,
+otherwise to `~/.codex/agents`. The three Luna-first roles are explorer, worker, and tester; the
+previous five profiles remain installed for compatibility and exception lanes. It is fail-closed: it never overwrites a modified file,
 symlink, non-regular file, unknown conflicting profile, or obsolete 0.7.0 capability profile.
 
 Start a fresh Codex task after installing the agents:
@@ -109,9 +100,9 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.102.2 checkout and run the installer. Existing unmodified 0.100.0 model-specific
-implementer/reviewer profiles are preserved byte-for-byte; the installer includes the two researcher
-profiles introduced in 0.101.0. If any 0.7.0 capability profiles are
+Then use a fresh 0.103.0 checkout and run the installer. Existing unmodified 0.102.2 profiles are
+preserved byte-for-byte; the installer adds the Luna explorer, worker, and tester profiles without
+rewriting the previous implementation, review, or researcher profiles. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
 unmodified 0.7.0 SHA-256 values are:
 
@@ -158,6 +149,16 @@ sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 
 Start a new task/session after the role files change. The skill invocation remains
 `$sol-advisor:orchestration`.
+
+## Design references
+
+The Luna-first topology and role split were compared against
+`donvito/codex-astra-luna-orchestrator` and `Hanqi-b/luna-based-agent-orchestrator`, both
+Apache-2.0 projects. Sol Advisor keeps its existing MIT codebase and uses independently adapted
+routing/contracts rather than copying their role-file text. In particular, this fork adopts the
+explorer/worker/tester/researcher separation and parallel-workstream discipline while retaining its
+own fail-closed installer, runtime evidence checks, `fork_turns: none`, Terra exception lane, and
+high-risk-only fresh Sol review.
 
 ## Maintainers
 
