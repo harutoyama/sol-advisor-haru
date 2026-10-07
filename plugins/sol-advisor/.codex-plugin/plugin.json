@@ -1,24 +1,36 @@
 {
   "name": "sol-advisor",
-  "version": "0.102.2",
-  "description": "Haru fork of Sol Advisor with explicit Sol/Luna/Terra model-specific routing and workstream-level research routing with dedicated read-only Luna/Terra researchers.",
-  "author": {"name": "Daniel McAteer / Haru fork", "url": "https://github.com/harutoyama/sol-advisor-haru"},
+  "version": "0.103.0",
+  "description": "Haru fork of Sol Advisor with GPT-6.1 Sol / High primary orchestration and Luna-first execution roles.",
+  "author": {
+    "name": "Daniel McAteer / Haru fork",
+    "url": "https://github.com/harutoyama/sol-advisor-haru"
+  },
   "homepage": "https://github.com/harutoyama/sol-advisor-haru#readme",
   "repository": "https://github.com/harutoyama/sol-advisor-haru",
   "license": "MIT",
-  "keywords": ["codex", "orchestration", "multi-agent", "selective-routing", "gpt-6"],
+  "keywords": [
+    "codex",
+    "orchestration",
+    "multi-agent",
+    "selective-routing",
+    "gpt-6"
+  ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
-    "shortDescription": "Sol plans; model-pinned implementers, researchers, and fresh review are used selectively.",
-    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High in the primary Codex session for architecture, requirements, verification, and acceptance. Fully specified bounded routine implementation is preferentially delegated to GPT-6 Luna / Max. Judgment-heavy, architecture-sensitive, context-heavy, high-risk, or wide-blast-radius implementation goes to GPT-5.6 Terra / High. Audit and full routes use a fresh read-only GPT-6.1 Sol / High reviewer. Research is routed independently at the workstream level: short or execution-state-coupled work stays inline, bounded evidence gathering can use GPT-6 Luna / Max, and judgment-heavy investigation can use GPT-5.6 Terra / High. Dedicated researchers are read-only, use fresh context, and do not delegate further. Context isolation/compression, coverage, fresh context, or latency can justify delegation when they exceed coordination cost; parallelism is not required.",
+    "shortDescription": "Sol architects and integrates; Luna handles routine exploration, implementation, testing, and research.",
+    "longDescription": "Sol Advisor keeps GPT-6.1 Sol / High as the primary architect, decomposer, integrator, and final acceptance owner. Non-trivial routine execution is Luna-first: GPT-6 Luna / Max explorers map repositories, workers implement bounded changes with local edit/verify/repair loops, testers reproduce and verify behavior, and researchers handle substantive self-contained read-only investigation. GPT-5.6 Terra / High is reserved for judgment-heavy implementation or research that exceeds a bounded Luna contract. Fresh GPT-6.1 Sol / High review is reserved for high-risk final scrutiny. All auxiliary roles keep explicit model pins, fresh context with fork_turns: none, runtime evidence checks, and fail-closed installation.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
-    "capabilities": ["Interactive", "Write"],
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
-      "Use $sol-advisor:orchestration to declare implementation/review and research axes in a SELECTIVE ROUTE before task tools, then build and verify this feature.",
-      "Keep architecture and acceptance in Sol; route self-contained read-only research workstreams to dedicated Luna/Terra researchers when isolation, compression, coverage, fresh context, or latency pays for coordination cost; do not route whole tasks merely because they are sequential."
+      "Use $sol-advisor:orchestration to declare the route before task tools. Keep architecture and final acceptance in GPT-6.1 Sol / High, and use Luna-first explorer, worker, tester, and researcher roles for non-trivial routine execution.",
+      "Use Terra only when a bounded Luna role returns concrete judgment-heavy limitations, and use a fresh Sol reviewer only for high-risk final scrutiny."
     ]
   }
 }
