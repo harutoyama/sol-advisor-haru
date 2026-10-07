@@ -25,7 +25,7 @@ change that model.
 | `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Judgment-heavy implementation exception |
 | `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | High-risk fresh final review; requests read-only sandbox |
 | `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Default substantive read-only research; nested agents disabled |
-| `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Judgment-heavy read-only research; nested agents disabled |
+| `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Legacy 0.102.x research compatibility profile |
 
 Each custom-agent TOML pins its own model and reasoning effort. Do not attach per-spawn model or
 reasoning overrides. Codex configuration can define `agents.default_subagent_model` and
@@ -52,6 +52,7 @@ sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-testi
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-implementation
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role sol-review
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-research
+# legacy compatibility only:
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-research
 ```
 
@@ -71,8 +72,7 @@ Research adds its own independent check:
 |---|---|
 | none / inline | None |
 | luna | `--check --check-role luna-research` |
-| terra | `--check --check-role terra-research` |
-| split | one check per selected dedicated researcher role |
+| split | one `--check --check-role luna-research` check; fanout uses the same pinned Luna role |
 
 Unknown roles fail before mutation. Cache a successful check only for the current task. Missing,
 conflicting, unavailable, or unobservable role/model/effort evidence stops that lane rather than
@@ -112,9 +112,9 @@ sh "$runtime_inspector" <native-subagent-thread-id>
 ```
 
 Accepted routing evidence is Luna / max for explorer, worker, tester, and substantive bounded
-research; Terra / high for judgment-heavy implementation or research exceptions; and GPT-6.1 Sol /
-high for fresh high-risk review. The legacy Luna implementer remains Luna / max when explicitly
-used for compatibility. If public and local evidence both exist,
+research; Terra / high only for judgment-heavy implementation exceptions; and GPT-6.1 Sol / high
+for fresh high-risk review. The legacy Luna implementer remains Luna / max and the legacy Terra
+researcher remains Terra / high when explicitly used for compatibility. If public and local evidence both exist,
 they must agree. The inspector is evidence, not a model-selection fallback.
 
 ## Explorer and researcher isolation
