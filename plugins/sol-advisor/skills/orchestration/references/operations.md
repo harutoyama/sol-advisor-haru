@@ -86,7 +86,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.102.2 installer treats any of them as a migration hazard and stops before changing the
+The 0.103.0 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -124,10 +124,10 @@ proof of effective isolation. Check public runtime metadata or the local runtime
 actual child sandbox before trusting a read-only-role result.
 
 - observed read-only sandbox: proceed;
-- broader observed sandbox: proceed only when hard isolation is not required, the research prompt
+- broader observed sandbox: proceed only when hard isolation is not required, the delegated read-only prompt
   still forbids all mutation, and the primary captures relevant before/after repository and artifact
   state;
-- hard read-only required but sandbox unobservable or broadened: stop that research lane;
+- hard read-only required but sandbox unobservable or broadened: stop that read-only lane;
 - any observed filesystem, repository, external-system, MCP, or app mutation: reject the result.
 
 Filesystem sandboxing and external-tool permissions are separate controls. A read-only filesystem
@@ -135,7 +135,7 @@ sandbox does not prove that an MCP/app tool cannot mutate remote state, and tool
 read-only hints are not an authorization boundary. Read-only roles therefore remain prohibited from
 external-system mutation regardless of filesystem sandbox state.
 
-Do not invent undocumented role-local tool-allowlist TOML fields. Keep the current researcher TOMLs
+Do not invent undocumented role-local tool-allowlist TOML fields. Keep the current explorer/researcher TOMLs
 unless a current OpenAI specification documents a role-local control whose effective behavior can
 also be verified at runtime.
 
@@ -154,8 +154,9 @@ Never claim enforced read-only isolation from the TOML alone.
 ## Acceptance evidence
 
 Auxiliary reports never replace direct primary inspection. Before acceptance, inspect the complete
-actual diff, confirm changed-file scope, rerun the requested checks, and evaluate required
-artifact/runtime evidence. If evidence conflicts with the selected role/model/effort or shows an
+actual diff, confirm changed-file scope, rerun required acceptance-critical checks, and evaluate
+required artifact/runtime evidence. Do not mechanically replay every child-local check when its
+compact evidence is sufficient and the check is not part of final acceptance. If evidence conflicts with the selected role/model/effort or shows an
 unauthorized mutation, reject that auxiliary result and reroute only through an explicit valid lane.
 
 ## Maintainer verification
@@ -172,5 +173,5 @@ git diff --stat
 The verifier checks the 0.103.0 manifests, exact eight-role set, Luna-first explorer/worker/tester
 pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
 external-mutation constraints, root/reference ownership,
-regression fixtures, installer fresh install, 0.100.0 -> current update behavior, 0.7.0 migration
-safety, JSON/TOML/YAML/shell syntax, and implementation plus research runtime fixtures.
+regression fixtures, installer fresh install, 0.102.2 -> current update behavior, 0.7.0 migration
+safety, JSON/TOML/YAML/shell syntax, and worker plus research runtime fixtures.
