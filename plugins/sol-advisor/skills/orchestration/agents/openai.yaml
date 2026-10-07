@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "Sol architects and integrates; Luna executes routine exploration, coding, testing, and research"
-  default_prompt: "Use $orchestration to declare the route before task tools; keep GPT-6.1 Sol / High as architect and final acceptance owner, default non-trivial routine execution to the model-pinned Luna explorer/worker/tester/researcher roles, and reserve Terra or fresh Sol review for explicit exception cases."
+  short_description: "High-default Sol effort gate; then Luna-first routine execution"
+  default_prompt: "Use $orchestration to run the PRIMARY EFFORT gate before task tools. Start GPT-6.1 Sol on High by default and redirect bounded lower-risk work to a fresh Sol / Medium task rather than switching effort in-session. After the effort matches, declare the SELECTIVE ROUTE; keep architecture, integration, and final acceptance in Sol, default routine exploration/coding/testing/research to the model-pinned Luna roles, and reserve Terra or fresh Sol review for explicit exception cases."
