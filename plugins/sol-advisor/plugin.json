@@ -2,5 +2,5 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sol-advisor",
   "version": "0.103.0",
-  "description": "Haru fork of Sol Advisor with a High-default primary effort preflight and Luna-first explorer, worker, tester, and researcher routing; Terra and fresh Sol review are explicit exception lanes."
+  "description": "Haru fork of Sol Advisor with a High-default primary effort preflight and Sol-led, bounded Luna delegation; Terra and fresh Sol review remain explicit exception lanes."
 }

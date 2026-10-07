@@ -97,7 +97,7 @@ model_count=$(grep -R -hE '^[[:space:]]*model[[:space:]]*=' "$agents" | wc -l | 
 effort_count=$(grep -R -hE '^[[:space:]]*model_reasoning_effort[[:space:]]*=' "$agents" | wc -l | tr -d ' ')
 [ "$model_count" -eq 8 ] || fail "expected exactly eight agent model assignments, found $model_count"
 [ "$effort_count" -eq 8 ] || fail "expected exactly eight agent effort assignments, found $effort_count"
-pass "Luna-first execution, exception, review, and research model/effort/isolation pins"
+pass "bounded Luna execution, exception, review, and research model/effort/isolation pins"
 
 stale_sol=gpt-5.6-"sol"
 stale_luna=gpt-5.6-"luna"
@@ -135,17 +135,20 @@ done
 
 grep -Fq 'mode: solo | delegate | audit | full' "$skill" || fail "route declaration missing"
 grep -Fq 'research: none | inline | luna | split' "$skill" || fail "research route declaration missing"
-grep -Fq 'Use **Luna-first routing**.' "$skill" || fail "Luna-first routing rule missing"
-grep -Fq 'default for non-trivial repository execution' "$skill" || fail "Luna-first delegate default missing"
+grep -Fq 'Use **Sol-led bounded delegation**.' "$skill" || fail "Sol-led bounded delegation rule missing"
+grep -Fq 'Delegation is substitution, not addition.' "$skill" || fail "delegation substitution rule missing"
+grep -Fq 'Normal active auxiliary fanout is `0-1`.' "$skill" || fail "bounded fanout rule missing"
+grep -Fq 'Use at most one follow-up' "$skill" || fail "bounded follow-up rule missing"
+grep -Fq 'completion reserve' "$skill" || fail "completion reserve rule missing"
 grep -Fq 'sol_advisor_luna_explorer' "$skill" || fail "explorer routing missing"
 grep -Fq 'sol_advisor_luna_worker' "$skill" || fail "worker routing missing"
 grep -Fq 'sol_advisor_luna_tester' "$skill" || fail "tester routing missing"
 grep -Fq 'fresh Sol / High final review' "$skill" || fail "high-risk review rule missing"
 grep -Fq 'fork_turns: none' "$skill" || fail "fresh-context invariant missing"
-grep -Fq 'default `luna` / fanout 1' "$skill" || fail "Luna research default missing"
+grep -Fq 'Use `luna` / fanout 1 for a self-contained read-only workstream' "$skill" || fail "bounded Luna research rule missing"
 grep -Fq 'Result dependency is not a reason' "$skill" || fail "result-dependency delegation rule missing"
 grep -Fq 'Independent read-only exploration/research workstreams' "$skill" || fail "parallel read-only workstream rule missing"
-grep -Fq 'should not reimplement the same change' "$skill" || fail "parent non-duplication rule missing"
+grep -Fq 'the same investigation or implementation in parallel' "$skill" || fail "parent non-duplication rule missing"
 grep -Fq 'Do not route research to Terra.' "$skill" || fail "Terra research exclusion missing"
 grep -Fq 'Terra is an exception' "$skill" || fail "Terra implementation exception rule missing"
 grep -Fq 'Fresh Sol review is a high-risk final gate' "$skill" || fail "reviewer exception rule missing"
@@ -168,9 +171,9 @@ grep -Fq 'luna-exploration' "$ops" || fail "operations omit explorer preflight"
 grep -Fq 'luna-worker' "$ops" || fail "operations omit worker preflight"
 grep -Fq 'luna-testing' "$ops" || fail "operations omit tester preflight"
 grep -Fq 'exact eight-role set' "$ops" || fail "operations omit eight-role verifier contract"
-grep -Fqi 'Luna delegation is the default' "$readme" || fail "README does not describe Luna-first default"
+grep -Fq 'Delegation is substitution, not addition.' "$readme" || fail "README does not describe substitution-based delegation"
 grep -Fq 'Design references' "$readme" || fail "README omits upstream design/license note"
-pass "Luna-first routing and role contracts"
+pass "Sol-led bounded delegation and role contracts"
 
 grep -Fq 'primary_effort: medium-recommended | high' "$skill" ||
   fail "primary effort gate declaration missing"
@@ -310,7 +313,7 @@ cmp -s "$luna_worker" "$upgrade/sol-advisor-luna-worker.toml" || fail "0.102.x -
 cmp -s "$luna_tester" "$upgrade/sol-advisor-luna-tester.toml" || fail "0.102.x -> current update missing Luna tester"
 cmp -s "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml" || fail "0.102.x update changed Luna researcher unexpectedly"
 cmp -s "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml" || fail "0.102.x update changed Terra researcher unexpectedly"
-pass "0.102.x -> current preserves previous profiles and adds Luna-first roles"
+pass "0.102.x -> current preserves previous profiles and adds bounded Luna roles"
 
 unknown=$tmp/unknown
 if sh "$installer" --target-dir "$unknown" --check-role unknown >/dev/null 2>&1; then
@@ -401,4 +404,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.103.0 Luna-first orchestration contract checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.103.0 Sol-led bounded delegation contract checks completed"
