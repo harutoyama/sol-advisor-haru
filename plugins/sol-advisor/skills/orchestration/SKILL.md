@@ -116,10 +116,16 @@ investigation.
   the same investigation or implementation in parallel or repeat it after return except for narrow
   acceptance-critical spot-checks. Primary integration, actual-diff inspection, and
   acceptance-critical verification are not duplicate execution. Reuse the child's compact evidence.
+- Reuse resolved findings for the same question while evidence, inputs, code, environment, and
+  execution conditions are unchanged. Reopen for new counterevidence, changed premises, or
+  acceptance gaps; do not introduce persistent tracking.
 - Normal active auxiliary fanout is `0-1`. Use `2` only for genuinely independent substantial
   surfaces. Fanout `3+` is exceptional and requires explicit marginal-value justification.
 - Each child is one-shot: spawn -> report -> terminate. Use at most one follow-up to the same child,
   only for a concrete missing fact or clarification; otherwise integrate, reroute, or finish.
+- Complete the user's requested endpoint, not merely the first patch, passing test, or child
+  report. Continue through requested PR/CI/merge, but never perform unrequested actions or
+  cross an approval boundary. If blocked, report the unmet endpoint and reason.
 - Before any new spawn, reserve enough primary capacity for integration, actual-diff/evidence
   inspection, acceptance-critical verification, and the final response. If that completion reserve
   is doubtful, stop spawning and converge from existing evidence.
