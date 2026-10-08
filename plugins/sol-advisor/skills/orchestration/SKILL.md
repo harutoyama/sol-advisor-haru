@@ -1,6 +1,6 @@
 ---
 name: orchestration
-description: "Codex-native Sol-led routing: GPT-6.1 Sol owns architecture, integration, and acceptance; bounded Luna roles are preferred for substantial independently assignable workstreams; Terra and fresh Sol review remain explicit exceptions."
+description: "Codex-native Sol-led orchestration using the user-selected primary model and effort; bounded Luna workstreams, fail-closed child verification, and exception-only Terra or fresh Sol review."
 ---
 
 # Sol Advisor Orchestration
@@ -15,59 +15,25 @@ This root file is the canonical owner of route selection and cross-route invaria
 context whenever the skill triggers. Load supporting references only when the selected route or
 an operational task requires their detailed contracts.
 
-## Primary effort gate and route declaration
+## Start immediately; route internally
 
-Start the primary Codex task on `gpt-6.1-sol` / `high` by default. The skill does not change the
-primary model or reasoning effort inside an active task/session. Before the first task tool call,
-classify the whole task once using only the user's request and already-available context; do not
-inspect the repository, research external sources, spawn auxiliaries, or begin implementation first.
+Use the primary model and reasoning effort already selected by the user. Start the requested
+work without a primary model/effort gate: do not ask for configuration confirmation,
+wait for primary runtime metadata, request a Medium/High restart, or block task tools over
+a primary configuration mismatch. Never change the user's primary settings as a prerequisite.
 
-Emit:
+Assess scope, uncertainty, reversibility, security/privacy/data-loss/migration/production impact,
+retry cost, and acceptance risk to choose delegation and verification depth—not to prescribe the
+primary model or effort. Keep `mode: solo | delegate | audit | full`,
+`research: none | inline | luna | split`, `fanout: 0..5`, and task-specific risk
+internally. Do not emit routine primary-effort or routing-status blocks, or pause for a
+routing checkpoint. Explain only a material change of approach,
+newly observed risk/conflict, required approval, or a consequential escalation. Re-evaluate
+routing when evidence changes, without repeating an unchanged declaration.
 
-```text
-PRIMARY EFFORT
-primary_effort: medium-recommended | high
-effort_rationale: <concise task-specific reason>
-```
-
-Choose `medium-recommended` only when all material conditions are true: requirements and interfaces
-are sufficiently resolved; architecture is stable; root-cause analysis is absent or bounded; blast
-radius is contained; changes are reversible; security, privacy, data-loss, migration, and production
-risk are low; failure/retry cost is modest; and final acceptance is routine. Ordinary planning,
-routine verification, normal code review, multi-step tool use, or a typical bounded implementation
-does not by itself justify staying on High.
-
-Keep `high` when any material condition applies: architecture or requirement ambiguity that needs
-judgment; complex root-cause analysis with multiple plausible layers; wide or cross-system blast
-radius; irreversible, security-sensitive, privacy-sensitive, data-loss, migration, or production
-risk; expensive failure/retry or rollback; or acceptance whose error cost is materially high. When
-uncertain because the missing information itself is consequential, keep High.
-
-If the gate says `medium-recommended` and runtime metadata does not already confirm
-`gpt-6.1-sol` / `medium`, return only a short instruction to restart this same task with GPT-6.1
-Sol / Medium and invoke Sol Advisor again. Stop before task tools. Do not attempt an in-session
-effort update. If the gate says `high`, require GPT-6.1 Sol / High before task tools. On a fresh
-Medium task, rerun the gate; proceed only when it again says `medium-recommended`. Verify
-model/effort from runtime metadata when available; if required fields are unavailable, ask the user
-to confirm the required primary configuration. Any observed mismatch is fail-closed.
-
-After the required primary configuration is confirmed, emit:
-
-```text
-SELECTIVE ROUTE
-primary_effort: medium | high
-mode: solo | delegate | audit | full
-research: none | inline | luna | split
-fanout: 0 | 1 | 2 | 3 | 4 | 5
-risk: <concise task-specific rationale>
-research_rationale: <why this research route matches scope, independence, and live-state coupling>
-```
-
-`fanout` is `0` for `none`/`inline`, normally `1` for one delegated workstream, and `2` only when two substantial workstreams are genuinely independent. `3..5` is exceptional and requires an explicit reason each added child cannot be bundled or deferred.
-Delegatability changes also require `ROUTE UPDATE`: for example a newly self-contained workstream,
-removed state coupling after a frozen snapshot, a new independent source family, Luna-discovered
-judgment conflict, or a second substantial independent workstream. Never silently change research
-routes. Implementation/review escalation still requires newly observed risk.
+`fanout` is 0 for none/inline, normally 1 for one bounded lane, and 2 only when
+workstreams are materially independent. 3–5 is exceptional and needs distinct ownership
+and marginal value for every additional child.
 
 ## Select the implementation/review route
 

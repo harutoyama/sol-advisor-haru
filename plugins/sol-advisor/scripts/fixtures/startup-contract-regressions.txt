@@ -1,0 +1,7 @@
+# category|forbidden startup instruction (test guards must reject each)
+effort-gate|Run PRIMARY EFFORT before task tools
+route-report|Declare SELECTIVE ROUTE in every response
+route-report|ROUTE UPDATE is mandatory after any delegated task
+effort-gate|primary_effort: medium-recommended
+restart|If low-risk, restart this task in Sol / Medium
+primary-pin|Require an exact primary model and effort configuration before proceeding

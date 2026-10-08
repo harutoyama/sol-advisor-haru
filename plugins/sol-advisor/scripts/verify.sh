@@ -24,7 +24,7 @@ inspector=$script_dir/inspect-agent-runtime.sh
 syntax=$script_dir/check-config-syntax.py
 routing_fixtures=$script_dir/fixtures/research-routing-regressions.txt
 delegation_fixtures=$script_dir/fixtures/delegation-routing-regressions.txt
-primary_effort_fixtures=$script_dir/fixtures/primary-effort-regressions.txt
+startup_fixtures=$script_dir/fixtures/startup-contract-regressions.txt
 
 luna_explorer=$agents/sol-advisor-luna-explorer.toml
 luna_worker=$agents/sol-advisor-luna-worker.toml
@@ -40,7 +40,7 @@ command -v jq >/dev/null 2>&1 || fail "jq is required"
 
 for file in "$portable" "$compat" "$market" "$luna_explorer" "$luna_worker" "$luna_tester" \
   "$luna_impl" "$terra_impl" "$sol_review" "$luna_research" "$terra_research" "$skill" "$ops" \
-  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures" "$delegation_fixtures" "$primary_effort_fixtures"; do
+  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures" "$delegation_fixtures" "$startup_fixtures"; do
   [ -f "$file" ] || fail "missing required file: $file"
 done
 
@@ -55,11 +55,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.104.1" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.104.2" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.104.1" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.104.2" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.104.1 manifests and marketplace path"
+pass "0.104.2 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_explorer" || fail "Luna explorer model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_explorer" || fail "Luna explorer effort pin"
@@ -188,45 +188,89 @@ grep -Fq 'Delegation is substitution, not addition.' "$readme" || fail "README d
 grep -Fq 'Design references' "$readme" || fail "README omits upstream design/license note"
 pass "Sol-led bounded delegation and role contracts"
 
-grep -Fq 'primary_effort: medium-recommended | high' "$skill" ||
-  fail "primary effort gate declaration missing"
-grep -Fq 'using only the user' "$skill" || fail "primary effort gate is not pre-tool"
-grep -Fq 'Ordinary planning,' "$skill" || fail "planning alone incorrectly implies High"
-grep -Fq 'routine verification' "$skill" || fail "routine verification alone incorrectly implies High"
-grep -Fq 'architecture or requirement ambiguity' "$skill" || fail "High architecture ambiguity rule missing"
-grep -Fq 'complex root-cause analysis' "$skill" || fail "High RCA rule missing"
-grep -Fq 'wide or cross-system blast' "$skill" || fail "High blast-radius rule missing"
-grep -Fq 'failure/retry or rollback' "$skill" || fail "High retry-cost rule missing"
-grep -Fq 'Do not attempt an in-session' "$skill" || fail "in-session effort switching is not prohibited"
-grep -Fq 'fresh Sol / Medium task' "$readme" || fail "README omits fresh Sol / Medium restart contract"
-grep -Fq 'step-scoped reasoning-effort machinery' "$ops" ||
-  fail "operations omit current Codex effort-update implementation note"
-grep -Fq 'one task has one primary effort' "$ops" ||
-  fail "operations omit one-effort-per-task invariant"
-pass "primary effort gate and no in-session switching contract"
+python3 - "$plugin_dir" "$startup_fixtures" <<'PY'
+import json
+import pathlib
+import re
+import sys
 
-expected_primary_effort_fixture_lines=9
-[ "$(wc -l < "$primary_effort_fixtures" | tr -d ' ')" -eq "$expected_primary_effort_fixture_lines" ] ||
-  fail "primary effort regression fixture line count"
-grep -Fqx 'scenario|expected_primary_effort' "$primary_effort_fixtures" ||
-  fail "primary effort fixture header"
-grep -Fqx 'settled low-risk planning with bounded scope|medium-recommended' "$primary_effort_fixtures" ||
-  fail "bounded planning effort regression"
-grep -Fqx 'routine verification of a reversible localized change|medium-recommended' "$primary_effort_fixtures" ||
-  fail "routine verification effort regression"
-grep -Fqx 'bounded implementation with stable interfaces and cheap retry|medium-recommended' "$primary_effort_fixtures" ||
-  fail "bounded implementation effort regression"
-grep -Fqx 'architecture choice with unresolved cross-component requirements|high' "$primary_effort_fixtures" ||
-  fail "architecture ambiguity effort regression"
-grep -Fqx 'multi-layer root-cause analysis with several plausible causes|high' "$primary_effort_fixtures" ||
-  fail "complex RCA effort regression"
-grep -Fqx 'security-sensitive or data-loss-risking migration|high' "$primary_effort_fixtures" ||
-  fail "security/data-loss effort regression"
-grep -Fqx 'wide-blast-radius production change with expensive rollback|high' "$primary_effort_fixtures" ||
-  fail "blast-radius/retry-cost effort regression"
-grep -Fqx 'acceptance-critical irreversible release decision|high' "$primary_effort_fixtures" ||
-  fail "critical acceptance effort regression"
-pass "primary Medium/High regression fixtures"
+plugin = pathlib.Path(sys.argv[1])
+fixture = pathlib.Path(sys.argv[2])
+skill = (plugin / "skills/orchestration/SKILL.md").read_text()
+ops = (plugin / "skills/orchestration/references/operations.md").read_text()
+compat = json.loads((plugin / ".codex-plugin/plugin.json").read_text())
+ui = (plugin / "skills/orchestration/agents/openai.yaml").read_text()
+
+# These are activation-time instructions. Prevent gates and repetitive user-facing
+# route reports from being reintroduced under either entry point.
+activation = "\\n".join((skill, " ".join(compat["interface"]["defaultPrompt"]),
+                          ui.split("  default_prompt:", 1)[-1]))
+def forbidden(fragment):
+    patterns = (
+        r"PRIMARY +EFFORT",
+        r"SELECTIVE +ROUTE",
+        r"ROUTE +UPDATE",
+        r"medium-recommended",
+        r"primary_effort *:",
+        r"restart.{0,90}(Sol|Medium|High)",
+        r"require.{0,70}primary.{0,70}(model|effort|configuration)",
+    )
+    return any(re.search(p, fragment, re.I | re.S) for p in patterns)
+
+assert not forbidden(activation), "primary gate/visible route report reintroduced"
+assert len(compat["interface"]["defaultPrompt"]) == 1, "duplicate entry instructions"
+assert "$sol-advisor:orchestration" in compat["interface"]["defaultPrompt"][0]
+assert "$orchestration" in ui
+assert len(compat["interface"]["defaultPrompt"][0]) < 320, "entry prompt repeats routing contract"
+assert "Use the primary model and reasoning effort already selected by the user" in skill
+assert "internally" in skill and "risk" in skill
+assert "SKILL.md" in ops and "runtime" in ops.lower()
+assert "Invalidate that result after agent-file edits" in ops
+assert "Any new child must be checked independently" in ops
+assert "Public" in ops and "metadata" in ops and "JSONL" in ops
+
+# Mutation-style guard tests: each former startup failure mode must be detected.
+for line in fixture.read_text().splitlines():
+    if not line or line.startswith("#"):
+        continue
+    category, snippet = line.split("|", 1)
+    assert category in {"effort-gate", "route-report", "restart", "primary-pin"}, category
+    assert forbidden(snippet), f"startup policy guard accepted {category}: {snippet}"
+
+# The entry-point gate is removed, but child pins remain actual parsed config.
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
+expected = {
+    "luna-explorer": ("gpt-6-luna", "max", "read-only"),
+    "luna-worker": ("gpt-6-luna", "max", "workspace-write"),
+    "luna-tester": ("gpt-6-luna", "max", None),
+    "luna-researcher": ("gpt-6-luna", "max", "read-only"),
+    "luna-implementer": ("gpt-6-luna", "max", None),
+    "terra-implementer": ("gpt-5.6-terra", "high", None),
+    "sol-reviewer": ("gpt-6.1-sol", "high", "read-only"),
+    "terra-researcher": ("gpt-5.6-terra", "high", "read-only"),
+}
+for slug, (model, effort, sandbox) in expected.items():
+    path = plugin / f"agents/sol-advisor-{slug}.toml"
+    with path.open("rb") as handle:
+        profile = tomllib.load(handle)
+    assert profile["name"] == "sol_advisor_" + slug.replace("-", "_"), path
+    assert (profile["model"], profile["model_reasoning_effort"]) == (model, effort), path
+    if sandbox:
+        assert profile.get("sandbox_mode") == sandbox, path
+    if slug not in {"sol-reviewer", "terra-implementer", "luna-implementer"}:
+        assert profile["agents"]["enabled"] is False, path
+
+assert "fork_turns: none" in skill
+assert "Delegation is substitution, not addition." in skill
+assert "the same investigation or implementation in parallel" in skill
+assert "completion reserve" in skill
+assert "read-only" in ops and "external-system mutation" in ops
+print("PASS: startup-policy negatives, compact entry points, and parsed child role invariants")
+PY
+pass "primary startup is ungated; child checks remain mandatory"
 
 expected_fixture_lines=7
 [ "$(wc -l < "$routing_fixtures" | tr -d ' ')" -eq "$expected_fixture_lines" ] ||
@@ -322,6 +366,21 @@ cmp -s "$luna_research" "$fresh/sol-advisor-luna-researcher.toml" || fail "fresh
 cmp -s "$terra_research" "$fresh/sol-advisor-terra-researcher.toml" || fail "fresh Terra research mismatch"
 pass "installer fresh install and selective checks"
 
+# Selective checks must not inspect unused roles. Rechecking after a changed
+# selected profile must fail; restoring the original makes it valid again.
+cp "$fresh/sol-advisor-luna-researcher.toml" "$tmp/researcher-original"
+printf '%s\n' '# user changed unused profile' >> "$fresh/sol-advisor-luna-researcher.toml"
+sh "$installer" --target-dir "$fresh" --check --check-role luna-worker >/dev/null ||
+  fail "selective worker check depended on unused researcher"
+if sh "$installer" --target-dir "$fresh" --check --check-role luna-research >/dev/null 2>&1; then
+  fail "changed selected researcher profile passed preflight"
+fi
+cp "$tmp/researcher-original" "$fresh/sol-advisor-luna-researcher.toml"
+sh "$installer" --target-dir "$fresh" --check --check-role luna-research >/dev/null ||
+  fail "restored selected profile did not pass revalidation"
+pass "unused role skipped; changed selected role invalidates preflight"
+
+
 upgrade=$tmp/upgrade-0102
 mkdir "$upgrade"
 cp "$luna_impl" "$upgrade/sol-advisor-luna-implementer.toml"
@@ -400,6 +459,15 @@ if printf '%s\n' "$runtime_impl_output" | grep -Fq DO_NOT_LEAK; then
   fail "runtime inspector leaked implementation payload"
 fi
 
+
+cp "$runtime_impl_rollout" "$tmp/worker-rollout-before-conflict"
+printf '%s\n' '{"type":"turn_context","payload":{"model":"gpt-5.6-terra","effort":"high","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' >> "$runtime_impl_rollout"
+if sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_impl_id" >/dev/null 2>&1; then
+  fail "conflicting child model/effort runtime evidence unexpectedly accepted"
+fi
+cp "$tmp/worker-rollout-before-conflict" "$runtime_impl_rollout"
+pass "child runtime evidence conflict fails closed"
+
 runtime_id=22222222-2222-7222-8222-222222222222
 runtime_rollout=$runtime_day/rollout-2026-10-05T00-00-01-$runtime_id.jsonl
 printf '%s\n' \
@@ -436,4 +504,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork 0.104.1 Sol-led bounded delegation contract checks completed"
+printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork Sol-led bounded delegation and ungated primary startup checks completed"

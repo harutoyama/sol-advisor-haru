@@ -1,65 +1,31 @@
 # Sol Advisor
 
-Sol Advisor is a Codex-native Sol-led orchestration workflow. This Haru fork starts the primary
-GPT-6.1 Sol task on High by default, performs a tool-free pre-task effort gate, and then prefers
-specialized Luna roles for substantial bounded workstreams that can be instructed independently.
+Sol Advisor orchestrates work under the **primary model and reasoning effort the user
+already selected**. It starts the task immediately: no startup model confirmation, Medium/High
+restart gate, or mandatory `PRIMARY EFFORT` / `SELECTIVE ROUTE` output. Task risk determines
+delegation and independent acceptance checks, not the primary model selection.
 
-| Role | Model | Effort | Use |
-|---|---|---|---|
-| Primary architect/integrator | GPT-6.1 Sol | High default; Medium when the pre-task gate permits | Architecture, decomposition, integration, escalation, final acceptance |
-| Explorer | GPT-6 Luna | Max | Read-only repo mapping, call/data-flow, tests/config, implementation boundaries |
-| Worker | GPT-6 Luna | Max | Bounded implementation with local edit -> verify -> repair |
-| Tester | GPT-6 Luna | Max | Reproduction, targeted verification, regression evidence |
-| Researcher | GPT-6 Luna | Max | Bounded substantive read-only docs/repo/log/Web research |
-| Higher-complexity implementer | GPT-5.6 Terra | High | Judgment-heavy implementation exception only |
-| Fresh reviewer | GPT-6.1 Sol | High | High-risk independent final review only |
-| Legacy Luna implementer | GPT-6 Luna | Max | 0.102.x compatibility; not preferred for new routing |
-| Legacy Terra researcher | GPT-5.6 Terra | High | 0.102.x compatibility; not selected by current routing |
+The primary retains Sol-style architecture, decomposition, integration, and final acceptance.
+The skill's [root contract](plugins/sol-advisor/skills/orchestration/SKILL.md) is the
+single source of routing policy. Detailed role contracts and operational verification
+are loaded only as needed.
 
-Start the Codex / ChatGPT Desktop task with GPT-6.1 Sol / High selected by default. Before any
-task tool call, the skill classifies the whole task as `medium-recommended` or `high`. If Medium
-is sufficient, it stops the High task and tells you to restart the same task as a fresh Sol / Medium task;
-it does not change reasoning effort inside the active task. Planning, routine verification, ordinary
-bounded coding, or normal review alone are not reasons to keep High. Architecture ambiguity,
-complex RCA, wide blast radius, irreversible/security/data-loss/production risk, expensive retry
-cost, or acceptance with materially high error cost keep High.
-
-## Routing modes
-
-| Mode | Use it when | Delivery |
+| Auxiliary role | Pin | Purpose |
 |---|---|---|
-| `solo` | Truly tiny/localized work, planning, or parent-owned architecture/security/breaking-change decisions. | Sol handles it directly. |
-| `delegate` | A substantial bounded workstream can be instructed independently with clear ownership and evidence. | Prefer the needed Luna role; Terra remains a judgment-heavy implementation exception. |
-| `audit` | Implementation must remain Sol-owned and high-risk independent scrutiny is warranted. | Sol implements/verifies; fresh Sol / High reviews. |
-| `full` | Delegated broad/high-risk implementation needs a fresh final review. | Bounded delegated execution (Terra only by exception), parent integration/verification, fresh Sol review. |
+| Luna explorer / worker / tester / researcher | GPT-6 Luna / Max | Independently bounded exploration, implementation, verification, and read-only research |
+| Terra implementer | GPT-5.6 Terra / High | Exception for judgment-heavy implementation after architecture is settled |
+| Fresh Sol reviewer | GPT-6.1 Sol / High | Independent final scrutiny only on high-risk changes |
+| Legacy Luna implementer / Terra researcher | Original pins preserved | Installation and migration compatibility only |
 
-Delegation is substitution, not addition. Normal fanout is 0-1; use two children only for genuinely
-independent substantial surfaces, and treat three or more as exceptional. Do not mechanically chain
-explorer -> worker -> tester. Each child is one-shot, with at most one follow-up for a concrete gap.
-The primary reuses returned evidence, inspects the actual diff, and performs acceptance-critical
-verification without re-running the delegated investigation or edit. Parent integration and final
-acceptance are not delegation contraindications.
-
-Budgeting uses a completion reserve rather than fixed model percentages: stop spawning when the
-remaining primary capacity may not cover integration, acceptance, and the final response.
-
-## Research routing
-
-Research remains orthogonal to implementation/review mode. Declare
-`research: none | inline | luna | split` and `fanout: 0..5`.
-
-- `none`: no substantive research.
-- `inline`: tiny lookup or evidence coupled to live primary mutation/state.
-- `luna`: prefer for substantive, self-contained, read-only repo/log/docs/Web/API/version
-  investigation; parent synthesis or handoff overhead alone does not make it inline.
-- Judgment-heavy research remains Luna for evidence gathering; Luna returns conflicts/gaps and the
-  primary Sol performs scientific/methodological or architecture-sensitive adjudication.
-- `split`: two genuinely independent substantial questions; three to five researchers are
-  exceptional and require explicit marginal-value justification.
-
-Waiting for a delegated report is only a result dependency and does not force inline research.
-Researchers use `fork_turns: none`, return compact evidence, cannot spawn nested agents, and do
-not mutate the workspace or external systems.
+Delegation is substitution, not addition. The primary inspects actual diffs and performs
+acceptance-critical checks, but does not duplicate child investigations or implementation.
+Normal fanout is 0–1, with larger fanout reserved for independent workstreams. Children
+receive bounded constraints and return compact evidence; no nested delegation, and
+`fork_turns: none` throughout. Preserve completion reserve. Only selected auxiliary
+roles are preflight-checked; successful role checks are reused within an unchanged
+task configuration, whereas each child thread's runtime evidence is checked afresh.
+A public runtime record is enough when complete; otherwise inspect only the exact
+child's JSONL. Fail closed on missing or contradictory required auxiliary evidence.
 
 ## Install
 
@@ -79,7 +45,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.104.1"
+workdir="$HOME/Downloads/sol-advisor-haru-0.104.2"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -93,7 +59,7 @@ symlink, non-regular file, unknown conflicting profile, or obsolete 0.7.0 capabi
 Start a fresh Codex task after installing the agents:
 
 ```text
-Use $sol-advisor:orchestration to build this feature and verify it. Declare the SELECTIVE ROUTE before task tools.
+Use $sol-advisor:orchestration to build this feature and verify it.
 ```
 
 ## Update from Haru fork 0.7.0
@@ -107,7 +73,7 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.104.1 checkout and run the installer. Existing unmodified 0.102.2 profiles are
+Then use a fresh 0.104.2 checkout and run the installer. Existing unmodified 0.102.2 profiles are
 preserved byte-for-byte; the installer adds the explorer, worker, and tester profiles without
 rewriting the previous implementation, review, or researcher profiles. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known

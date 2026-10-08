@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "High-default Sol effort gate; then bounded substitution-based Luna delegation"
-  default_prompt: "Use $orchestration to run the PRIMARY EFFORT gate before task tools. After the effort matches, declare the SELECTIVE ROUTE. Keep architecture, integration, and final acceptance in Sol; prefer Luna for substantial bounded workstreams that can be instructed independently while keeping delegation substitution-based and fanout normally 0-1. Reuse child evidence, preserve completion capacity, and reserve Terra or fresh Sol review for explicit exception cases."
+  short_description: "Sol-led bounded delegation, without a primary model gate"
+  default_prompt: "Use $orchestration to execute the task with the user's selected primary model and effort; follow its internal routing, child validation, and acceptance rules without a startup confirmation or route declaration."
