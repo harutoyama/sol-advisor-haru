@@ -153,6 +153,9 @@ if grep -Fq 'perform nearly the same investigation, edit, or verification afterw
   fail "restrictive parent-reverification delegation wording remains"
 fi
 grep -Fq 'completion reserve' "$skill" || fail "completion reserve rule missing"
+grep -Fq 'Reuse resolved findings for the same question' "$skill" || fail "settled-evidence reuse rule missing"
+grep -Fq "Complete the user's requested endpoint" "$skill" || fail "requested-endpoint completion rule missing"
+grep -Fq 'required CI, explicit user criteria' "$ops" || fail "risk-based acceptance rule missing"
 grep -Fq 'sol_advisor_luna_explorer' "$skill" || fail "explorer routing missing"
 grep -Fq 'sol_advisor_luna_worker' "$skill" || fail "worker routing missing"
 grep -Fq 'sol_advisor_luna_tester' "$skill" || fail "tester routing missing"
