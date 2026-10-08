@@ -1,7 +1,7 @@
 {
   "name": "sol-advisor",
   "version": "0.104.1",
-  "description": "Haru fork of Sol Advisor with a High-default primary effort preflight and Sol-led bounded model-pinned delegation.",
+  "description": "Haru fork of Sol Advisor with Sol-led selective delegation and task-scoped child validation.",
   "author": {
     "name": "Daniel McAteer / Haru fork",
     "url": "https://github.com/harutoyama/sol-advisor-haru"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
-    "shortDescription": "Sol starts High, gates Medium vs High pre-tool, then uses bounded Luna delegation.",
-    "longDescription": "Sol Advisor starts GPT-6.1 Sol / High by default and performs a tool-free primary-effort gate before substantive work. Bounded low-to-moderate-risk tasks are redirected to a fresh GPT-6.1 Sol / Medium task rather than changing effort in-session. After the primary effort matches, GPT-6.1 Sol owns architecture, decomposition, integration, escalation, and final acceptance. GPT-6 Luna / Max explorer, worker, tester, and researcher roles are preferred for substantial bounded workstreams that can be instructed independently, with low fanout and compact evidence reuse. GPT-5.6 Terra / High remains a judgment-heavy implementation exception, and fresh GPT-6.1 Sol / High review remains a high-risk final gate. Model pins, fork_turns: none, runtime evidence checks, and fail-closed installation are preserved.",
+    "shortDescription": "Use the selected primary settings; delegate bounded work to Luna.",
+    "longDescription": "Start immediately with the user's primary model and effort. The orchestration skill owns internal routing, bounded Luna delegation, risk-based verification, compact evidence, and exception-only Terra or fresh Sol review. Auxiliary profiles retain explicit pins, sandbox checks, fail-closed validation, and compatibility-safe installation.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": [
@@ -29,8 +29,7 @@
     ],
     "websiteURL": "https://github.com/harutoyama/sol-advisor-haru",
     "defaultPrompt": [
-      "Use $sol-advisor:orchestration to run the PRIMARY EFFORT gate before task tools. Start from Sol / High by default; if the task is medium-recommended, stop and restart it as a fresh Sol / Medium task instead of switching effort in-session.",
-      "After the primary effort matches, declare the SELECTIVE ROUTE; keep architecture and final acceptance in Sol, prefer Luna for substantial bounded workstreams that can be independently instructed while keeping delegation substitution-based, normally keep fanout at 0-1, and reserve Terra and fresh Sol review for explicit exception cases."
+      "Use $sol-advisor:orchestration to carry out the user's task using their selected primary model and effort. Follow the skill's routing, delegation, safety, and acceptance rules without a startup model confirmation or routine route declaration."
     ]
   }
 }

@@ -11,18 +11,14 @@ The portable Agent Plugins manifest at `plugins/sol-advisor/plugin.json` is cano
 `plugins/sol-advisor/.codex-plugin/plugin.json` remains as the Codex compatibility manifest.
 The repo marketplace at `.agents/plugins/marketplace.json` points to `./plugins/sol-advisor`.
 
-## Role pins and primary evidence
+## Role pins and primary execution
 
-The primary task starts on `gpt-6.1-sol` / `high` by default. Before task tools, the root skill
-performs its primary-effort gate. A `medium-recommended` decision may proceed only in a fresh
-`gpt-6.1-sol` / `medium` task; a `high` decision requires `gpt-6.1-sol` / `high`. Runtime
-metadata must match the gate before work starts. Missing or conflicting evidence is fail-closed.
+The user-selected primary model and effort are authoritative. There is no primary
+model/effort preflight, confirmation prompt, or restart gate. Risk assessment determines
+routing, isolation, and acceptance scrutiny only. The primary is responsible for Sol-led
+architecture, integration, and final acceptance regardless of its current runtime setting.
 
-Do not implement the gate by changing reasoning effort inside an active task/session. Current Codex
-code has step-scoped reasoning-effort machinery on supported surfaces, but this workflow
-intentionally treats primary effort as a task-start decision so one task has one primary effort and
-one auditable runtime contract. The gate therefore redirects to a fresh task when the current
-effort does not match.
+The following pins apply **only to auxiliary custom agents**, not to the primary task.
 
 | Role type | Model | Effort | Operational use |
 |---|---|---|---|
@@ -82,9 +78,16 @@ Research adds its own independent check:
 | luna | `--check --check-role luna-research` |
 | split | one `--check --check-role luna-research` check; fanout uses the same pinned Luna role |
 
-Unknown roles fail before mutation. Cache a successful check only for the current task. Missing,
-conflicting, unavailable, or unobservable role/model/effort evidence stops that lane rather than
-triggering a silent substitute.
+Unknown roles fail before mutation. Check only selected role profiles, just before their
+first use. Reuse a successful installed-profile check within the same task for the same
+role and unchanged effective configuration; shared-role fanout needs only one profile
+check. Invalidate that result after agent-file edits/reinstallation, config or scope
+changes affecting the role, contradictory evidence, or a new task/session. Do not reuse
+one child thread's runtime evidence for another thread.
+
+Missing, conflicting, unavailable, or unobservable required role/model/effort evidence
+stops that auxiliary lane rather than triggering a silent substitute. If no auxiliary
+is selected, no auxiliary preflight is required.
 
 ## Convergence reserve and waits
 
@@ -120,8 +123,12 @@ manually.
 
 ## Runtime routing evidence
 
-Public spawn/details metadata is authoritative when available. If it omits routing fields, use the
-local inspector for the exact native thread:
+Confirm each spawned child matches its selected custom-agent role and exact model/effort
+pin; verify the effective sandbox/permission controls required by that lane. Public
+spawn/details metadata suffices when it exposes all needed fields consistently. Do not
+inspect local session JSONL routinely or when public evidence is already complete.
+
+If needed fields are missing, inspect **only the exact child thread** using:
 
 ```sh
 skill_dir=<directory-containing-SKILL.md>
@@ -129,11 +136,14 @@ runtime_inspector="$skill_dir/../../scripts/inspect-agent-runtime.sh"
 sh "$runtime_inspector" <native-subagent-thread-id>
 ```
 
-Accepted routing evidence is Luna / max for explorer, worker, tester, and substantive bounded
-research; Terra / high only for judgment-heavy implementation exceptions; and GPT-6.1 Sol / high
-for fresh high-risk review. The legacy Luna implementer remains Luna / max and the legacy Terra
-researcher remains Terra / high when explicitly used for compatibility. If public and local evidence both exist,
-they must agree. The inspector is evidence, not a model-selection fallback.
+Use that local evidence only to fill gaps, never as an alternative model-selection path.
+If both public and local evidence were obtained they must agree. Missing/conflicting
+model, effort, role, or required isolation/permission evidence fails closed for that lane.
+Any new child must be checked independently, even when its installed profile check is cached.
+
+Accepted routing evidence: Luna / max for explorer, worker, tester, and bounded research;
+Terra / high for judgment-heavy implementation exceptions; GPT-6.1 Sol / high for
+fresh high-risk review. Legacy profiles retain their installed pins only for compatibility.
 
 ## Explorer and researcher isolation
 
