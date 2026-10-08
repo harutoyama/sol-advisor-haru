@@ -182,10 +182,14 @@ Never claim enforced read-only isolation from the TOML alone.
 ## Acceptance evidence
 
 Auxiliary reports never replace direct primary inspection. Before acceptance, inspect the complete
-actual diff, confirm changed-file scope, rerun required acceptance-critical checks, and evaluate
-required artifact/runtime evidence. Do not mechanically replay every child-local check when its
-compact evidence is sufficient and the check is not part of final acceptance. If evidence conflicts with the selected role/model/effort or shows an
-unauthorized mutation, reject that auxiliary result and reroute only through an explicit valid lane.
+actual diff, confirm changed-file scope, and evaluate required artifact/runtime evidence. Select
+checks by changed behavior, dependencies, regression and scientific risk, and user acceptance
+criteria. Reuse passing evidence only when code, inputs, environment, and check conditions are
+unchanged; new failures, counterevidence, or changed conditions invalidate affected checks.
+Do not replay child-local checks without cause, but never omit acceptance-critical checks,
+required CI, explicit user criteria, or necessary scientific/regression validation. If evidence
+conflicts with the selected role/model/effort or shows an unauthorized mutation, reject that
+auxiliary result and reroute only through an explicit valid lane.
 
 ## Maintainer verification
 
