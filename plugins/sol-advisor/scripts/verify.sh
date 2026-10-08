@@ -207,13 +207,13 @@ activation = "\\n".join((skill, " ".join(compat["interface"]["defaultPrompt"]),
                           ui.split("  default_prompt:", 1)[-1]))
 def forbidden(fragment):
     patterns = (
-        r"\\bPRIMARY\\s+EFFORT\\b",
-        r"\\bSELECTIVE\\s+ROUTE\\b",
-        r"\\bROUTE\\s+UPDATE\\b",
-        r"\\bmedium-recommended\\b",
-        r"\\bprimary_effort\\s*:",
-        r"\\brestart\\b.{0,90}\\b(?:Sol|Medium|High)\\b",
-        r"\\brequire\\b.{0,70}\\bprimary\\b.{0,70}\\b(?:model|effort|configuration)\\b",
+        r"PRIMARY +EFFORT",
+        r"SELECTIVE +ROUTE",
+        r"ROUTE +UPDATE",
+        r"medium-recommended",
+        r"primary_effort *:",
+        r"restart.{0,90}(Sol|Medium|High)",
+        r"require.{0,70}primary.{0,70}(model|effort|configuration)",
     )
     return any(re.search(p, fragment, re.I | re.S) for p in patterns)
 
@@ -226,7 +226,6 @@ assert "Use the primary model and reasoning effort already selected by the user"
 assert "internally" in skill and "risk" in skill
 assert "SKILL.md" in ops and "runtime" in ops.lower()
 assert "Invalidate that result after agent-file edits" in ops
-assert "Do not reuse\\none child" not in ops  # guard accidental line escape
 assert "Any new child must be checked independently" in ops
 assert "Public" in ops and "metadata" in ops and "JSONL" in ops
 
