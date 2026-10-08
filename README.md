@@ -45,7 +45,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.104.2"
+workdir="$HOME/Downloads/sol-advisor-haru-0.105.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -73,7 +73,7 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.104.2 checkout and run the installer. Existing unmodified 0.102.2 profiles are
+Then use a fresh 0.105.0 checkout and run the installer. Existing unmodified 0.102.2 profiles are
 preserved byte-for-byte; the installer adds the explorer, worker, and tester profiles without
 rewriting the previous implementation, review, or researcher profiles. If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
