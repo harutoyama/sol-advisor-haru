@@ -260,7 +260,7 @@ for slug, (model, effort, sandbox) in expected.items():
     assert (profile["model"], profile["model_reasoning_effort"]) == (model, effort), path
     if sandbox:
         assert profile.get("sandbox_mode") == sandbox, path
-    if slug not in {"sol-reviewer", "terra-implementer"}:
+    if slug not in {"sol-reviewer", "terra-implementer", "luna-implementer"}:
         assert profile["agents"]["enabled"] is False, path
 
 assert "fork_turns: none" in skill
