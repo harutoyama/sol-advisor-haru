@@ -26,8 +26,8 @@ Assess scope, uncertainty, reversibility, security/privacy/data-loss/migration/p
 retry cost, and acceptance risk to choose delegation and verification depth—not to prescribe the
 primary model or effort. Keep `mode: solo | delegate | audit | full`,
 `research: none | inline | luna | split`, `fanout: 0..5`, and task-specific risk
-internally. Do not emit routine PRIMARY EFFORT, SELECTIVE ROUTE, or ROUTE UPDATE
-blocks or pause for a routing checkpoint. Explain only a material change of approach,
+internally. Do not emit routine primary-effort or routing-status blocks, or pause for a
+routing checkpoint. Explain only a material change of approach,
 newly observed risk/conflict, required approval, or a consequential escalation. Re-evaluate
 routing when evidence changes, without repeating an unchanged declaration.
 
