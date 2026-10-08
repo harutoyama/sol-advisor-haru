@@ -1,6 +1,6 @@
 ---
 name: orchestration
-description: "Codex-native Sol-led routing: GPT-6.1 Sol owns architecture, integration, and acceptance; bounded Luna roles are preferred for substantial independently assignable workstreams; Terra and fresh Sol review remain explicit exceptions."
+description: "Codex-native Sol-led orchestration using the user-selected primary model and effort; bounded Luna workstreams, fail-closed child verification, and exception-only Terra or fresh Sol review."
 ---
 
 # Sol Advisor Orchestration
