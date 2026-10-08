@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "sol-advisor",
-  "version": "0.104.1",
+  "version": "0.104.2",
   "description": "Haru fork of Sol Advisor with Sol-led bounded delegation, user-selected primary settings, and child-only model/effort validation."
 }

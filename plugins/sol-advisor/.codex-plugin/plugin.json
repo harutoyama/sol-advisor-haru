@@ -1,6 +1,6 @@
 {
   "name": "sol-advisor",
-  "version": "0.104.1",
+  "version": "0.104.2",
   "description": "Haru fork of Sol Advisor with Sol-led selective delegation and task-scoped child validation.",
   "author": {
     "name": "Daniel McAteer / Haru fork",
