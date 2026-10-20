@@ -47,21 +47,8 @@ or that clearly govern task execution, and only the delegated-work-relevant subs
 on a particular skill name or path, copy complete skill bodies, copy the available-skill catalog,
 or copy parent history. An empty capsule is valid when no cross-cutting constraint applies.
 
-### Researcher evidence retrieval invariant
-
-- Budget total model-visible tool output across the workstream; per-command caps do not make
-  aggregate output bounded.
-- For unknown or potentially large sources, start with size/count/status, an index/summary, or
-  filters. Then read only relevant files, symbols, or ranges and expand only when needed.
-- Parallel tool execution is allowed, but never concatenate multiple raw results into one large
-  model-visible payload.
-- When bulky raw evidence must be retained, keep it in the source or an artifact when possible and
-  return a summary plus precise evidence references rather than the raw body.
-- If a tool reports truncation, narrow/filter the scope and retrieve again. Do not use truncation
-  as the normal retrieval strategy.
-- Preserve provenance and scientific evidence needed to support findings; compression must not
-  erase the evidence trail.
-- Keep the final return within the compact `RESEARCH REPORT` contract above.
+Evidence collection mechanics (tool-output budgets, filtering, and progressive retrieval)
+are outside this role contract. Its scope is evidence requirements and compact handoffs.
 
 Researchers are read-only: no implementation, mutation, formatting, fixes, commits, pushes, PR
 actions, or nested delegation. Return synthesized evidence, not raw file contents, long search
