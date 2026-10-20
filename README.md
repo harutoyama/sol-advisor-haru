@@ -10,6 +10,16 @@ The skill's [root contract](plugins/sol-advisor/skills/orchestration/SKILL.md) i
 single source of routing policy. Detailed role contracts and operational verification
 are loaded only as needed.
 
+## Responsibility boundary
+
+Sol Advisor owns agent routing, delegation, role contracts, and acceptance. Its compact
+child reports and completion reserve are orchestration requirements, not general-purpose
+context-optimization policies. Static token audits and bounded progressive retrieval of
+large tool results belong to a separate, independently usable skill such as
+`context-budget`. Sol Advisor does not require or automatically invoke that skill.
+When both are selected, use context-budget for evidence acquisition and Sol Advisor for
+routing and child handoff contracts.
+
 | Auxiliary role | Pin | Purpose |
 |---|---|---|
 | Luna explorer / worker / tester / researcher | GPT-6 Luna / Max | Independently bounded exploration, implementation, verification, and read-only research |
