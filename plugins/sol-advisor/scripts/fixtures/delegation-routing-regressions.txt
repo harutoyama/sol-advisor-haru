@@ -1,7 +1,11 @@
 scenario|expected_mode|expected_research|expected_role|expected_fanout
 substantial repo mapping with unknown implementation surface|delegate|none|sol_advisor_luna_explorer|1
 settled bounded implementation|delegate|none|sol_advisor_luna_worker|1
+routine multi-file implementation with settled interfaces|delegate|none|sol_advisor_luna_worker|1
+complex causal debugging with difficult tradeoffs at intake|delegate|none|sol_advisor_terra_implementer|1
+judgment-heavy scientific implementation within settled architecture|delegate|none|sol_advisor_terra_implementer|1
 non-trivial independent regression verification|delegate|none|sol_advisor_luna_tester|1
 substantive static self-contained research|solo|luna|sol_advisor_luna_researcher|1
+conflicting methodological evidence requiring interpretation|solo|terra|sol_advisor_terra_researcher|1
 tiny local change|solo|none|none|0
 strongly live-state-coupled operation|solo|none|none|0

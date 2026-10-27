@@ -1,6 +1,6 @@
 {
   "name": "sol-advisor",
-  "version": "0.105.0",
+  "version": "0.106.0",
   "description": "Haru fork of Sol Advisor with Sol-led selective delegation and task-scoped child validation.",
   "author": {
     "name": "Daniel McAteer / Haru fork",
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Sol Advisor (Haru fork)",
-    "shortDescription": "Use the selected primary settings; delegate bounded work to Luna.",
-    "longDescription": "Start immediately with the user's primary model and effort. The orchestration skill owns internal routing, bounded Luna delegation, risk-based verification, compact evidence, and exception-only Terra or fresh Sol review. Auxiliary profiles retain explicit pins, sandbox checks, fail-closed validation, and compatibility-safe installation.",
+    "shortDescription": "Honor primary settings; route routine work to Luna and complex judgment to Terra.",
+    "longDescription": "Start immediately with the user's primary model and effort. The orchestration skill routes bounded routine work to Luna / Max and judgment-heavy work directly to Terra 6.1 / High, with primary-owned decisions, risk-based verification and high-risk-only fresh Sol review. Auxiliary profiles retain explicit pins, sandbox checks, fail-closed validation and safe installation.",
     "developerName": "Daniel McAteer / Haru fork",
     "category": "Productivity",
     "capabilities": [
