@@ -5,13 +5,15 @@ set -eu
 
 usage() {
   cat <<'EOF'
-Usage: install-agents.sh [--target-dir PATH] [--check] [--check-role ROLE ...]
+Usage: install-agents.sh [--target-dir PATH] [--check] [--check-role ROLE ...] [--upgrade-known]
 
 Roles: luna-exploration, luna-worker, luna-testing, luna-implementation, terra-implementation, sol-review, luna-research, terra-research
 
 Normal mode installs the eight current profiles. It never overwrites modified, symlinked,
 non-regular, conflicting, or obsolete Sol Advisor profiles. --check is non-mutating.
---check-role is repeatable and implies --check.
+--check-role is repeatable and implies --check. --upgrade-known explicitly upgrades
+only pristine prior-release Terra 5.6 profiles to Terra 6.1; any other changed
+content still blocks the entire install before mutation.
 
 Haru fork 0.7.0 capability profiles are migration hazards. If present, the installer
 classifies and reports them, performs no mutation, and exits nonzero. Remove or archive only
@@ -72,7 +74,20 @@ classify() {
   elif cmp -s "$source_path" "$destination"; then
     printf '%s\n' current
   else
-    printf '%s\n' conflict
+    case "$source_path" in
+      "$terra_template"|"$terra_research_template")
+        # Accept only the exact old distributed template with its former model line.
+        # All other modifications (including comments) remain protected.
+        if grep -Fqx 'model = "gpt-6.1-terra"' "$source_path" &&
+           sed 's/^model = "gpt-6.1-terra"$/model = "gpt-5.6-terra"/' "$source_path" |
+             cmp -s - "$destination"; then
+          printf '%s\n' legacy-terra
+        else
+          printf '%s\n' conflict
+        fi
+        ;;
+      *) printf '%s\n' conflict ;;
+    esac
   fi
 }
 
@@ -110,6 +125,26 @@ install_one() {
   printf '%s\n' "INSTALLED: $destination"
 }
 
+upgrade_one() {
+  source_path=$1
+  destination=$2
+  staged=$(mktemp "$target_dir/.sol-advisor-agent.XXXXXX") ||
+    fail "could not create upgrade staging file for $destination"
+  if ! cp "$source_path" "$staged"; then
+    rm -f "$staged"
+    fail "could not stage upgrade of $destination"
+  fi
+  if [ "$(classify "$source_path" "$destination")" != legacy-terra ]; then
+    rm -f "$staged"
+    fail "destination changed after preflight; refusing upgrade: $destination"
+  fi
+  if ! mv -f "$staged" "$destination"; then
+    rm -f "$staged"
+    fail "could not atomically replace prior pristine Terra profile: $destination"
+  fi
+  printf '%s\n' "UPGRADED: $destination"
+}
+
 script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
 template_dir=$script_dir/../agents
 
@@ -122,6 +157,7 @@ fi
 
 check_only=0
 check_roles=''
+upgrade_known=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -134,6 +170,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --check)
       check_only=1
+      shift
+      ;;
+    --upgrade-known)
+      upgrade_known=1
       shift
       ;;
     --check-role)
@@ -243,6 +283,12 @@ for role in luna-exploration luna-worker luna-testing luna-implementation terra-
       }
       ;;
     current) ;;
+    legacy-terra)
+      if [ "$upgrade_known" -ne 1 ] || [ "$check_only" -eq 1 ]; then
+        printf '%s\n' "ERROR: old Terra profile needs explicit --upgrade-known: $destination" >&2
+        preflight_failed=1
+      fi
+      ;;
     unsafe)
       printf '%s\n' "ERROR: unsafe destination: $destination" >&2
       preflight_failed=1
@@ -280,6 +326,10 @@ for role in luna-exploration luna-worker luna-testing luna-implementation terra-
   case "$(classify "$source" "$destination")" in
     current) printf '%s\n' "UNCHANGED: $destination" ;;
     missing) install_one "$source" "$destination" ;;
+    legacy-terra)
+      [ "$upgrade_known" -eq 1 ] || fail "explicit upgrade flag lost"
+      upgrade_one "$source" "$destination"
+      ;;
     *) fail "destination changed after preflight: $destination" ;;
   esac
 done
