@@ -83,25 +83,23 @@ The installed profile is `sol_advisor_luna_researcher`, pinned to `gpt-6-luna` /
 the supplied research packet. If the investigation requires material scientific, methodological,
 architectural, or
 conflict-resolution judgment beyond the bounded scope, stop and return the evidence and gap so the
-primary can explicitly route-update.
+primary can explicitly reroute only the newly complex scope.
 
-## Legacy Terra researcher (compatibility only)
+## Terra judgment-heavy researcher
 
-The current route does not select Terra for research. Luna gathers bounded evidence and
-returns conflicts or gaps; the primary Sol owns judgment-heavy scientific, methodological,
-architectural, or causal adjudication. Keep this profile only so existing 0.102.x installations
-remain fail-closed and byte-stable.
-
-Only when an explicit compatibility/migration path requires the legacy role, spawn:
+When the root selects scientific, methodological, causal, or conflicting-evidence
+research that requires nontrivial judgment, spawn **directly**:
 
 ```text
 agent_type: sol_advisor_terra_researcher
 fork_turns: none
 ```
 
-The installed profile is `sol_advisor_terra_researcher`. Do not choose it for new Luna-first
-routing. When used for compatibility, stay inside the supplied research packet and preserve its
-existing read-only contract.
+The profile is pinned to `gpt-6.1-terra` / `high`. Use the shared bounded read-only
+research packet and compact report contract. Terra distinguishes observation and
+inference, evaluates conflicting evidence, and reports conclusions with uncertainty.
+The primary retains scientific, architectural, integration, and acceptance decisions.
+Terra research is a normal selectable lane, not a compatibility-only or post-Luna stage.
 
 ## Luna repository explorer
 
@@ -223,9 +221,10 @@ agent_type: sol_advisor_terra_implementer
 fork_turns: none
 ```
 
-The installed profile is `sol_advisor_terra_implementer`. Execute only the settled implementation
-contract and surface unresolved architecture or scope conflicts instead of silently broadening the
-task.
+The installed profile is `sol_advisor_terra_implementer`, pinned to `gpt-6.1-terra` /
+`high`. Select it directly for known judgment-heavy implementation, or explicitly reroute
+newly complex scope. Execute only the settled implementation contract and surface unresolved
+parent-owned architecture or scope conflicts instead of silently broadening the task.
 
 ## Fresh Sol reviewer
 
