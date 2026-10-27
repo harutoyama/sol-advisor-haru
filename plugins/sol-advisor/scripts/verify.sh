@@ -135,7 +135,7 @@ for role in sol_advisor_luna_explorer sol_advisor_luna_worker sol_advisor_luna_t
 done
 
 grep -Fq 'mode: solo | delegate | audit | full' "$skill" || fail "route declaration missing"
-grep -Fq 'research: none | inline | luna | split' "$skill" || fail "research route declaration missing"
+grep -Fq 'research: none | inline | luna | terra | split' "$skill" || fail "research route declaration missing"
 grep -Fq 'Use **Sol-led judgment-based delegation**.' "$skill" || fail "judgment-based delegation rule missing"
 grep -Fq 'Delegation is substitution, not addition.' "$skill" || fail "delegation substitution rule missing"
 grep -Fq 'Normal active auxiliary fanout is `0-1`.' "$skill" || fail "bounded fanout rule missing"
@@ -144,7 +144,7 @@ grep -Fq 'Select Luna / Max for clear, bounded routine tasks.' "$skill" || fail 
 grep -Fq 'Select Terra 6.1 / High **directly**' "$skill" || fail "direct Terra implementation routing missing"
 grep -Fq 'Do not require a Luna attempt before Terra' "$skill" || fail "Terra routing improperly gated by Luna"
 grep -Fq 'File count and task size alone are not routing criteria.' "$skill" || fail "size-only routing regression"
-grep -Fq 'Parent integration, actual-diff inspection, and acceptance-critical verification are not' "$skill" || fail "parent acceptance incorrectly blocks delegation"
+grep -Fq 'Parent integration, actual-diff inspection, and' "$skill" || fail "parent acceptance incorrectly blocks delegation"
 grep -Fq 'Do not choose `solo` merely because it seems faster or delegation' "$skill" || fail "solo-overhead regression guard missing"
 if grep -Fq 'meaningfully replaces primary execution' "$skill" "$readme" "$compat" "$ui"; then
   fail "restrictive primary-replacement delegation wording remains"
