@@ -26,10 +26,10 @@ The following pins apply **only to auxiliary custom agents**, not to the primary
 | `sol_advisor_luna_worker` | `gpt-6-luna` | `max` | Bounded routine implementation with local edit/verify/repair; nested agents disabled |
 | `sol_advisor_luna_tester` | `gpt-6-luna` | `max` | Targeted verification and regression evidence; nested agents disabled |
 | `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Legacy 0.102.x implementation compatibility profile |
-| `sol_advisor_terra_implementer` | `gpt-5.6-terra` | `high` | Judgment-heavy implementation exception |
+| `sol_advisor_terra_implementer` | `gpt-6.1-terra` | `high` | Judgment-heavy implementation, including direct initial routing |
 | `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | High-risk fresh final review; requests read-only sandbox |
 | `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Bounded substantive read-only research; nested agents disabled |
-| `sol_advisor_terra_researcher` | `gpt-5.6-terra` | `high` | Legacy 0.102.x research compatibility profile |
+| `sol_advisor_terra_researcher` | `gpt-6.1-terra` | `high` | Judgment-heavy read-only research, selectable directly |
 
 Each custom-agent TOML pins its own model and reasoning effort. Do not attach per-spawn model or
 reasoning overrides. Codex configuration can define `agents.default_subagent_model` and
@@ -56,7 +56,6 @@ sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-testi
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-implementation
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role sol-review
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role luna-research
-# legacy compatibility only:
 sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-research
 ```
 
@@ -66,7 +65,7 @@ sh plugins/sol-advisor/scripts/install-agents.sh --check --check-role terra-rese
 | Luna exploration | `--check --check-role luna-exploration` |
 | Luna worker | `--check --check-role luna-worker` |
 | Luna tester | `--check --check-role luna-testing` |
-| Terra implementation exception | `--check --check-role terra-implementation` |
+| Terra implementation | `--check --check-role terra-implementation` |
 | high-risk fresh review | `--check --check-role sol-review` |
 | legacy 0.102.x Luna implementation compatibility | `--check --check-role luna-implementation` |
 
@@ -76,7 +75,8 @@ Research adds its own independent check:
 |---|---|
 | none / inline | None |
 | luna | `--check --check-role luna-research` |
-| split | one `--check --check-role luna-research` check; fanout uses the same pinned Luna role |
+| terra | `--check --check-role terra-research` |
+| split | check each distinct selected researcher role once (Luna and/or Terra) |
 
 Unknown roles fail before mutation. Check only selected role profiles, just before their
 first use. Reuse a successful installed-profile check within the same task for the same
@@ -99,6 +99,16 @@ expansion and converge from evidence already collected.
 For long-running processes or child work, use native wait/status mechanisms when available. Do not
 spend repeated model turns polling unchanged state.
 
+## Exact-match Terra profile update
+
+The standard installer is fail-closed: it will not silently replace stale or modified
+profiles. Explicitly run `install-agents.sh --upgrade-known` to update only
+pristine old Terra implementer/researcher profiles that byte-match the shipped
+template after reverting just the model line to `gpt-5.6-terra`.
+Any other difference blocks all changes before mutation. Then run
+`install-agents.sh --check` and start a new Codex session. Updating the plugin
+alone does not update installed role files; obsolete 0.7.0 profiles still block.
+
 ## 0.7.0 capability-role migration
 
 Haru fork 0.7.0 installed these obsolete role names:
@@ -107,7 +117,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.105.0 installer treats any of them as a migration hazard and stops before changing the
+The 0.106.0 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -141,9 +151,10 @@ If both public and local evidence were obtained they must agree. Missing/conflic
 model, effort, role, or required isolation/permission evidence fails closed for that lane.
 Any new child must be checked independently, even when its installed profile check is cached.
 
-Accepted routing evidence: Luna / max for explorer, worker, tester, and bounded research;
-Terra / high for judgment-heavy implementation exceptions; GPT-6.1 Sol / high for
-fresh high-risk review. Legacy profiles retain their installed pins only for compatibility.
+Accepted routing evidence: Luna / max for bounded routine exploration, implementation,
+testing, and research; Terra 6.1 / high for judgment-heavy implementation or research,
+including direct initial routing; GPT-6.1 Sol / high for fresh high-risk review.
+Only the older Luna implementation profile remains compatibility-only.
 
 ## Explorer and researcher isolation
 
@@ -202,8 +213,8 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.105.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
+The verifier checks the 0.106.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
 pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
 external-mutation constraints, root/reference ownership,
-regression fixtures, installer fresh install, 0.102.2 -> current update behavior, 0.7.0 migration
+regression fixtures, installer fresh install, 0.102.2 -> current update behavior, exact-match Terra model upgrades, 0.7.0 migration
 safety, JSON/TOML/YAML/shell syntax, and worker plus research runtime fixtures.

@@ -13,9 +13,17 @@ are loaded only as needed.
 | Auxiliary role | Pin | Purpose |
 |---|---|---|
 | Luna explorer / worker / tester / researcher | GPT-6 Luna / Max | Independently bounded exploration, implementation, verification, and read-only research |
-| Terra implementer | GPT-5.6 Terra / High | Exception for judgment-heavy implementation after architecture is settled |
+| Terra implementer | GPT-6.1 Terra / High | Judgment-heavy implementation, including direct routing inside settled architecture |
+| Terra researcher | GPT-6.1 Terra / High | Scientific, methodological, causal, and conflicting-evidence research |
 | Fresh Sol reviewer | GPT-6.1 Sol / High | Independent final scrutiny only on high-risk changes |
-| Legacy Luna implementer / Terra researcher | Original pins preserved | Installation and migration compatibility only |
+| Legacy Luna implementer | GPT-6 Luna / Max | Compatibility only |
+
+Route work by judgment and risk. Luna / Max handles routine bounded implementation,
+focused exploration, ordinary evidence gathering, and testing. Terra 6.1 / High
+handles complex implementation, difficult causal debugging, methodological validation,
+and contradictory evidence. Choose Terra directly when difficulty is evident at intake;
+file count or task size alone does not determine the route. The primary retains
+architecture, integration and final acceptance; high-risk Sol review is unchanged.
 
 Delegation is substitution, not addition. The primary inspects actual diffs and performs
 acceptance-critical checks, but does not duplicate child investigations or implementation.
@@ -45,16 +53,16 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.105.0"
+workdir="$HOME/Downloads/sol-advisor-haru-0.106.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 ```
 
 The installer writes eight profiles to `$CODEX_HOME/agents` when `CODEX_HOME` is set,
-otherwise to `~/.codex/agents`. The three bounded Luna execution roles are explorer, worker, and tester; the
-previous five profiles remain installed for compatibility and exception lanes. It is fail-closed: it never overwrites a modified file,
-symlink, non-regular file, unknown conflicting profile, or obsolete 0.7.0 capability profile.
+otherwise to `~/.codex/agents`. The Luna execution roles are explorer, worker, and tester;
+both Terra roles are normally selectable. It is fail-closed and never overwrites
+modified, symlinked, non-regular, unknown, or obsolete 0.7.0 profiles.
 
 Start a fresh Codex task after installing the agents:
 
@@ -73,9 +81,18 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.105.0 checkout and run the installer. Existing unmodified 0.102.2 profiles are
-preserved byte-for-byte; the installer adds the explorer, worker, and tester profiles without
-rewriting the previous implementation, review, or researcher profiles. If any 0.7.0 capability profiles are
+Then use a fresh 0.106.0 checkout. Updating the plugin alone leaves old
+`gpt-5.6-terra` pins in existing agent TOMLs. To migrate unchanged prior-release
+Terra implementer and researcher profiles only:
+
+```sh
+sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --upgrade-known
+sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
+```
+
+Any modified or unknown destination blocks all writes. Reconcile custom profiles
+manually rather than overwriting them. Unchanged other roles remain untouched.
+If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
 unmodified 0.7.0 SHA-256 values are:
 
@@ -130,8 +147,8 @@ The specialized Luna role split was compared against
 Apache-2.0 projects. Sol Advisor keeps its existing MIT codebase and uses independently adapted
 routing/contracts rather than copying their role-file text. In particular, this fork adopts the
 explorer/worker/tester/researcher separation and parallel-workstream discipline while retaining its
-own fail-closed installer, runtime evidence checks, `fork_turns: none`, implementation-only Terra
-exception lane, and high-risk-only fresh Sol review.
+own fail-closed installer, runtime evidence checks, `fork_turns: none`, direct Terra
+judgment-heavy routing, and high-risk-only fresh Sol review.
 
 ## Maintainers
 

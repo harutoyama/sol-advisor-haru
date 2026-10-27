@@ -1,4 +1,4 @@
 interface:
   display_name: "Sol Advisor Orchestration"
-  short_description: "Sol-led bounded delegation, without a primary model gate"
+  short_description: "Judgment-based Luna/Terra routing, no primary gate"
   default_prompt: "Use $orchestration to execute the task with the user's selected primary model and effort; follow its internal routing, child validation, and acceptance rules without a startup confirmation or route declaration."
