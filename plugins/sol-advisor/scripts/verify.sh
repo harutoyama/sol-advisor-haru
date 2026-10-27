@@ -55,11 +55,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.105.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.106.0" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.105.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.106.0" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.105.0 manifests and marketplace path"
+pass "0.106.0 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_explorer" || fail "Luna explorer model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_explorer" || fail "Luna explorer effort pin"
@@ -70,7 +70,7 @@ grep -Fq 'model = "gpt-6-luna"' "$luna_tester" || fail "Luna tester model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_tester" || fail "Luna tester effort pin"
 grep -Fq 'model = "gpt-6-luna"' "$luna_impl" || fail "Luna implementation model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_impl" || fail "Luna implementation effort pin"
-grep -Fq 'model = "gpt-5.6-terra"' "$terra_impl" || fail "Terra implementation model pin"
+grep -Fq 'model = "gpt-6.1-terra"' "$terra_impl" || fail "Terra implementation model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$terra_impl" || fail "Terra implementation effort pin"
 grep -Fq 'model = "gpt-6.1-sol"' "$sol_review" || fail "Sol reviewer model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$sol_review" || fail "Sol reviewer effort pin"
@@ -78,7 +78,7 @@ grep -Fq 'sandbox_mode = "read-only"' "$sol_review" || fail "Sol reviewer read-o
 grep -Fq 'model = "gpt-6-luna"' "$luna_research" || fail "Luna research model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_research" || fail "Luna research effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$luna_research" || fail "Luna researcher read-only request"
-grep -Fq 'model = "gpt-5.6-terra"' "$terra_research" || fail "Terra research model pin"
+grep -Fq 'model = "gpt-6.1-terra"' "$terra_research" || fail "Terra research model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$terra_research" || fail "Terra research effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$terra_research" || fail "Terra researcher read-only request"
 for isolated in "$luna_explorer" "$luna_worker" "$luna_tester" "$luna_research" "$terra_research"; do
@@ -136,11 +136,14 @@ done
 
 grep -Fq 'mode: solo | delegate | audit | full' "$skill" || fail "route declaration missing"
 grep -Fq 'research: none | inline | luna | split' "$skill" || fail "research route declaration missing"
-grep -Fq 'Use **Sol-led bounded delegation**.' "$skill" || fail "Sol-led bounded delegation rule missing"
+grep -Fq 'Use **Sol-led judgment-based delegation**.' "$skill" || fail "judgment-based delegation rule missing"
 grep -Fq 'Delegation is substitution, not addition.' "$skill" || fail "delegation substitution rule missing"
 grep -Fq 'Normal active auxiliary fanout is `0-1`.' "$skill" || fail "bounded fanout rule missing"
 grep -Fq 'Use at most one follow-up' "$skill" || fail "bounded follow-up rule missing"
-grep -Fq 'Prefer Luna whenever a substantial bounded workstream' "$skill" || fail "positive Luna delegation preference missing"
+grep -Fq 'Select Luna / Max for clear, bounded routine tasks.' "$skill" || fail "routine Luna routing missing"
+grep -Fq 'Select Terra 6.1 / High **directly**' "$skill" || fail "direct Terra implementation routing missing"
+grep -Fq 'Do not require a Luna attempt before Terra' "$skill" || fail "Terra routing improperly gated by Luna"
+grep -Fq 'File count and task size alone are not routing criteria.' "$skill" || fail "size-only routing regression"
 grep -Fq 'Parent integration, actual-diff inspection, and acceptance-critical verification are not' "$skill" || fail "parent acceptance incorrectly blocks delegation"
 grep -Fq 'Do not choose `solo` merely because it seems faster or delegation' "$skill" || fail "solo-overhead regression guard missing"
 if grep -Fq 'meaningfully replaces primary execution' "$skill" "$readme" "$compat" "$ui"; then
@@ -161,12 +164,15 @@ grep -Fq 'sol_advisor_luna_worker' "$skill" || fail "worker routing missing"
 grep -Fq 'sol_advisor_luna_tester' "$skill" || fail "tester routing missing"
 grep -Fq 'fresh Sol / High final review' "$skill" || fail "high-risk review rule missing"
 grep -Fq 'fork_turns: none' "$skill" || fail "fresh-context invariant missing"
-grep -Fq 'Prefer `luna` / fanout 1 for any substantive, self-contained, read-only workstream.' "$skill" || fail "bounded Luna research preference missing"
-grep -Fq 'Result dependency is not a reason' "$skill" || fail "result-dependency delegation rule missing"
+grep -Fq 'Bounded fact gathering, literature search' "$skill" || fail "routine Luna research preference missing"
+grep -Fq 'Scientific or methodological validation, ambiguous causal interpretation' "$skill" || fail "Terra research complexity rule missing"
+grep -Fq 'Choose Terra' "$skill" || fail "direct Terra research missing"
+grep -Fq 'Terra research is a normal selectable lane' "$contracts" || fail "Terra researcher still compatibility-only"
+grep -Fq 'parent synthesis, or handoff overhead alone cannot determine' "$skill" || fail "result-dependency research routing rule missing"
 grep -Fq 'Independent read-only exploration/research workstreams' "$skill" || fail "parallel read-only workstream rule missing"
 grep -Fq 'the same investigation or implementation in parallel' "$skill" || fail "parent non-duplication rule missing"
-grep -Fq 'Do not route research to Terra.' "$skill" || fail "Terra research exclusion missing"
-grep -Fq 'Terra is an exception' "$skill" || fail "Terra implementation exception rule missing"
+if grep -Fq 'Do not route research to Terra.' "$skill"; then fail "Terra research incorrectly disabled"; fi
+grep -Fq 'Terra is not selected merely because the task spans multiple files.' "$skill" || fail "Terra size-independent routing missing"
 grep -Fq 'Fresh Sol review is a high-risk final gate' "$skill" || fail "reviewer exception rule missing"
 
 grep -Fq 'agent_type: sol_advisor_luna_explorer' "$contracts" || fail "explorer spawn contract missing"
@@ -189,7 +195,7 @@ grep -Fq 'luna-testing' "$ops" || fail "operations omit tester preflight"
 grep -Fq 'exact eight-role set' "$ops" || fail "operations omit eight-role verifier contract"
 grep -Fq 'Delegation is substitution, not addition.' "$readme" || fail "README does not describe substitution-based delegation"
 grep -Fq 'Design references' "$readme" || fail "README omits upstream design/license note"
-pass "Sol-led bounded delegation and role contracts"
+pass "judgment-based Luna/Terra routing and role contracts"
 
 python3 - "$plugin_dir" "$startup_fixtures" <<'PY'
 import json
@@ -251,9 +257,9 @@ expected = {
     "luna-tester": ("gpt-6-luna", "max", None),
     "luna-researcher": ("gpt-6-luna", "max", "read-only"),
     "luna-implementer": ("gpt-6-luna", "max", None),
-    "terra-implementer": ("gpt-5.6-terra", "high", None),
+    "terra-implementer": ("gpt-6.1-terra", "high", None),
     "sol-reviewer": ("gpt-6.1-sol", "high", "read-only"),
-    "terra-researcher": ("gpt-5.6-terra", "high", "read-only"),
+    "terra-researcher": ("gpt-6.1-terra", "high", "read-only"),
 }
 for slug, (model, effort, sandbox) in expected.items():
     path = plugin / f"agents/sol-advisor-{slug}.toml"
@@ -275,7 +281,7 @@ print("PASS: startup-policy negatives, compact entry points, and parsed child ro
 PY
 pass "primary startup is ungated; child checks remain mandatory"
 
-expected_fixture_lines=7
+expected_fixture_lines=9
 [ "$(wc -l < "$routing_fixtures" | tr -d ' ')" -eq "$expected_fixture_lines" ] ||
   fail "routing regression fixture line count"
 grep -Fqx 'scenario|expected_research|expected_fanout' "$routing_fixtures" || fail "routing fixture header"
@@ -283,12 +289,14 @@ grep -Fqx 'one-symbol lookup|inline|0' "$routing_fixtures" || fail "one-symbol l
 grep -Fqx 'live process manipulation only|inline|0' "$routing_fixtures" || fail "live process regression"
 grep -Fqx 'live mutation + independent multi-file repo/log trace|luna|1' "$routing_fixtures" || fail "S8 mixed live/static regression"
 grep -Fqx 'two unrelated substantial static subsystems|split|2' "$routing_fixtures" || fail "two-workstream split regression"
-grep -Fqx 'conflicting scientific/methodological evidence|luna|1' "$routing_fixtures" || fail "Luna evidence-gathering methodology regression"
+grep -Fqx 'conflicting scientific/methodological evidence|terra|1' "$routing_fixtures" || fail "conflicting methodology evidence must go to Terra"
+grep -Fqx 'methodology validation with inconsistent studies|terra|1' "$routing_fixtures" || fail "methodology validation must go to Terra"
+grep -Fqx 'bounded broad literature evidence collection|luna|1' "$routing_fixtures" || fail "bounded evidence collection must remain Luna"
 grep -Fqx 'five tiny related files|inline-or-luna|0-or-1' "$routing_fixtures" || fail "tiny-related-files regression"
 if grep -Fq 'five tiny related files|split|5' "$routing_fixtures"; then fail "tiny files incorrectly split five ways"; fi
 pass "research routing regression fixtures"
 
-expected_delegation_fixture_lines=7
+expected_delegation_fixture_lines=11
 [ "$(wc -l < "$delegation_fixtures" | tr -d ' ')" -eq "$expected_delegation_fixture_lines" ] ||
   fail "delegation routing regression fixture line count"
 grep -Fqx 'scenario|expected_mode|expected_research|expected_role|expected_fanout' "$delegation_fixtures" ||
@@ -297,15 +305,23 @@ grep -Fqx 'substantial repo mapping with unknown implementation surface|delegate
   fail "substantial repo mapping should prefer Luna explorer"
 grep -Fqx 'settled bounded implementation|delegate|none|sol_advisor_luna_worker|1' "$delegation_fixtures" ||
   fail "settled bounded implementation should prefer Luna worker"
+grep -Fqx 'routine multi-file implementation with settled interfaces|delegate|none|sol_advisor_luna_worker|1' "$delegation_fixtures" ||
+  fail "multi-file routine implementation should remain Luna"
+grep -Fqx 'complex causal debugging with difficult tradeoffs at intake|delegate|none|sol_advisor_terra_implementer|1' "$delegation_fixtures" ||
+  fail "hard root-cause work must route directly to Terra"
+grep -Fqx 'judgment-heavy scientific implementation within settled architecture|delegate|none|sol_advisor_terra_implementer|1' "$delegation_fixtures" ||
+  fail "judgment-heavy implementation must route directly to Terra"
 grep -Fqx 'non-trivial independent regression verification|delegate|none|sol_advisor_luna_tester|1' "$delegation_fixtures" ||
   fail "independent regression verification should prefer Luna tester"
 grep -Fqx 'substantive static self-contained research|solo|luna|sol_advisor_luna_researcher|1' "$delegation_fixtures" ||
   fail "substantive static research should prefer Luna researcher"
+grep -Fqx 'conflicting methodological evidence requiring interpretation|solo|terra|sol_advisor_terra_researcher|1' "$delegation_fixtures" ||
+  fail "Terra must handle judgment-heavy research from intake"
 grep -Fqx 'tiny local change|solo|none|none|0' "$delegation_fixtures" ||
   fail "tiny local change should remain solo"
 grep -Fqx 'strongly live-state-coupled operation|solo|none|none|0' "$delegation_fixtures" ||
   fail "live-state-coupled operation should remain solo"
-pass "positive Luna delegation routing regression fixtures"
+pass "positive Luna/Terra delegation routing regression fixtures"
 
 for role in luna-exploration luna-worker luna-testing luna-implementation terra-implementation sol-review luna-research terra-research; do
   grep -Fq "$role" "$installer" || fail "installer omits unambiguous role check name $role"
@@ -407,7 +423,54 @@ cmp -s "$luna_worker" "$upgrade/sol-advisor-luna-worker.toml" || fail "0.102.x -
 cmp -s "$luna_tester" "$upgrade/sol-advisor-luna-tester.toml" || fail "0.102.x -> current update missing Luna tester"
 cmp -s "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml" || fail "0.102.x update changed Luna researcher unexpectedly"
 cmp -s "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml" || fail "0.102.x update changed Terra researcher unexpectedly"
-pass "0.102.x -> current preserves previous profiles and adds bounded Luna roles"
+pass "unchanged existing profiles remain intact and bounded Luna roles install"
+
+# The default install must reject stale Terra pins; the explicit migration updates
+# only byte-identical prior-release Terra templates and remains idempotent.
+prior=$tmp/prior-terra
+mkdir "$prior"
+for name in sol-advisor-terra-implementer.toml sol-advisor-terra-researcher.toml; do
+  sed 's/^model = "gpt-6.1-terra"$/model = "gpt-5.6-terra"/' "$agents/$name" > "$prior/$name"
+done
+prior_impl_before=$(cksum "$prior/sol-advisor-terra-implementer.toml")
+prior_research_before=$(cksum "$prior/sol-advisor-terra-researcher.toml")
+if sh "$installer" --target-dir "$prior" >/dev/null 2>&1; then
+  fail "default installer silently upgraded old Terra profiles"
+fi
+[ "$prior_impl_before" = "$(cksum "$prior/sol-advisor-terra-implementer.toml")" ] ||
+  fail "default install modified old Terra implementer"
+[ "$prior_research_before" = "$(cksum "$prior/sol-advisor-terra-researcher.toml")" ] ||
+  fail "default install modified old Terra researcher"
+[ ! -e "$prior/sol-advisor-luna-explorer.toml" ] ||
+  fail "default failure partially installed profiles"
+if sh "$installer" --target-dir "$prior" --check --check-role terra-implementation >/dev/null 2>&1; then
+  fail "stale Terra passed preflight"
+fi
+sh "$installer" --target-dir "$prior" --upgrade-known >/dev/null
+sh "$installer" --target-dir "$prior" --upgrade-known >/dev/null
+sh "$installer" --target-dir "$prior" --check >/dev/null
+cmp -s "$terra_impl" "$prior/sol-advisor-terra-implementer.toml" || fail "Terra implementation upgrade mismatch"
+cmp -s "$terra_research" "$prior/sol-advisor-terra-researcher.toml" || fail "Terra research upgrade mismatch"
+pass "explicit pristine Terra 5.6 -> 6.1 upgrade and idempotence"
+
+modified_prior=$tmp/modified-prior-terra
+mkdir "$modified_prior"
+for name in sol-advisor-terra-implementer.toml sol-advisor-terra-researcher.toml; do
+  sed 's/^model = "gpt-6.1-terra"$/model = "gpt-5.6-terra"/' "$agents/$name" > "$modified_prior/$name"
+done
+printf '%s\n' '# user change' >> "$modified_prior/sol-advisor-terra-researcher.toml"
+before_modified_impl=$(cksum "$modified_prior/sol-advisor-terra-implementer.toml")
+before_modified_research=$(cksum "$modified_prior/sol-advisor-terra-researcher.toml")
+if sh "$installer" --target-dir "$modified_prior" --upgrade-known >/dev/null 2>&1; then
+  fail "modified previous Terra profile was overwritten"
+fi
+[ "$before_modified_impl" = "$(cksum "$modified_prior/sol-advisor-terra-implementer.toml")" ] ||
+  fail "partial Terra upgrade before modified-profile refusal"
+[ "$before_modified_research" = "$(cksum "$modified_prior/sol-advisor-terra-researcher.toml")" ] ||
+  fail "modified Terra researcher contents changed"
+[ ! -e "$modified_prior/sol-advisor-luna-explorer.toml" ] ||
+  fail "modified-profile refusal partially installed other roles"
+pass "modified Terra profile blocks entire upgrade before mutation"
 
 unknown=$tmp/unknown
 if sh "$installer" --target-dir "$unknown" --check-role unknown >/dev/null 2>&1; then
@@ -464,7 +527,7 @@ fi
 
 
 cp "$runtime_impl_rollout" "$tmp/worker-rollout-before-conflict"
-printf '%s\n' '{"type":"turn_context","payload":{"model":"gpt-5.6-terra","effort":"high","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' >> "$runtime_impl_rollout"
+printf '%s\n' '{"type":"turn_context","payload":{"model":"gpt-6.1-terra","effort":"high","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' >> "$runtime_impl_rollout"
 if sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_impl_id" >/dev/null 2>&1; then
   fail "conflicting child model/effort runtime evidence unexpectedly accepted"
 fi
@@ -507,4 +570,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: Sol Advisor Haru fork Sol-led bounded delegation and ungated primary startup checks completed"
+printf '%s\n' "VERIFY PASSED: judgment-based Luna/Terra routing, safe Terra upgrades, and ungated primary startup checks completed"
