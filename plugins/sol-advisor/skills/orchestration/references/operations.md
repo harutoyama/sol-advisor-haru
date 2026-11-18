@@ -99,15 +99,16 @@ expansion and converge from evidence already collected.
 For long-running processes or child work, use native wait/status mechanisms when available. Do not
 spend repeated model turns polling unchanged state.
 
-## Exact-match Terra profile update
+## Git-history-matched profile updates
 
-The standard installer is fail-closed: it will not silently replace stale or modified
-profiles. Explicitly run `install-agents.sh --upgrade-known` to update only
-pristine old Terra implementer/researcher profiles that byte-match the shipped
-template after reverting just the model line to `gpt-5.6-terra`.
-Any other difference blocks all changes before mutation. Then run
-`install-agents.sh --check` and start a new Codex session. Updating the plugin
-alone does not update installed role files; obsolete 0.7.0 profiles still block.
+The standard installer is fail-closed: it never silently replaces an existing profile.
+Use `install-agents.sh --upgrade-known` to replace only profiles that byte-match
+a template distributed in the repository's Git history. The entire file must match:
+a model-only match is insufficient. A custom or unknown profile blocks all changes
+before mutation. Full Git history is required to recognize prior templates.
+Then run `install-agents.sh --check` and start a new Codex session.
+Updating the plugin alone does not update installed role files; obsolete 0.7.0
+profiles still block.
 
 ## 0.7.0 capability-role migration
 
@@ -204,9 +205,11 @@ auxiliary result and reroute only through an explicit valid lane.
 
 ## Maintainer verification
 
-From the repository root:
+Edit `config/release.toml`, then from the repository root:
 
 ```sh
+python3 plugins/sol-advisor/scripts/sync-release.py
+python3 plugins/sol-advisor/scripts/sync-release.py --check
 sh plugins/sol-advisor/scripts/verify.sh
 git diff --check
 git status --short
@@ -216,5 +219,5 @@ git diff --stat
 The verifier checks the 0.107.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
 pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
 external-mutation constraints, root/reference ownership,
-regression fixtures, installer fresh install, 0.102.2 -> current update behavior, exact-match Terra model upgrades, 0.7.0 migration
+regression fixtures, installer fresh install, 0.102.2 -> current update behavior, history-matched pristine profile upgrades, 0.7.0 migration
 safety, JSON/TOML/YAML/shell syntax, and worker plus research runtime fixtures.

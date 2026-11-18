@@ -12,8 +12,8 @@ Roles: luna-exploration, luna-worker, luna-testing, luna-implementation, terra-i
 Normal mode installs the eight current profiles. It never overwrites modified, symlinked,
 non-regular, conflicting, or obsolete Sol Advisor profiles. --check is non-mutating.
 --check-role is repeatable and implies --check. --upgrade-known explicitly upgrades
-only pristine prior-release Terra 5.6 profiles to Terra 6.1; any other changed
-content still blocks the entire install before mutation.
+only byte-identical distributed templates from repository Git history;
+any modified or unknown profile blocks the entire install before mutation.
 
 Haru fork 0.7.0 capability profiles are migration hazards. If present, the installer
 classifies and reports them, performs no mutation, and exits nonzero. Remove or archive only
@@ -64,6 +64,20 @@ role_paths() {
   esac
 }
 
+matches_prior() {
+  source_path=$1
+  destination=$2
+  relative=plugins/sol-advisor/agents/$(basename "$source_path")
+  git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
+  # Match entire previously distributed files, never just model lines.
+  for commit in $(git -C "$repo_root" log --format=%H -- "$relative"); do
+    if git -C "$repo_root" show "$commit:$relative" 2>/dev/null | cmp -s - "$destination"; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 classify() {
   source_path=$1
   destination=$2
@@ -74,20 +88,11 @@ classify() {
   elif cmp -s "$source_path" "$destination"; then
     printf '%s\n' current
   else
-    case "$source_path" in
-      "$terra_template"|"$terra_research_template")
-        # Accept only the exact old distributed template with its former model line.
-        # All other modifications (including comments) remain protected.
-        if grep -Fqx 'model = "gpt-6.1-terra"' "$source_path" &&
-           sed 's/^model = "gpt-6.1-terra"$/model = "gpt-5.6-terra"/' "$source_path" |
-             cmp -s - "$destination"; then
-          printf '%s\n' legacy-terra
-        else
-          printf '%s\n' conflict
-        fi
-        ;;
-      *) printf '%s\n' conflict ;;
-    esac
+    if matches_prior "$source_path" "$destination"; then
+      printf '%s\n' known-prior
+    else
+      printf '%s\n' conflict
+    fi
   fi
 }
 
@@ -134,18 +139,19 @@ upgrade_one() {
     rm -f "$staged"
     fail "could not stage upgrade of $destination"
   fi
-  if [ "$(classify "$source_path" "$destination")" != legacy-terra ]; then
+  if [ "$(classify "$source_path" "$destination")" != known-prior ]; then
     rm -f "$staged"
     fail "destination changed after preflight; refusing upgrade: $destination"
   fi
   if ! mv -f "$staged" "$destination"; then
     rm -f "$staged"
-    fail "could not atomically replace prior pristine Terra profile: $destination"
+    fail "could not atomically replace pristine prior-release profile: $destination"
   fi
   printf '%s\n' "UPGRADED: $destination"
 }
 
 script_dir=$(CDPATH= cd "$(dirname "$0")" && pwd) || exit 1
+repo_root=$(CDPATH= cd "$script_dir/../../.." && pwd) || exit 1
 template_dir=$script_dir/../agents
 
 if [ -n "${CODEX_HOME-}" ]; then
@@ -283,9 +289,9 @@ for role in luna-exploration luna-worker luna-testing luna-implementation terra-
       }
       ;;
     current) ;;
-    legacy-terra)
+    known-prior)
       if [ "$upgrade_known" -ne 1 ] || [ "$check_only" -eq 1 ]; then
-        printf '%s\n' "ERROR: old Terra profile needs explicit --upgrade-known: $destination" >&2
+        printf '%s\n' "ERROR: pristine prior-release profile needs explicit --upgrade-known: $destination" >&2
         preflight_failed=1
       fi
       ;;
@@ -326,7 +332,7 @@ for role in luna-exploration luna-worker luna-testing luna-implementation terra-
   case "$(classify "$source" "$destination")" in
     current) printf '%s\n' "UNCHANGED: $destination" ;;
     missing) install_one "$source" "$destination" ;;
-    legacy-terra)
+    known-prior)
       [ "$upgrade_known" -eq 1 ] || fail "explicit upgrade flag lost"
       upgrade_one "$source" "$destination"
       ;;
