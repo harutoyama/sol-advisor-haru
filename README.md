@@ -38,7 +38,7 @@ child's JSONL. Fail closed on missing or contradictory required auxiliary eviden
 ## Install
 
 Requirements: a current Codex CLI or ChatGPT desktop app with plugin and custom-agent support,
-`jq`, `git`, and access to the selected models.
+`jq`, `git`, Python 3.11+, and access to the selected models.
 
 Register this fork as a marketplace:
 
@@ -70,28 +70,31 @@ Start a fresh Codex task after installing the agents:
 Use $sol-advisor:orchestration to build this feature and verify it.
 ```
 
-## Update from Haru fork 0.7.0
+## Update an existing installation
 
-Refresh the configured marketplace snapshot:
+From the checkout created above, use the **same command for every release**:
 
 ```sh
-codex plugin marketplace list
-codex plugin marketplace upgrade sol-advisor
+sh "$workdir/plugins/sol-advisor/scripts/update-local.sh"
 ```
 
-Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
+The updater fast-forwards `main`, fetches full Git history when necessary, verifies
+the release files, refreshes the Codex marketplace and installed plugin, then updates
+only local agent profiles that exactly match historical distributed templates.
+It verifies the installed plugin version and fails if the host did not refresh it.
+If needed, refresh the plugin in the ChatGPT desktop Plugins Directory and restart
+the app. Custom, unknown, symlinked and non-regular profiles are never overwritten.
 
-Then use a fresh 0.107.0 checkout. Updating the plugin alone leaves old
-`gpt-5.6-terra` pins in existing agent TOMLs. To migrate unchanged prior-release
-Terra implementer and researcher profiles only:
+For an agent-only migration, the reusable installer can also be invoked directly:
 
 ```sh
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --upgrade-known
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 ```
 
-Any modified or unknown destination blocks all writes. Reconcile custom profiles
-manually rather than overwriting them. Unchanged other roles remain untouched.
+A complete Git checkout history is required to recognize older distributed templates.
+Any modified or unknown destination blocks all agent writes; reconcile custom profiles
+manually. Unchanged roles remain untouched.
 If any 0.7.0 capability profiles are
 still present, the installer stops before mutation and prints their exact paths. The known
 unmodified 0.7.0 SHA-256 values are:
@@ -139,6 +142,21 @@ sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 
 Start a new task/session after the role files change. The skill invocation remains
 `$sol-advisor:orchestration`.
+
+## Preparing a release
+
+Edit only the four fields in `config/release.toml`, then run from the checkout:
+
+```sh
+python3 plugins/sol-advisor/scripts/sync-release.py
+python3 plugins/sol-advisor/scripts/sync-release.py --check
+sh plugins/sol-advisor/scripts/verify.sh
+```
+
+The synchronizer writes explicit pins in all eight role TOMLs, versions in both manifests,
+and the active model/version references in the documentation. `--check` rejects drift
+without changing files. Commit the synchronized changes, then use the normal local update
+command above on each machine.
 
 ## Design references
 

@@ -22,6 +22,10 @@ readme=$repo_root/README.md
 installer=$script_dir/install-agents.sh
 inspector=$script_dir/inspect-agent-runtime.sh
 syntax=$script_dir/check-config-syntax.py
+release_config=$repo_root/config/release.toml
+sync=$script_dir/sync-release.py
+sync_tests=$script_dir/test-release-sync.py
+update_local=$script_dir/update-local.sh
 routing_fixtures=$script_dir/fixtures/research-routing-regressions.txt
 delegation_fixtures=$script_dir/fixtures/delegation-routing-regressions.txt
 startup_fixtures=$script_dir/fixtures/startup-contract-regressions.txt
@@ -40,7 +44,7 @@ command -v jq >/dev/null 2>&1 || fail "jq is required"
 
 for file in "$portable" "$compat" "$market" "$luna_explorer" "$luna_worker" "$luna_tester" \
   "$luna_impl" "$terra_impl" "$sol_review" "$luna_research" "$terra_research" "$skill" "$ops" \
-  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$routing_fixtures" "$delegation_fixtures" "$startup_fixtures"; do
+  "$contracts" "$ui" "$readme" "$installer" "$inspector" "$syntax" "$release_config" "$sync" "$sync_tests" "$update_local" "$routing_fixtures" "$delegation_fixtures" "$startup_fixtures"; do
   [ -f "$file" ] || fail "missing required file: $file"
 done
 
@@ -49,36 +53,45 @@ toml_count=$(find "$agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d '
 pass "required files and exact eight-role set"
 
 python3 "$syntax" json "$portable" "$compat" "$market"
-python3 "$syntax" toml "$luna_explorer" "$luna_worker" "$luna_tester" "$luna_impl" "$terra_impl" "$sol_review" "$luna_research" "$terra_research"
+python3 "$syntax" toml "$release_config" "$luna_explorer" "$luna_worker" "$luna_tester" "$luna_impl" "$terra_impl" "$sol_review" "$luna_research" "$terra_research"
 python3 "$syntax" yaml "$ui"
-python3 -m py_compile "$syntax"
+python3 -m py_compile "$syntax" "$sync" "$sync_tests"
 pass "JSON, TOML, YAML, and Python syntax"
+python3 "$sync" --check || fail "release configuration drift"
+python3 "$sync_tests" || fail "release synchronization regression tests"
+release_version=$(python3 "$sync" --get version)
+sol_model=$(python3 "$sync" --get models.sol)
+terra_model=$(python3 "$sync" --get models.terra)
+luna_model=$(python3 "$sync" --get models.luna)
+terra_number=${terra_model#gpt-}
+terra_number=${terra_number%-terra}
+pass "release SSOT, drift, idempotence and propagation"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.107.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "$release_version" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.107.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "$release_version" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.107.0 manifests and marketplace path"
+pass "$release_version manifests and marketplace path"
 
-grep -Fq 'model = "gpt-6-luna"' "$luna_explorer" || fail "Luna explorer model pin"
+grep -Fq "model = \"$luna_model\"" "$luna_explorer" || fail "Luna explorer model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_explorer" || fail "Luna explorer effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$luna_explorer" || fail "Luna explorer read-only request"
-grep -Fq 'model = "gpt-6-luna"' "$luna_worker" || fail "Luna worker model pin"
+grep -Fq "model = \"$luna_model\"" "$luna_worker" || fail "Luna worker model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_worker" || fail "Luna worker effort pin"
-grep -Fq 'model = "gpt-6-luna"' "$luna_tester" || fail "Luna tester model pin"
+grep -Fq "model = \"$luna_model\"" "$luna_tester" || fail "Luna tester model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_tester" || fail "Luna tester effort pin"
-grep -Fq 'model = "gpt-6-luna"' "$luna_impl" || fail "Luna implementation model pin"
+grep -Fq "model = \"$luna_model\"" "$luna_impl" || fail "Luna implementation model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_impl" || fail "Luna implementation effort pin"
-grep -Fq 'model = "gpt-6.1-terra"' "$terra_impl" || fail "Terra implementation model pin"
+grep -Fq "model = \"$terra_model\"" "$terra_impl" || fail "Terra implementation model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$terra_impl" || fail "Terra implementation effort pin"
-grep -Fq 'model = "gpt-6.2-sol"' "$sol_review" || fail "Sol reviewer model pin"
+grep -Fq "model = \"$sol_model\"" "$sol_review" || fail "Sol reviewer model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$sol_review" || fail "Sol reviewer effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$sol_review" || fail "Sol reviewer read-only request"
-grep -Fq 'model = "gpt-6-luna"' "$luna_research" || fail "Luna research model pin"
+grep -Fq "model = \"$luna_model\"" "$luna_research" || fail "Luna research model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_research" || fail "Luna research effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$luna_research" || fail "Luna researcher read-only request"
-grep -Fq 'model = "gpt-6.1-terra"' "$terra_research" || fail "Terra research model pin"
+grep -Fq "model = \"$terra_model\"" "$terra_research" || fail "Terra research model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$terra_research" || fail "Terra research effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$terra_research" || fail "Terra researcher read-only request"
 for isolated in "$luna_explorer" "$luna_worker" "$luna_tester" "$luna_research" "$terra_research"; do
@@ -141,7 +154,7 @@ grep -Fq 'Delegation is substitution, not addition.' "$skill" || fail "delegatio
 grep -Fq 'Normal active auxiliary fanout is `0-1`.' "$skill" || fail "bounded fanout rule missing"
 grep -Fq 'Use at most one follow-up' "$skill" || fail "bounded follow-up rule missing"
 grep -Fq 'Select Luna / Max for clear, bounded routine tasks.' "$skill" || fail "routine Luna routing missing"
-grep -Fq 'Select Terra 6.1 / High **directly**' "$skill" || fail "direct Terra implementation routing missing"
+grep -Fq "Select Terra $terra_number / High **directly**" "$skill" || fail "direct Terra implementation routing missing"
 grep -Fq 'Do not require a Luna attempt before Terra' "$skill" || fail "Terra routing improperly gated by Luna"
 grep -Fq 'File count and task size alone are not routing criteria.' "$skill" || fail "size-only routing regression"
 grep -Fq 'Parent integration, actual-diff inspection, and' "$skill" || fail "parent acceptance incorrectly blocks delegation"
@@ -251,15 +264,17 @@ try:
     import tomllib
 except ModuleNotFoundError:
     import tomli as tomllib
+with (plugin.parents[1] / "config/release.toml").open("rb") as config:
+    release_models = tomllib.load(config)["models"]
 expected = {
-    "luna-explorer": ("gpt-6-luna", "max", "read-only"),
-    "luna-worker": ("gpt-6-luna", "max", "workspace-write"),
-    "luna-tester": ("gpt-6-luna", "max", None),
-    "luna-researcher": ("gpt-6-luna", "max", "read-only"),
-    "luna-implementer": ("gpt-6-luna", "max", None),
-    "terra-implementer": ("gpt-6.1-terra", "high", None),
-    "sol-reviewer": ("gpt-6.2-sol", "high", "read-only"),
-    "terra-researcher": ("gpt-6.1-terra", "high", "read-only"),
+    "luna-explorer": (release_models["luna"], "max", "read-only"),
+    "luna-worker": (release_models["luna"], "max", "workspace-write"),
+    "luna-tester": (release_models["luna"], "max", None),
+    "luna-researcher": (release_models["luna"], "max", "read-only"),
+    "luna-implementer": (release_models["luna"], "max", None),
+    "terra-implementer": (release_models["terra"], "high", None),
+    "sol-reviewer": (release_models["sol"], "high", "read-only"),
+    "terra-researcher": (release_models["terra"], "high", "read-only"),
 }
 for slug, (model, effort, sandbox) in expected.items():
     path = plugin / f"agents/sol-advisor-{slug}.toml"
@@ -344,6 +359,7 @@ fi
 pass "README uses marketplace CLI plus Plugins Directory"
 
 sh -n "$installer"
+sh -n "$update_local"
 sh -n "$inspector"
 sh -n "$0"
 pass "shell syntax"
@@ -425,39 +441,45 @@ cmp -s "$luna_research" "$upgrade/sol-advisor-luna-researcher.toml" || fail "0.1
 cmp -s "$terra_research" "$upgrade/sol-advisor-terra-researcher.toml" || fail "0.102.x update changed Terra researcher unexpectedly"
 pass "unchanged existing profiles remain intact and bounded Luna roles install"
 
-# The default install must reject stale Terra pins; the explicit migration updates
-# only byte-identical prior-release Terra templates and remains idempotent.
+# Exact prior distributed files from Git history are eligible for explicit upgrade.
+# A modified historical file must block all writes, without partial installs.
+historical=$tmp/historical-terra
+mkdir "$historical"
+for name in sol-advisor-terra-implementer.toml sol-advisor-terra-researcher.toml; do
+  relative=plugins/sol-advisor/agents/$name
+  previous=$(git -C "$repo_root" log --format=%H -- "$relative" | sed -n '2p')
+  [ -n "$previous" ] || fail "prior release template missing in Git history: $relative"
+  git -C "$repo_root" show "$previous:$relative" > "$historical/$name" ||
+    fail "cannot extract known prior template: $relative"
+done
+
 prior=$tmp/prior-terra
 mkdir "$prior"
-for name in sol-advisor-terra-implementer.toml sol-advisor-terra-researcher.toml; do
-  sed 's/^model = "gpt-6.1-terra"$/model = "gpt-5.6-terra"/' "$agents/$name" > "$prior/$name"
-done
+cp "$historical/"*.toml "$prior/"
 prior_impl_before=$(cksum "$prior/sol-advisor-terra-implementer.toml")
 prior_research_before=$(cksum "$prior/sol-advisor-terra-researcher.toml")
 if sh "$installer" --target-dir "$prior" >/dev/null 2>&1; then
-  fail "default installer silently upgraded old Terra profiles"
+  fail "default installer silently upgraded known prior Terra profiles"
 fi
 [ "$prior_impl_before" = "$(cksum "$prior/sol-advisor-terra-implementer.toml")" ] ||
-  fail "default install modified old Terra implementer"
+  fail "default install modified prior Terra implementer"
 [ "$prior_research_before" = "$(cksum "$prior/sol-advisor-terra-researcher.toml")" ] ||
-  fail "default install modified old Terra researcher"
+  fail "default install modified prior Terra researcher"
 [ ! -e "$prior/sol-advisor-luna-explorer.toml" ] ||
   fail "default failure partially installed profiles"
 if sh "$installer" --target-dir "$prior" --check --check-role terra-implementation >/dev/null 2>&1; then
-  fail "stale Terra passed preflight"
+  fail "outdated Terra passed preflight"
 fi
 sh "$installer" --target-dir "$prior" --upgrade-known >/dev/null
 sh "$installer" --target-dir "$prior" --upgrade-known >/dev/null
 sh "$installer" --target-dir "$prior" --check >/dev/null
 cmp -s "$terra_impl" "$prior/sol-advisor-terra-implementer.toml" || fail "Terra implementation upgrade mismatch"
 cmp -s "$terra_research" "$prior/sol-advisor-terra-researcher.toml" || fail "Terra research upgrade mismatch"
-pass "explicit pristine Terra 5.6 -> 6.1 upgrade and idempotence"
+pass "explicit history-matched pristine Terra upgrade and idempotence"
 
 modified_prior=$tmp/modified-prior-terra
 mkdir "$modified_prior"
-for name in sol-advisor-terra-implementer.toml sol-advisor-terra-researcher.toml; do
-  sed 's/^model = "gpt-6.1-terra"$/model = "gpt-5.6-terra"/' "$agents/$name" > "$modified_prior/$name"
-done
+cp "$historical/"*.toml "$modified_prior/"
 printf '%s\n' '# user change' >> "$modified_prior/sol-advisor-terra-researcher.toml"
 before_modified_impl=$(cksum "$modified_prior/sol-advisor-terra-implementer.toml")
 before_modified_research=$(cksum "$modified_prior/sol-advisor-terra-researcher.toml")
@@ -512,13 +534,13 @@ runtime_impl_rollout=$runtime_day/rollout-2026-10-05T00-00-00-$runtime_impl_id.j
 printf '%s\n' \
   '{"type":"response_item","payload":{"prompt":"DO_NOT_LEAK_PROMPT"}}' \
   "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_impl_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_worker\",\"agent_path\":\"/root/fixture\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
-  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"max","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  '{"type":"turn_context","payload":{"model":"'"$luna_model"'","effort":"max","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
   > "$runtime_impl_rollout"
 runtime_impl_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_impl_id")
 printf '%s\n' "$runtime_impl_output" | jq -e --arg id "$runtime_impl_id" '
   .thread_id == $id
   and .agent_role == "sol_advisor_luna_worker"
-  and .model == "gpt-6-luna"
+  and .model == "'"$luna_model"'"
   and .effort == "max"
 ' >/dev/null || fail "runtime inspector returned wrong Luna/Max worker evidence"
 if printf '%s\n' "$runtime_impl_output" | grep -Fq DO_NOT_LEAK; then
@@ -527,7 +549,7 @@ fi
 
 
 cp "$runtime_impl_rollout" "$tmp/worker-rollout-before-conflict"
-printf '%s\n' '{"type":"turn_context","payload":{"model":"gpt-6.1-terra","effort":"high","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' >> "$runtime_impl_rollout"
+printf '%s\n' '{"type":"turn_context","payload":{"model":"'"$terra_model"'","effort":"high","sandbox_policy":{"type":"danger-full-access"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' >> "$runtime_impl_rollout"
 if sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_impl_id" >/dev/null 2>&1; then
   fail "conflicting child model/effort runtime evidence unexpectedly accepted"
 fi
@@ -539,13 +561,13 @@ runtime_rollout=$runtime_day/rollout-2026-10-05T00-00-01-$runtime_id.jsonl
 printf '%s\n' \
   '{"type":"response_item","payload":{"prompt":"DO_NOT_LEAK_RESEARCH"}}' \
   "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_researcher\",\"agent_path\":\"/root/fixture\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
-  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"max","sandbox_policy":{"type":"read-only"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  '{"type":"turn_context","payload":{"model":"'"$luna_model"'","effort":"max","sandbox_policy":{"type":"read-only"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
   > "$runtime_rollout"
 runtime_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_id")
 printf '%s\n' "$runtime_output" | jq -e --arg id "$runtime_id" '
   .thread_id == $id
   and .agent_role == "sol_advisor_luna_researcher"
-  and .model == "gpt-6-luna"
+  and .model == "'"$luna_model"'"
   and .effort == "max"
   and .sandbox_policy_type == "read-only"
 ' >/dev/null || fail "runtime inspector returned wrong Luna/Max research evidence"
@@ -555,7 +577,7 @@ runtime_broad_id=33333333-3333-7333-8333-333333333333
 runtime_broad_rollout=$runtime_day/rollout-2026-10-05T00-00-02-$runtime_broad_id.jsonl
 printf '%s\n' \
   "{\"type\":\"session_meta\",\"payload\":{\"id\":\"$runtime_broad_id\",\"parent_thread_id\":\"00000000-0000-7000-8000-000000000000\",\"agent_role\":\"sol_advisor_luna_researcher\",\"agent_path\":\"/root/fixture-broad\",\"model_provider\":\"openai\",\"cwd\":\"/fixture\"}}" \
-  '{"type":"turn_context","payload":{"model":"gpt-6-luna","effort":"max","sandbox_policy":{"type":"workspace-write"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
+  '{"type":"turn_context","payload":{"model":"'"$luna_model"'","effort":"max","sandbox_policy":{"type":"workspace-write"},"permission_profile":{"type":"disabled"},"cwd":"/fixture"}}' \
   > "$runtime_broad_rollout"
 runtime_broad_output=$(sh "$inspector" --sessions-dir "$runtime_sessions" "$runtime_broad_id")
 printf '%s\n' "$runtime_broad_output" | jq -e --arg id "$runtime_broad_id" '
@@ -570,4 +592,4 @@ if command -v git >/dev/null 2>&1 && git -C "$repo_root" rev-parse --is-inside-w
   pass "git diff --check"
 fi
 
-printf '%s\n' "VERIFY PASSED: judgment-based Luna/Terra routing, safe Terra upgrades, and ungated primary startup checks completed"
+printf '%s\n' "VERIFY PASSED: release SSOT, historical-template migration, routing and runtime checks completed"

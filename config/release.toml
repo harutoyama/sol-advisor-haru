@@ -1,0 +1,6 @@
+version = "0.107.0"
+
+[models]
+sol = "gpt-6.2-sol"
+terra = "gpt-6.1-terra"
+luna = "gpt-6-luna"
