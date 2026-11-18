@@ -350,8 +350,8 @@ pass "installer role names and 0.7.0 migration detection contract"
 
 grep -Fq 'codex plugin marketplace add harutoyama/sol-advisor-haru --ref main' "$readme" ||
   fail "README marketplace install command is stale"
-grep -Fq 'codex plugin marketplace upgrade sol-advisor' "$readme" ||
-  fail "README marketplace upgrade command is stale"
+grep -Fq 'codex plugin marketplace upgrade sol-advisor' "$update_local" ||
+  fail "local updater marketplace upgrade command is missing"
 grep -Fq 'Plugins Directory' "$readme" || fail "README omits Plugins Directory flow"
 if grep -Eq 'codex plugin (add|remove|list)([[:space:]]|$)' "$readme"; then
   fail "README relies on undocumented direct plugin CLI commands"
