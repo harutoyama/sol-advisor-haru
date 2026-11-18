@@ -55,11 +55,11 @@ python3 -m py_compile "$syntax"
 pass "JSON, TOML, YAML, and Python syntax"
 
 [ "$(jq -r '.name' "$portable")" = "sol-advisor" ] || fail "portable manifest name"
-[ "$(jq -r '.version' "$portable")" = "0.106.0" ] || fail "portable manifest version"
+[ "$(jq -r '.version' "$portable")" = "0.107.0" ] || fail "portable manifest version"
 [ "$(jq -r '."$schema"' "$portable")" = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json" ] || fail "portable manifest schema"
-[ "$(jq -r '.version' "$compat")" = "0.106.0" ] || fail "compat manifest version"
+[ "$(jq -r '.version' "$compat")" = "0.107.0" ] || fail "compat manifest version"
 [ "$(jq -r '.plugins[0].source.path' "$market")" = "./plugins/sol-advisor" ] || fail "marketplace path"
-pass "0.106.0 manifests and marketplace path"
+pass "0.107.0 manifests and marketplace path"
 
 grep -Fq 'model = "gpt-6-luna"' "$luna_explorer" || fail "Luna explorer model pin"
 grep -Fq 'model_reasoning_effort = "max"' "$luna_explorer" || fail "Luna explorer effort pin"
@@ -72,7 +72,7 @@ grep -Fq 'model = "gpt-6-luna"' "$luna_impl" || fail "Luna implementation model 
 grep -Fq 'model_reasoning_effort = "max"' "$luna_impl" || fail "Luna implementation effort pin"
 grep -Fq 'model = "gpt-6.1-terra"' "$terra_impl" || fail "Terra implementation model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$terra_impl" || fail "Terra implementation effort pin"
-grep -Fq 'model = "gpt-6.1-sol"' "$sol_review" || fail "Sol reviewer model pin"
+grep -Fq 'model = "gpt-6.2-sol"' "$sol_review" || fail "Sol reviewer model pin"
 grep -Fq 'model_reasoning_effort = "high"' "$sol_review" || fail "Sol reviewer effort pin"
 grep -Fq 'sandbox_mode = "read-only"' "$sol_review" || fail "Sol reviewer read-only request"
 grep -Fq 'model = "gpt-6-luna"' "$luna_research" || fail "Luna research model pin"
@@ -258,7 +258,7 @@ expected = {
     "luna-researcher": ("gpt-6-luna", "max", "read-only"),
     "luna-implementer": ("gpt-6-luna", "max", None),
     "terra-implementer": ("gpt-6.1-terra", "high", None),
-    "sol-reviewer": ("gpt-6.1-sol", "high", "read-only"),
+    "sol-reviewer": ("gpt-6.2-sol", "high", "read-only"),
     "terra-researcher": ("gpt-6.1-terra", "high", "read-only"),
 }
 for slug, (model, effort, sandbox) in expected.items():

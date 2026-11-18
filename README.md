@@ -15,7 +15,7 @@ are loaded only as needed.
 | Luna explorer / worker / tester / researcher | GPT-6 Luna / Max | Independently bounded exploration, implementation, verification, and read-only research |
 | Terra implementer | GPT-6.1 Terra / High | Judgment-heavy implementation, including direct routing inside settled architecture |
 | Terra researcher | GPT-6.1 Terra / High | Scientific, methodological, causal, and conflicting-evidence research |
-| Fresh Sol reviewer | GPT-6.1 Sol / High | Independent final scrutiny only on high-risk changes |
+| Fresh Sol reviewer | GPT-6.2 Sol / High | Independent final scrutiny only on high-risk changes |
 | Legacy Luna implementer | GPT-6 Luna / Max | Compatibility only |
 
 Route work by judgment and risk. Luna / Max handles routine bounded implementation,
@@ -53,7 +53,7 @@ Directory.
 Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
-workdir="$HOME/Downloads/sol-advisor-haru-0.106.0"
+workdir="$HOME/Downloads/sol-advisor-haru-0.107.0"
 git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
@@ -81,7 +81,7 @@ codex plugin marketplace upgrade sol-advisor
 
 Refresh or reinstall **Sol Advisor (Haru fork)** from the ChatGPT desktop Plugins Directory.
 
-Then use a fresh 0.106.0 checkout. Updating the plugin alone leaves old
+Then use a fresh 0.107.0 checkout. Updating the plugin alone leaves old
 `gpt-5.6-terra` pins in existing agent TOMLs. To migrate unchanged prior-release
 Terra implementer and researcher profiles only:
 

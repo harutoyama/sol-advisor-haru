@@ -27,7 +27,7 @@ The following pins apply **only to auxiliary custom agents**, not to the primary
 | `sol_advisor_luna_tester` | `gpt-6-luna` | `max` | Targeted verification and regression evidence; nested agents disabled |
 | `sol_advisor_luna_implementer` | `gpt-6-luna` | `max` | Legacy 0.102.x implementation compatibility profile |
 | `sol_advisor_terra_implementer` | `gpt-6.1-terra` | `high` | Judgment-heavy implementation, including direct initial routing |
-| `sol_advisor_sol_reviewer` | `gpt-6.1-sol` | `high` | High-risk fresh final review; requests read-only sandbox |
+| `sol_advisor_sol_reviewer` | `gpt-6.2-sol` | `high` | High-risk fresh final review; requests read-only sandbox |
 | `sol_advisor_luna_researcher` | `gpt-6-luna` | `max` | Bounded substantive read-only research; nested agents disabled |
 | `sol_advisor_terra_researcher` | `gpt-6.1-terra` | `high` | Judgment-heavy read-only research, selectable directly |
 
@@ -117,7 +117,7 @@ Haru fork 0.7.0 installed these obsolete role names:
 - `sol-advisor-escalation-implementer.toml`
 - `sol-advisor-audit-reviewer.toml`
 
-The 0.106.0 installer treats any of them as a migration hazard and stops before changing the
+The 0.107.0 installer treats any of them as a migration hazard and stops before changing the
 destination. It never deletes them automatically. It reports whether each file is the exact known
 0.7.0 regular file or a modified/unknown/unsafe file.
 
@@ -153,7 +153,7 @@ Any new child must be checked independently, even when its installed profile che
 
 Accepted routing evidence: Luna / max for bounded routine exploration, implementation,
 testing, and research; Terra 6.1 / high for judgment-heavy implementation or research,
-including direct initial routing; GPT-6.1 Sol / high for fresh high-risk review.
+including direct initial routing; GPT-6.2 Sol / high for fresh high-risk review.
 Only the older Luna implementation profile remains compatibility-only.
 
 ## Explorer and researcher isolation
@@ -213,7 +213,7 @@ git status --short
 git diff --stat
 ```
 
-The verifier checks the 0.106.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
+The verifier checks the 0.107.0 manifests, exact eight-role set, bounded Luna explorer/worker/tester
 pins and contracts, Terra/Sol exception lanes, research routing, read-only-role isolation and
 external-mutation constraints, root/reference ownership,
 regression fixtures, installer fresh install, 0.102.2 -> current update behavior, exact-match Terra model upgrades, 0.7.0 migration
