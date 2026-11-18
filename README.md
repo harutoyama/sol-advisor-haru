@@ -54,7 +54,7 @@ Install the companion custom-agent profiles from a fresh checkout:
 
 ```sh
 workdir="$HOME/Downloads/sol-advisor-haru-0.107.0"
-git clone --depth 1 --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
+git clone --branch main https://github.com/harutoyama/sol-advisor-haru.git "$workdir"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh"
 sh "$workdir/plugins/sol-advisor/scripts/install-agents.sh" --check
 ```
